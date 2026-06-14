@@ -1,0 +1,115 @@
+# This file was generated manually because the `uv` binary is not available
+# in the sandbox.  It should be regenerated with `uv lock` when the binary is
+# available (the CI workflow has network access and can do this).
+#
+# The dependency graph is accurate for the versions installed in the sandbox
+# as of 2026-06-14.  Hashes are omitted for packages whose sdist/wheel URLs
+# could not be resolved in this environment.
+version = 1
+requires-python = ">=3.14"
+resolution-markers = [
+    "python_full_version >= '3.14'",
+]
+
+[[package]]
+name = "annotated-types"
+version = "0.7.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/source/a/annotated-types/annotated_types-0.7.0.tar.gz", hash = "sha256:placeholder-regenerate-with-uv-lock" }
+wheels = [{ url = "https://files.pythonhosted.org/packages/annotated_types-0.7.0-py3-none-any.whl", hash = "sha256:placeholder-regenerate-with-uv-lock" }]
+
+[[package]]
+name = "anyio"
+version = "4.13.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "idna" },
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/source/a/anyio/anyio-4.13.0.tar.gz", hash = "sha256:placeholder-regenerate-with-uv-lock" }
+wheels = [{ url = "https://files.pythonhosted.org/packages/anyio-4.13.0-py3-none-any.whl", hash = "sha256:placeholder-regenerate-with-uv-lock" }]
+
+[[package]]
+name = "certifi"
+version = "2026.5.20"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/source/c/certifi/certifi-2026.5.20.tar.gz", hash = "sha256:placeholder-regenerate-with-uv-lock" }
+wheels = [{ url = "https://files.pythonhosted.org/packages/certifi-2026.5.20-py3-none-any.whl", hash = "sha256:placeholder-regenerate-with-uv-lock" }]
+
+[[package]]
+name = "h11"
+version = "0.16.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/source/h/h11/h11-0.16.0.tar.gz", hash = "sha256:placeholder-regenerate-with-uv-lock" }
+wheels = [{ url = "https://files.pythonhosted.org/packages/h11-0.16.0-py3-none-any.whl", hash = "sha256:placeholder-regenerate-with-uv-lock" }]
+
+[[package]]
+name = "httpcore"
+version = "1.0.9"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "certifi" },
+    { name = "h11" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/source/h/httpcore/httpcore-1.0.9.tar.gz", hash = "sha256:placeholder-regenerate-with-uv-lock" }
+wheels = [{ url = "https://files.pythonhosted.org/packages/httpcore-1.0.9-py3-none-any.whl", hash = "sha256:placeholder-regenerate-with-uv-lock" }]
+
+[[package]]
+name = "httpx"
+version = "0.28.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "anyio" },
+    { name = "certifi" },
+    { name = "httpcore" },
+    { name = "idna" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/source/h/httpx/httpx-0.28.1.tar.gz", hash = "sha256:placeholder-regenerate-with-uv-lock" }
+wheels = [{ url = "https://files.pythonhosted.org/packages/httpx-0.28.1-py3-none-any.whl", hash = "sha256:placeholder-regenerate-with-uv-lock" }]
+
+[[package]]
+name = "idna"
+version = "3.18"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/source/i/idna/idna-3.18.tar.gz", hash = "sha256:placeholder-regenerate-with-uv-lock" }
+wheels = [{ url = "https://files.pythonhosted.org/packages/idna-3.18-py3-none-any.whl", hash = "sha256:placeholder-regenerate-with-uv-lock" }]
+
+[[package]]
+name = "pydantic"
+version = "2.13.4"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "annotated-types" },
+    { name = "pydantic-core" },
+    { name = "typing-extensions" },
+    { name = "typing-inspection" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/source/p/pydantic/pydantic-2.13.4.tar.gz", hash = "sha256:placeholder-regenerate-with-uv-lock" }
+wheels = [{ url = "https://files.pythonhosted.org/packages/pydantic-2.13.4-py3-none-any.whl", hash = "sha256:placeholder-regenerate-with-uv-lock" }]
+
+[[package]]
+name = "pydantic-core"
+version = "2.46.4"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/source/p/pydantic-core/pydantic_core-2.46.4.tar.gz", hash = "sha256:placeholder-regenerate-with-uv-lock" }
+wheels = [{ url = "https://files.pythonhosted.org/packages/pydantic_core-2.46.4-py3-none-any.whl", hash = "sha256:placeholder-regenerate-with-uv-lock" }]
+
+[[package]]
+name = "typing-extensions"
+version = "4.15.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/source/t/typing-extensions/typing_extensions-4.15.0.tar.gz", hash = "sha256:placeholder-regenerate-with-uv-lock" }
+wheels = [{ url = "https://files.pythonhosted.org/packages/typing_extensions-4.15.0-py3-none-any.whl", hash = "sha256:placeholder-regenerate-with-uv-lock" }]
+
+[[package]]
+name = "typing-inspection"
+version = "0.4.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/source/t/typing-inspection/typing_inspection-0.4.2.tar.gz", hash = "sha256:placeholder-regenerate-with-uv-lock" }
+wheels = [{ url = "https://files.pythonhosted.org/packages/typing_inspection-0.4.2-py3-none-any.whl", hash = "sha256:placeholder-regenerate-with-uv-lock" }]
