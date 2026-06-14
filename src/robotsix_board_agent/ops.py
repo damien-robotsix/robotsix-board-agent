@@ -1,0 +1,254 @@
+"""Operation dispatch table and argument models.
+
+Maps structured ``{"op": "...", "args": {...}}`` requests to
+``BoardClient`` method calls.
+"""
+
+from __future__ import annotations
+
+from collections.abc import Callable
+from typing import Any
+
+from pydantic import BaseModel
+
+from .client import BoardClient
+
+
+class UnknownOpError(Exception):
+    """Raised when the requested operation name is not in the op table."""
+
+    def __init__(self, op: str) -> None:
+        self.op = op
+        super().__init__(f"Unknown operation: {op}")
+
+
+# -- operation argument models ---------------------------------------------
+
+
+class ListTicketsArgs(BaseModel):
+    state: str | None = None
+    repo_id: str | None = None
+
+
+class GetTicketArgs(BaseModel):
+    ticket_id: str
+
+
+class BoardCardsArgs(BaseModel):
+    repo_id: str | None = None
+
+
+class HistoryArgs(BaseModel):
+    ticket_id: str
+
+
+class MergeStatusArgs(BaseModel):
+    ticket_id: str
+
+
+class DescriptionArgs(BaseModel):
+    ticket_id: str
+
+
+class CreateTicketArgs(BaseModel):
+    title: str
+    description: str
+    source: str = "agent"
+    kind: str = "task"
+    repo_id: str | None = None
+
+
+class AddCommentArgs(BaseModel):
+    ticket_id: str
+    body: str
+    author: str = "board-agent"
+
+
+class TransitionArgs(BaseModel):
+    ticket_id: str
+    state: str
+    note: str = ""
+
+
+class ApproveArgs(BaseModel):
+    ticket_id: str
+
+
+class MarkDoneArgs(BaseModel):
+    ticket_id: str
+    note: str = ""
+
+
+class MergeNowArgs(BaseModel):
+    ticket_id: str
+
+
+class ResumeBlockedArgs(BaseModel):
+    ticket_id: str
+
+
+class MigrateArgs(BaseModel):
+    ticket_id: str
+    target_repo_id: str
+    note: str = ""
+
+
+class SetPriorityArgs(BaseModel):
+    ticket_id: str
+    priority: bool
+
+
+# -- op dispatch table -----------------------------------------------------
+
+
+async def _list_tickets(client: BoardClient, args: dict[str, Any]) -> dict[str, Any]:
+    a = ListTicketsArgs.model_validate(args)
+    result = await client.list_tickets(state=a.state, repo_id=a.repo_id)
+    return {"tickets": result}
+
+
+async def _get_ticket(client: BoardClient, args: dict[str, Any]) -> dict[str, Any]:
+    a = GetTicketArgs.model_validate(args)
+    return await client.get_ticket(ticket_id=a.ticket_id)
+
+
+async def _board_cards(client: BoardClient, args: dict[str, Any]) -> dict[str, Any]:
+    a = BoardCardsArgs.model_validate(args)
+    result = await client.board_cards(repo_id=a.repo_id)
+    return {"cards": result}
+
+
+async def _history(client: BoardClient, args: dict[str, Any]) -> dict[str, Any]:
+    a = HistoryArgs.model_validate(args)
+    result = await client.history(ticket_id=a.ticket_id)
+    return {"history": result}
+
+
+async def _merge_status(client: BoardClient, args: dict[str, Any]) -> dict[str, Any]:
+    a = MergeStatusArgs.model_validate(args)
+    return await client.merge_status(ticket_id=a.ticket_id)
+
+
+async def _description(client: BoardClient, args: dict[str, Any]) -> dict[str, Any]:
+    a = DescriptionArgs.model_validate(args)
+    return await client.description(ticket_id=a.ticket_id)
+
+
+async def _create_ticket(client: BoardClient, args: dict[str, Any]) -> dict[str, Any]:
+    a = CreateTicketArgs.model_validate(args)
+    return await client.create_ticket(
+        title=a.title,
+        description=a.description,
+        source=a.source,
+        kind=a.kind,
+        repo_id=a.repo_id,
+    )
+
+
+async def _add_comment(client: BoardClient, args: dict[str, Any]) -> dict[str, Any]:
+    a = AddCommentArgs.model_validate(args)
+    return await client.add_comment(
+        ticket_id=a.ticket_id,
+        body=a.body,
+        author=a.author,
+    )
+
+
+async def _transition(client: BoardClient, args: dict[str, Any]) -> dict[str, Any]:
+    a = TransitionArgs.model_validate(args)
+    return await client.transition(
+        ticket_id=a.ticket_id,
+        state=a.state,
+        note=a.note,
+    )
+
+
+async def _approve(client: BoardClient, args: dict[str, Any]) -> dict[str, Any]:
+    a = ApproveArgs.model_validate(args)
+    return await client.approve(ticket_id=a.ticket_id)
+
+
+async def _mark_done(client: BoardClient, args: dict[str, Any]) -> dict[str, Any]:
+    a = MarkDoneArgs.model_validate(args)
+    return await client.mark_done(ticket_id=a.ticket_id, note=a.note)
+
+
+async def _merge_now(client: BoardClient, args: dict[str, Any]) -> dict[str, Any]:
+    a = MergeNowArgs.model_validate(args)
+    return await client.merge_now(ticket_id=a.ticket_id)
+
+
+async def _resume_blocked(client: BoardClient, args: dict[str, Any]) -> dict[str, Any]:
+    a = ResumeBlockedArgs.model_validate(args)
+    return await client.resume_blocked(ticket_id=a.ticket_id)
+
+
+async def _migrate(client: BoardClient, args: dict[str, Any]) -> dict[str, Any]:
+    a = MigrateArgs.model_validate(args)
+    return await client.migrate(
+        ticket_id=a.ticket_id,
+        target_repo_id=a.target_repo_id,
+        note=a.note,
+    )
+
+
+async def _set_priority(client: BoardClient, args: dict[str, Any]) -> dict[str, Any]:
+    a = SetPriorityArgs.model_validate(args)
+    return await client.set_priority(ticket_id=a.ticket_id, priority=a.priority)
+
+
+OP_TABLE: dict[str, Callable[[BoardClient, dict[str, Any]], Any]] = {
+    # read ops
+    "list_tickets": _list_tickets,
+    "get_ticket": _get_ticket,
+    "board_cards": _board_cards,
+    "history": _history,
+    "merge_status": _merge_status,
+    "description": _description,
+    # write ops
+    "create_ticket": _create_ticket,
+    "comment": _add_comment,
+    "transition": _transition,
+    "approve": _approve,
+    "mark_done": _mark_done,
+    "merge_now": _merge_now,
+    "resume_blocked": _resume_blocked,
+    "migrate": _migrate,
+    "set_priority": _set_priority,
+}
+
+WRITE_OPS: frozenset[str] = frozenset(
+    {
+        "create_ticket",
+        "comment",
+        "transition",
+        "approve",
+        "mark_done",
+        "merge_now",
+        "resume_blocked",
+        "migrate",
+        "set_priority",
+    }
+)
+
+
+# -- dispatch --------------------------------------------------------------
+
+
+class BoardOp(BaseModel):
+    """A structured operation request: ``{"op": "...", "args": {...}}``."""
+
+    op: str
+    args: dict[str, Any] = {}
+
+
+async def dispatch(client: BoardClient, op: BoardOp) -> dict[str, Any]:
+    """Look up *op* in ``OP_TABLE``, validate args, and execute.
+
+    Raises:
+        UnknownOpError: if *op* is not in the table.
+    """
+    handler = OP_TABLE.get(op.op)
+    if handler is None:
+        raise UnknownOpError(op.op)
+    return await handler(client, op.args)  # type: ignore[no-any-return]

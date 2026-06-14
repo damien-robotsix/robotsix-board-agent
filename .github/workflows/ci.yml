@@ -1,0 +1,13 @@
+name: CI
+
+on: [pull_request, push]
+
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    permissions:
+      contents: read
+      security-events: write
+    uses: damien-robotsix/robotsix-mill/.github/workflows/python-ci.yml@main

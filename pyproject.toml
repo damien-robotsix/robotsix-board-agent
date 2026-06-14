@@ -1,0 +1,79 @@
+[project]
+name = "robotsix-board-agent"
+version = "0.1.0"
+description = "Agent-comm agent exposing the mill board's full ticket lifecycle over structured messages"
+requires-python = ">=3.14"
+license = { text = "MIT" }
+readme = "README.md"
+
+dependencies = [
+    "httpx>=0.27",
+    "pydantic>=2",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8",
+    "pytest-asyncio>=0.21",
+    "mypy>=1.15",
+    "ruff==0.15.15",
+]
+prod = [
+    "robotsix-agent-comm",
+]
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.uv]
+default-groups = ["dev"]
+
+[tool.uv.sources]
+robotsix-agent-comm = { git = "https://github.com/damien-robotsix/robotsix-agent-comm.git", rev = "main" }
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/robotsix_board_agent"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py314"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "UP", "B", "C4", "SIM", "RUF"]
+ignore = []
+
+[tool.ruff.lint.isort]
+known-first-party = ["robotsix_board_agent"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.mypy]
+strict = true
+python_version = "3.14"
+explicit_package_bases = true
+mypy_path = "src"
+files = ["src/robotsix_board_agent", "tests"]
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+disallow_untyped_defs = false
+
+[[tool.mypy.overrides]]
+module = "robotsix_agent_comm"
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+addopts = "-q --tb=short"
+testpaths = ["tests"]
+filterwarnings = [
+    "ignore::DeprecationWarning",
+]
+coverage_source = ["robotsix_board_agent"]
