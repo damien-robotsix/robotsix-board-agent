@@ -11,3 +11,5 @@ jobs:
       contents: read
       security-events: write
     uses: damien-robotsix/robotsix-mill/.github/workflows/python-ci.yml@main
+    with:
+      run-deptry: false
