@@ -17,23 +17,8 @@ from robotsix_board_agent.config import BoardAgentSettings
 from robotsix_board_agent.ops import WRITE_OPS
 
 # ---------------------------------------------------------------------------
-# Fixtures
+# Fixtures (settings and registry are provided by tests/conftest.py)
 # ---------------------------------------------------------------------------
-
-
-@pytest.fixture
-def settings() -> BoardAgentSettings:
-    return BoardAgentSettings(
-        board_api_url="http://mock-board.test",
-        board_api_token="test-token",
-        board_repo_id="test-repo",
-        enable_write_ops=True,
-    )
-
-
-@pytest.fixture
-def registry() -> Registry:
-    return Registry()
 
 
 @pytest.fixture
