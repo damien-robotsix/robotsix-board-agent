@@ -11,7 +11,9 @@ modules:
       BoardOp, UnknownOpError, and dispatch.
 
   - name: agent
-    path: src/robotsix_board_agent/agent.py
+    path:
+      - src/robotsix_board_agent/agent.py
+      - docs/getting-started.md
     description: >
       BoardAgent class — registers with an agent-comm Registry, parses
       structured ``{"op": ..., "args": {...}}`` requests, and dispatches
