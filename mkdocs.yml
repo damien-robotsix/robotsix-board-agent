@@ -4,4 +4,4 @@ theme:
 
 nav:
   - Getting Started: getting-started.md
-  - Operations Reference: operations.md
+  - Operations Reference: ops/operations.md
