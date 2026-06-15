@@ -21,7 +21,9 @@ modules:
       the lazy import fallback for sandbox environments.
 
   - name: client
-    path: src/robotsix_board_agent/client.py
+    path:
+      - src/robotsix_board_agent/client.py
+      - tests/client/
     description: >
       Typed HTTP client (BoardClient) for the mill board REST API.
       Every public method maps 1:1 to a board endpoint.  Supports
