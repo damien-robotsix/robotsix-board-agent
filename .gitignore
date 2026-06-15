@@ -16,3 +16,4 @@ site/
 
 # stray uv binary downloaded into the workspace — never commit
 uv-x86_64-unknown-linux-gnu/
+.coverage
