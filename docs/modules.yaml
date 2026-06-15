@@ -3,7 +3,9 @@
 # directory tree and flags drift (new, missing, or relocated modules).
 modules:
   - name: __init__
-    path: src/robotsix_board_agent/__init__.py
+    path:
+      - src/robotsix_board_agent/__init__.py
+      - src/robotsix_board_agent/py.typed
     description: >
       Package init — re-exports BoardAgent, BoardClient, BoardAgentSettings,
       BoardOp, UnknownOpError, and dispatch.
