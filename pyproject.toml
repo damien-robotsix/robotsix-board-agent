@@ -9,6 +9,7 @@ readme = "README.md"
 dependencies = [
     "httpx>=0.27",
     "pydantic>=2",
+    "robotsix-llmio",
 ]
 
 [project.optional-dependencies]
@@ -38,6 +39,7 @@ default-groups = ["dev"]
 
 [tool.uv.sources]
 robotsix-agent-comm = { git = "https://github.com/damien-robotsix/robotsix-agent-comm.git", rev = "main" }
+robotsix-llmio = { git = "https://github.com/damien-robotsix/robotsix-llmio.git", rev = "main" }
 
 [build-system]
 requires = ["hatchling"]

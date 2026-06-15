@@ -7,12 +7,15 @@ other agents can drive a board programmatically.
 from __future__ import annotations
 
 import json
+import logging
 import sys
 from typing import Any
 
 from .client import BoardAPIError, BoardClient
 from .config import BoardAgentSettings
 from .ops import OP_TABLE, WRITE_OPS, BoardOp, UnknownOpError, dispatch
+
+logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # Import robotsix-agent-comm, with a fallback for sandbox environments where
@@ -37,6 +40,16 @@ except ImportError:
         Registry = None
         Request = None
         Response = None
+
+# ---------------------------------------------------------------------------
+# Setup structured logging via robotsix-llmio's shared helper (idempotent).
+# ---------------------------------------------------------------------------
+try:
+    from robotsix_llmio.logging import setup_logging as _llmio_setup_logging
+
+    _llmio_setup_logging(loggers=["robotsix_board_agent"])
+except ImportError:
+    pass
 
 # ---------------------------------------------------------------------------
 # Known-op sets — derived from OP_TABLE so they can never drift.
@@ -111,14 +124,18 @@ class BoardAgent:
         try:
             op = BoardOp.model_validate(body)
         except Exception as exc:
+            logger.warning("Bad request: %s", exc)
             return Error.to(
                 request,
                 code="BAD_REQUEST",
                 message=f"Invalid operation: {exc}",
             )
 
+        logger.info("Request received: op=%s", op.op)
+
         # Unknown op check.
         if op.op not in OP_TABLE:
+            logger.warning("Unknown op requested: %s", op.op)
             return Error.to(
                 request,
                 code="UNKNOWN_OP",
@@ -127,6 +144,7 @@ class BoardAgent:
 
         # Write gate.
         if op.op in WRITE_OPS and not self.settings.enable_write_ops:
+            logger.warning("Write op rejected (disabled): op=%s", op.op)
             return Error.to(
                 request,
                 code="WRITE_OPS_DISABLED",
@@ -137,18 +155,26 @@ class BoardAgent:
         try:
             result = await dispatch(self.client, op)
         except BoardAPIError as exc:
+            logger.error(
+                "Board API error: op=%s status=%d detail=%s",
+                op.op,
+                exc.status_code,
+                exc.detail,
+            )
             return Error.to(
                 request,
                 code="BOARD_API_ERROR",
                 message=f"Board API error {exc.status_code}: {exc.detail}",
             )
         except UnknownOpError as exc:
+            logger.error("Dispatch failed: unknown op=%s", op.op)
             return Error.to(
                 request,
                 code="UNKNOWN_OP",
                 message=str(exc),
             )
 
+        logger.info("Response sent: op=%s", op.op)
         return Response(result=result)
 
     # -- lifecycle ---------------------------------------------------------

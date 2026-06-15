@@ -6,12 +6,15 @@ Maps structured ``{"op": "...", "args": {...}}`` requests to
 
 from __future__ import annotations
 
+import logging
 from collections.abc import Callable
 from typing import Any
 
 from pydantic import BaseModel
 
 from .client import BoardClient
+
+logger = logging.getLogger(__name__)
 
 
 class UnknownOpError(Exception):
@@ -250,5 +253,9 @@ async def dispatch(client: BoardClient, op: BoardOp) -> dict[str, Any]:
     """
     handler = OP_TABLE.get(op.op)
     if handler is None:
+        logger.error("Dispatch failed: unknown op=%s", op.op)
         raise UnknownOpError(op.op)
-    return await handler(client, op.args)  # type: ignore[no-any-return]
+    logger.info("Dispatching op=%s", op.op)
+    result = await handler(client, op.args)
+    logger.info("Dispatch succeeded: op=%s", op.op)
+    return result  # type: ignore[no-any-return]
