@@ -1,0 +1,7 @@
+site_name: robotsix-board-agent
+theme:
+  name: material
+
+nav:
+  - Getting Started: getting-started.md
+  - Operations Reference: operations.md
