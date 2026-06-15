@@ -683,7 +683,7 @@ requires-dist = [
     { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=0.21" },
     { name = "ruff", marker = "extra == 'dev'", specifier = "==0.15.15" },
 ]
-provides-extras = ["dev"]
+provides-extras = ["dev", "tracing"]
 
 [package.metadata.requires-dev]
 dev = [
