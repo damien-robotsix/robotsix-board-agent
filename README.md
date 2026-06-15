@@ -31,7 +31,7 @@ Send a structured operation (e.g. via another agent):
 ```
 
 See [docs/getting-started.md](docs/getting-started.md) for details and
-[docs/operations.md](docs/operations.md) for the full operation reference.
+[docs/ops/operations.md](docs/ops/operations.md) for the full operation reference.
 
 ## License
 
