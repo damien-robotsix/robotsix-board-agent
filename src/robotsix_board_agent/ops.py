@@ -30,37 +30,44 @@ class UnknownOpError(Exception):
 
 class ListTicketsArgs(BaseModel):
     """Arguments for the ``list_tickets`` operation — optional state and repo filters."""
+
     state: str | None = None
     repo_id: str | None = None
 
 
 class GetTicketArgs(BaseModel):
     """Arguments for the ``get_ticket`` operation — identifies a single ticket by id."""
+
     ticket_id: str
 
 
 class BoardCardsArgs(BaseModel):
     """Arguments for the ``board_cards`` operation — optional repo filter."""
+
     repo_id: str | None = None
 
 
 class HistoryArgs(BaseModel):
     """Arguments for the ``history`` operation — identifies a ticket by id."""
+
     ticket_id: str
 
 
 class MergeStatusArgs(BaseModel):
     """Arguments for the ``merge_status`` operation — identifies a ticket by id."""
+
     ticket_id: str
 
 
 class DescriptionArgs(BaseModel):
     """Arguments for the ``get_description`` operation — identifies a ticket by id."""
+
     ticket_id: str
 
 
 class CreateTicketArgs(BaseModel):
     """Arguments for the ``create_ticket`` operation — title, description, and optional metadata."""
+
     title: str
     description: str
     source: str = "agent"
@@ -70,6 +77,7 @@ class CreateTicketArgs(BaseModel):
 
 class AddCommentArgs(BaseModel):
     """Arguments for the ``add_comment`` operation — ticket id, body, and optional author."""
+
     ticket_id: str
     body: str
     author: str = "board-agent"
@@ -77,6 +85,7 @@ class AddCommentArgs(BaseModel):
 
 class TransitionArgs(BaseModel):
     """Arguments for the ``transition`` operation — ticket id, target state, and optional note."""
+
     ticket_id: str
     state: str
     note: str = ""
@@ -84,27 +93,32 @@ class TransitionArgs(BaseModel):
 
 class ApproveArgs(BaseModel):
     """Arguments for the ``approve`` operation — identifies a ticket by id."""
+
     ticket_id: str
 
 
 class MarkDoneArgs(BaseModel):
     """Arguments for the ``mark_done`` operation — ticket id and optional closing note."""
+
     ticket_id: str
     note: str = ""
 
 
 class MergeNowArgs(BaseModel):
     """Arguments for the ``merge_now`` operation — identifies a ticket by id."""
+
     ticket_id: str
 
 
 class ResumeBlockedArgs(BaseModel):
     """Arguments for the ``resume_blocked`` operation — identifies a ticket by id."""
+
     ticket_id: str
 
 
 class MigrateArgs(BaseModel):
     """Arguments for the ``migrate`` operation — ticket id, target repo, and optional note."""
+
     ticket_id: str
     target_repo_id: str
     note: str = ""
@@ -112,6 +126,7 @@ class MigrateArgs(BaseModel):
 
 class SetPriorityArgs(BaseModel):
     """Arguments for the ``set_priority`` operation — ticket id and priority flag."""
+
     ticket_id: str
     priority: bool
 
