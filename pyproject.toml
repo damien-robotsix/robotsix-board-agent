@@ -54,7 +54,7 @@ target-version = "py314"
 src = ["src", "tests"]
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "N", "W", "UP", "B", "C4", "SIM", "RUF"]
+select = ["E", "F", "I", "N", "W", "UP", "B", "C4", "SIM", "RUF", "S"]
 ignore = []
 
 [tool.ruff.lint.isort]
@@ -62,6 +62,7 @@ known-first-party = ["robotsix_board_agent"]
 
 [tool.ruff.lint.per-file-ignores]
 "vulture_whitelist.py" = ["B018", "F821"]
+"tests/**" = ["S101", "S106"]
 
 [tool.ruff.format]
 quote-style = "double"
