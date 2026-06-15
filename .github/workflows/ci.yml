@@ -14,6 +14,9 @@ jobs:
       contents: read
     uses: damien-robotsix/robotsix-mill/.github/workflows/python-ci.yml@main
     with:
+      # deptry reports DEP002 false positives for CLI-only dev tools
+      # (pytest, mypy, ruff, vulture) that aren't imported in source code.
+      # TODO: configure deptry to ignore those and re-enable.
       run-deptry: false
       cov-package: robotsix_board_agent
 
