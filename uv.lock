@@ -646,6 +646,11 @@ wheels = [
 ]
 
 [[package]]
+name = "robotsix-agent-comm"
+version = "0.1.0"
+source = { git = "https://github.com/damien-robotsix/robotsix-agent-comm.git?rev=main#4a433bb736e844c0cc4ff808bf159e3e3dec3fdf" }
+
+[[package]]
 name = "robotsix-board-agent"
 version = "0.1.0"
 source = { editable = "." }
@@ -660,6 +665,9 @@ dev = [
     { name = "pytest" },
     { name = "pytest-asyncio" },
     { name = "ruff" },
+]
+prod = [
+    { name = "robotsix-agent-comm" },
 ]
 
 [package.dev-dependencies]
@@ -681,9 +689,10 @@ requires-dist = [
     { name = "pydantic", specifier = ">=2" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8" },
     { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=0.21" },
+    { name = "robotsix-agent-comm", marker = "extra == 'prod'", git = "https://github.com/damien-robotsix/robotsix-agent-comm.git?rev=main" },
     { name = "ruff", marker = "extra == 'dev'", specifier = "==0.15.15" },
 ]
-provides-extras = ["dev", "tracing"]
+provides-extras = ["dev", "prod", "tracing"]
 
 [package.metadata.requires-dev]
 dev = [
