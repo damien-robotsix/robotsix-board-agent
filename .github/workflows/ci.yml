@@ -16,3 +16,4 @@ jobs:
     uses: damien-robotsix/robotsix-mill/.github/workflows/python-ci.yml@main
     with:
       run-deptry: false
+      cov-package: robotsix_board_agent
