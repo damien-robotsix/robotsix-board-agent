@@ -35,7 +35,9 @@ modules:
       and the enable_write_ops flag.
 
   - name: ops
-    path: src/robotsix_board_agent/ops.py
+    path:
+      - src/robotsix_board_agent/ops.py
+      - docs/operations.md
     description: >
       Operation dispatch — OP_TABLE mapping, per-op argument models
       (pydantic), handler functions, WRITE_OPS set, and the dispatch()
