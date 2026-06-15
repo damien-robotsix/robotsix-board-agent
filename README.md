@@ -30,7 +30,7 @@ Send a structured operation (e.g. via another agent):
 {"op": "create_ticket", "args": {"title": "Fix bug", "description": "It broke."}}
 ```
 
-See [docs/getting-started.md](docs/getting-started.md) for details and
+See [docs/agent/getting-started.md](docs/agent/getting-started.md) for details and
 [docs/ops/operations.md](docs/ops/operations.md) for the full operation reference.
 
 ## License
