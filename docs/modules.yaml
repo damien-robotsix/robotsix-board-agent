@@ -1,0 +1,45 @@
+# Module taxonomy for robotsix-board-agent.
+# The module_curator periodic workflow validates this against the live
+# directory tree and flags drift (new, missing, or relocated modules).
+modules:
+  - name: __init__
+    path: src/robotsix_board_agent/__init__.py
+    description: >
+      Package init — re-exports BoardAgent, BoardClient, BoardAgentSettings,
+      BoardOp, UnknownOpError, and dispatch.
+
+  - name: agent
+    path: src/robotsix_board_agent/agent.py
+    description: >
+      BoardAgent class — registers with an agent-comm Registry, parses
+      structured ``{"op": ..., "args": {...}}`` requests, and dispatches
+      them to the board client.  Also contains the read/write op gate and
+      the lazy import fallback for sandbox environments.
+
+  - name: client
+    path: src/robotsix_board_agent/client.py
+    description: >
+      Typed HTTP client (BoardClient) for the mill board REST API.
+      Every public method maps 1:1 to a board endpoint.  Supports
+      transport injection for network-free testing.
+
+  - name: config
+    path: src/robotsix_board_agent/config.py
+    description: >
+      Configuration model — BoardAgentSettings (pydantic BaseModel, NOT
+      BaseSettings).  Holds board_api_url, board_api_token, board_repo_id,
+      and the enable_write_ops flag.
+
+  - name: ops
+    path: src/robotsix_board_agent/ops.py
+    description: >
+      Operation dispatch — OP_TABLE mapping, per-op argument models
+      (pydantic), handler functions, WRITE_OPS set, and the dispatch()
+      entry point.  Also defines BoardOp (the incoming request model)
+      and UnknownOpError.
+
+  - name: tests
+    path: tests/
+    description: >
+      Test suite — conftest.py (shared fixtures, mock transports),
+      test_agent.py, test_client.py, test_ops.py.
