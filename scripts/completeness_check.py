@@ -245,7 +245,6 @@ def check_d(op_table: dict[str, Any], client_cls: type) -> list[str]:
 def check_e(
     op_table: dict[str, Any],
     write_ops: frozenset[str],
-    agent_mod: Any,
     client_cls: type,
 ) -> list[str]:
     """Check E — WRITE_OPS consistency.
@@ -254,8 +253,6 @@ def check_e(
     1. ``WRITE_OPS`` ⊆ ``OP_TABLE.keys()``.
     2. Every OP_TABLE entry whose handler calls a ``POST``-based client
        method must be in ``WRITE_OPS``.
-    3. Every OP_TABLE entry in ``WRITE_OPS`` must be absent from
-       ``agent.READ_OPS`` (the read-ops complement).
     """
     errors: list[str] = []
 
@@ -284,12 +281,6 @@ def check_e(
                 f"Check E: OP_TABLE[{op_name!r}] calls a POST-based "
                 f"client method but is not in WRITE_OPS"
             )
-
-    # (3) WRITE_OPS entries must be absent from READ_OPS.
-    read_ops: frozenset[str] = getattr(agent_mod, "READ_OPS", frozenset())
-    for op_name in write_ops:
-        if op_name in read_ops:
-            errors.append(f"Check E: {op_name!r} is in both WRITE_OPS and READ_OPS")
 
     return errors
 
@@ -386,7 +377,7 @@ def main() -> int:
         ("B", check_b, (OP_TABLE, _ops_mod, BoardClient)),
         ("C", check_c, (OP_TABLE, BoardClient)),
         ("D", check_d, (OP_TABLE, BoardClient)),
-        ("E", check_e, (OP_TABLE, WRITE_OPS, _agent_mod, BoardClient)),
+        ("E", check_e, (OP_TABLE, WRITE_OPS, BoardClient)),
         ("F", check_f, (robotsix_board_agent, init_source)),
         ("G", check_g, (_config_mod, client_path, agent_path)),
     ]

@@ -37,4 +37,3 @@ SetPriorityArgs
 
 # -- agent.py indirect references ------------------------------------------
 _handle_request
-READ_OPS

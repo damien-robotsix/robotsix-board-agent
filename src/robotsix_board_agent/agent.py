@@ -51,11 +51,6 @@ try:
 except ImportError:
     pass
 
-# ---------------------------------------------------------------------------
-# Known-op sets — derived from OP_TABLE so they can never drift.
-# ---------------------------------------------------------------------------
-READ_OPS: frozenset[str] = frozenset(OP_TABLE.keys()) - WRITE_OPS
-
 
 class BoardAgent:
     """An agent-comm Agent that wraps the board REST API.
