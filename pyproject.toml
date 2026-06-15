@@ -19,6 +19,7 @@ dev = [
     "pytest-xdist>=3",
     "mypy>=1.15",
     "ruff==0.15.15",
+    "vulture>=2.14",
 ]
 prod = [
     "robotsix-agent-comm",
@@ -29,7 +30,7 @@ tracing = []
 allow-direct-references = true
 
 [dependency-groups]
-dev = ["pytest>=8", "pytest-asyncio>=0.21", "pytest-cov>=7", "pytest-xdist>=3", "mypy>=1.15", "ruff==0.15.15"]
+dev = ["pytest>=8", "pytest-asyncio>=0.21", "pytest-cov>=7", "pytest-xdist>=3", "mypy>=1.15", "ruff==0.15.15", "vulture>=2.14"]
 docs = ["mkdocs", "mkdocs-material"]
 
 [tool.uv]
@@ -57,6 +58,9 @@ ignore = []
 [tool.ruff.lint.isort]
 known-first-party = ["robotsix_board_agent"]
 
+[tool.ruff.lint.per-file-ignores]
+"vulture_whitelist.py" = ["B018", "F821"]
+
 [tool.ruff.format]
 quote-style = "double"
 indent-style = "space"
@@ -83,3 +87,4 @@ testpaths = ["tests"]
 filterwarnings = [
     "ignore::DeprecationWarning",
 ]
+
