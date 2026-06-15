@@ -21,6 +21,7 @@ dev = [
 prod = [
     "robotsix-agent-comm",
 ]
+tracing = []
 
 [tool.hatch.metadata]
 allow-direct-references = true
