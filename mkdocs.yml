@@ -3,5 +3,5 @@ theme:
   name: material
 
 nav:
-  - Getting Started: getting-started.md
+  - Getting Started: agent/getting-started.md
   - Operations Reference: ops/operations.md
