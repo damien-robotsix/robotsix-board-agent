@@ -5,11 +5,14 @@ Network-free in tests — pass ``transport=`` to inject a mock transport.
 
 from __future__ import annotations
 
+import logging
 from typing import Any
 
 import httpx
 
 from .config import BoardAgentSettings
+
+logger = logging.getLogger(__name__)
 
 
 class BoardAPIError(Exception):
@@ -67,8 +70,16 @@ class BoardClient:
     ) -> Any:
         """Send a request and return parsed JSON, or raise ``BoardAPIError``."""
         client = await self._get_client()
+        logger.debug("HTTP %s %s", method, path)
         resp = await client.request(method, path, params=params, json=json_body)
         if resp.is_error:
+            logger.warning(
+                "Non-2xx response: %s %s -> %d %s",
+                method,
+                path,
+                resp.status_code,
+                resp.reason_phrase,
+            )
             detail = ""
             try:
                 detail = resp.json().get("detail", resp.text)
