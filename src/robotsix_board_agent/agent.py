@@ -51,6 +51,7 @@ try:
 except ImportError:
     pass
 
+
 class BoardAgent:
     """An agent-comm Agent that wraps the board REST API.
 
