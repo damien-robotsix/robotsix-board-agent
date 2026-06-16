@@ -11,6 +11,12 @@ from typing import Any
 import httpx
 
 from .config import BoardAgentSettings
+from .constants import (
+    DEFAULT_COMMENT_AUTHOR,
+    DEFAULT_NOTE,
+    DEFAULT_TICKET_KIND,
+    DEFAULT_TICKET_SOURCE,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -135,8 +141,8 @@ class BoardClient:
         self,
         title: str,
         description: str,
-        source: str = "agent",
-        kind: str = "task",
+        source: str = DEFAULT_TICKET_SOURCE,
+        kind: str = DEFAULT_TICKET_KIND,
         repo_id: str | None = None,
         **kwargs: Any,
     ) -> dict[str, Any]:
@@ -155,7 +161,7 @@ class BoardClient:
         self,
         ticket_id: str,
         body: str,
-        author: str = "board-agent",
+        author: str = DEFAULT_COMMENT_AUTHOR,
     ) -> dict[str, Any]:
         """Add a comment to a ticket."""
         return await self._request(  # type: ignore[no-any-return]
@@ -168,7 +174,7 @@ class BoardClient:
         self,
         ticket_id: str,
         state: str,
-        note: str = "",
+        note: str = DEFAULT_NOTE,
     ) -> dict[str, Any]:
         """Transition a ticket to a new state."""
         return await self._request(  # type: ignore[no-any-return]
@@ -184,7 +190,7 @@ class BoardClient:
     async def mark_done(
         self,
         ticket_id: str,
-        note: str = "",
+        note: str = DEFAULT_NOTE,
     ) -> dict[str, Any]:
         """Mark a ticket as done."""
         return await self._request(  # type: ignore[no-any-return]
@@ -207,7 +213,7 @@ class BoardClient:
         self,
         ticket_id: str,
         target_repo_id: str,
-        note: str = "",
+        note: str = DEFAULT_NOTE,
     ) -> dict[str, Any]:
         """Migrate a ticket to another repo."""
         return await self._request(  # type: ignore[no-any-return]
