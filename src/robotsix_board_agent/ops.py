@@ -13,6 +13,12 @@ from typing import Any
 from pydantic import BaseModel
 
 from .client import BoardClient
+from .constants import (
+    DEFAULT_COMMENT_AUTHOR,
+    DEFAULT_NOTE,
+    DEFAULT_TICKET_KIND,
+    DEFAULT_TICKET_SOURCE,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -70,8 +76,8 @@ class CreateTicketArgs(BaseModel):
 
     title: str
     description: str
-    source: str = "agent"
-    kind: str = "task"
+    source: str = DEFAULT_TICKET_SOURCE
+    kind: str = DEFAULT_TICKET_KIND
     repo_id: str | None = None
 
 
@@ -80,7 +86,7 @@ class AddCommentArgs(BaseModel):
 
     ticket_id: str
     body: str
-    author: str = "board-agent"
+    author: str = DEFAULT_COMMENT_AUTHOR
 
 
 class TransitionArgs(BaseModel):
@@ -88,7 +94,7 @@ class TransitionArgs(BaseModel):
 
     ticket_id: str
     state: str
-    note: str = ""
+    note: str = DEFAULT_NOTE
 
 
 class ApproveArgs(BaseModel):
@@ -101,7 +107,7 @@ class MarkDoneArgs(BaseModel):
     """Arguments for the ``mark_done`` operation — ticket id and optional closing note."""
 
     ticket_id: str
-    note: str = ""
+    note: str = DEFAULT_NOTE
 
 
 class MergeNowArgs(BaseModel):
@@ -121,7 +127,7 @@ class MigrateArgs(BaseModel):
 
     ticket_id: str
     target_repo_id: str
-    note: str = ""
+    note: str = DEFAULT_NOTE
 
 
 class SetPriorityArgs(BaseModel):
