@@ -13,6 +13,7 @@ from typing import Any
 
 from .client import BoardAPIError, BoardClient
 from .config import BoardAgentSettings
+from .constants import BoardErrorCode
 from .ops import OP_TABLE, WRITE_OPS, BoardOp, UnknownOpError, dispatch
 
 logger = logging.getLogger(__name__)
@@ -111,13 +112,13 @@ class BoardAgent:
             except json.JSONDecodeError:
                 return Error.to(
                     request,
-                    code="BAD_REQUEST",
+                    code=BoardErrorCode.BAD_REQUEST.value,
                     message="Request body must be valid JSON",
                 )
         else:
             return Error.to(
                 request,
-                code="BAD_REQUEST",
+                code=BoardErrorCode.BAD_REQUEST.value,
                 message="Request body must be a JSON object",
             )
 
@@ -127,7 +128,7 @@ class BoardAgent:
             logger.warning("Bad request: %s", exc)
             return Error.to(
                 request,
-                code="BAD_REQUEST",
+                code=BoardErrorCode.BAD_REQUEST.value,
                 message=f"Invalid operation: {exc}",
             )
 
@@ -138,7 +139,7 @@ class BoardAgent:
             logger.warning("Unknown op requested: %s", op.op)
             return Error.to(
                 request,
-                code="UNKNOWN_OP",
+                code=BoardErrorCode.UNKNOWN_OP.value,
                 message=f"Unknown op: {op.op}",
             )
 
@@ -147,7 +148,7 @@ class BoardAgent:
             logger.warning("Write op rejected (disabled): op=%s", op.op)
             return Error.to(
                 request,
-                code="WRITE_OPS_DISABLED",
+                code=BoardErrorCode.WRITE_OPS_DISABLED.value,
                 message=f"Write operation '{op.op}' rejected: enable_write_ops is False",
             )
 
@@ -163,14 +164,14 @@ class BoardAgent:
             )
             return Error.to(
                 request,
-                code="BOARD_API_ERROR",
+                code=BoardErrorCode.BOARD_API_ERROR.value,
                 message=f"Board API error {exc.status_code}: {exc.detail}",
             )
         except UnknownOpError as exc:
             logger.error("Dispatch failed: unknown op=%s", op.op)
             return Error.to(
                 request,
-                code="UNKNOWN_OP",
+                code=BoardErrorCode.UNKNOWN_OP.value,
                 message=str(exc),
             )
 
