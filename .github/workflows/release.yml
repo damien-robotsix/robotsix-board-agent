@@ -1,0 +1,30 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+jobs:
+  verify-tag:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify tag matches pyproject.toml version
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          TOML_VERSION=$(grep '^version = ' pyproject.toml | head -1 | sed 's/^version = "\(.*\)"/\1/')
+          if [ "$TAG_VERSION" != "$TOML_VERSION" ]; then
+            echo "Tag version '${TAG_VERSION}' does not match pyproject.toml version '${TOML_VERSION}'"
+            exit 1
+          fi
+          echo "Tag version '${TAG_VERSION}' matches pyproject.toml version '${TOML_VERSION}'"
+
+  release:
+    needs: verify-tag
+    permissions:
+      contents: read
+      id-token: write
+    uses: damien-robotsix/robotsix-mill/.github/workflows/python-release.yml@main
