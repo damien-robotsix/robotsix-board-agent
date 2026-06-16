@@ -87,6 +87,9 @@ disallow_untyped_defs = false
 module = "robotsix_agent_comm"
 ignore_missing_imports = true
 
+[tool.deptry]
+optional_dependencies_dev_groups = ["dev"]
+
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 addopts = "-q --tb=short"
