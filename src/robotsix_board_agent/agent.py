@@ -49,7 +49,12 @@ try:
 
     _llmio_setup_logging(loggers=["robotsix_board_agent"])
 except ImportError:
-    pass
+    import logging as _logging
+
+    _logging.basicConfig(
+        level=_logging.INFO,
+        format="%(levelname)s:%(name)s:%(message)s",
+    )
 
 
 class BoardAgent:
