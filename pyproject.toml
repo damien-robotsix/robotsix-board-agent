@@ -39,7 +39,11 @@ default-groups = ["dev"]
 
 [tool.uv.sources]
 robotsix-agent-comm = { git = "https://github.com/damien-robotsix/robotsix-agent-comm.git", rev = "main" }
-robotsix-llmio = { git = "https://github.com/damien-robotsix/robotsix-llmio.git", rev = "main" }
+# Pinned to a commit (NOT rev=main): robotsix-mill consumes BOTH this package
+# and robotsix-llmio, so a moving `@main` here re-resolves on every fresh
+# `uv export --frozen` in mill's Docker build and conflicts with mill's locked
+# llmio commit, freezing mill's deploys. Bump in lockstep with mill's llmio pin.
+robotsix-llmio = { git = "https://github.com/damien-robotsix/robotsix-llmio.git", rev = "765489a6b2433df066cfe178e07327be99d20014" }
 
 [build-system]
 requires = ["hatchling"]
