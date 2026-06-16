@@ -2,6 +2,18 @@ site_name: robotsix-board-agent
 theme:
   name: material
 
+plugins:
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [src]
+          options:
+            show_source: false
+            show_root_heading: true
+
 nav:
   - Getting Started: agent/getting-started.md
   - Operations Reference: ops/operations.md
+  - Client API: client/api.md
+  - Config Reference: config/reference.md
+  - API Reference: reference.md
