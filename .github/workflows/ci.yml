@@ -14,12 +14,18 @@ concurrency:
 
 jobs:
   ci:
+    runs-on: ubuntu-latest
     permissions:
       contents: read
-    uses: damien-robotsix/robotsix-mill/.github/workflows/python-ci.yml@main
-    with:
-      run-deptry: true
-      cov-package: robotsix_board_agent
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: uv sync --frozen
+      - run: ruff check .
+      - run: ruff format . --check
+      - run: mypy
+      - run: pytest --cov=robotsix_board_agent --cov-report=term-missing
+      - run: uv run --with deptry deptry .
 
   codeql:
     permissions:
