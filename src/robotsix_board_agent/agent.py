@@ -14,7 +14,7 @@ from typing import Any
 from .client import BoardAPIError, BoardClient
 from .config import BoardAgentSettings
 from .constants import BoardErrorCode
-from .ops import OP_TABLE, WRITE_OPS, BoardOp, UnknownOpError, dispatch
+from .ops import OP_TABLE, WRITE_OPS, BoardOp, dispatch
 
 logger = logging.getLogger(__name__)
 
@@ -167,14 +167,6 @@ class BoardAgent:
                 code=BoardErrorCode.BOARD_API_ERROR.value,
                 message=f"Board API error {exc.status_code}: {exc.detail}",
             )
-        except UnknownOpError as exc:
-            logger.error("Dispatch failed: unknown op=%s", op.op)
-            return Error.to(
-                request,
-                code=BoardErrorCode.UNKNOWN_OP.value,
-                message=str(exc),
-            )
-
         logger.info("Response sent: op=%s", op.op)
         return Response(result=result)
 
