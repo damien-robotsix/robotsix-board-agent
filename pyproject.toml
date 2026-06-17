@@ -89,6 +89,7 @@ ignore_missing_imports = true
 
 [tool.deptry]
 optional_dependencies_dev_groups = ["dev"]
+known_first_party = ["robotsix_board_agent"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
