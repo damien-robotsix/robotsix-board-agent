@@ -54,6 +54,7 @@ jobs:
       - uses: astral-sh/setup-uv@v5
       - run: uv sync --frozen
       - run: uv export --format requirements.txt -o /tmp/requirements.txt
+      - run: sed -i '/^-e \./d' /tmp/requirements.txt
       - run: uv run --with pip-audit pip-audit -r /tmp/requirements.txt --require-hashes --strict
 
   vulture:
