@@ -25,6 +25,7 @@ modules:
   - name: client
     path:
       - src/robotsix_board_agent/client.py
+      - docs/client/api.md
       - tests/client/
     description: >
       Typed HTTP client (BoardClient) for the mill board REST API.
@@ -32,7 +33,10 @@ modules:
       transport injection for network-free testing.
 
   - name: config
-    path: src/robotsix_board_agent/config.py
+    path:
+      - src/robotsix_board_agent/config.py
+      - docs/config/reference.md
+      - tests/config/
     description: >
       Configuration model — BoardAgentSettings (pydantic BaseModel, NOT
       BaseSettings).  Holds board_api_url, board_api_token, board_repo_id,
@@ -53,4 +57,5 @@ modules:
     path: tests/
     description: >
       Test suite — conftest.py (shared fixtures, mock transports),
-      test_agent.py, test_client.py, ops/test_ops.py.
+      test_agent.py, test_client.py, config/test_config.py,
+      ops/test_ops.py.
