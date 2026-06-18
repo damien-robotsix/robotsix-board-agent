@@ -81,7 +81,7 @@ The responder parses the body with `_parse_and_validate`, which maps `op` to a
 
 ## Write gate
 
-When `settings.enable_write_ops` is `False` (the default), any operation in
+When `settings.enable_write_ops` is `False` (the default is `True`; set to `False` to gate writes), any operation in
 the `WRITE_OPS` set is rejected with a `WRITE_OPS_DISABLED` error before
 dispatch. Write ops include `create_ticket`, `comment`, `transition`,
 `approve`, `mark_done`, `merge_now`, `resume_blocked`, `migrate`, and
