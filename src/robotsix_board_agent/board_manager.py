@@ -12,10 +12,8 @@ Memory keeps only question→answer pairs (see :mod:`.memory`).
 
 from __future__ import annotations
 
-import asyncio
 import json
 import logging
-import threading
 from pathlib import Path
 from typing import Any
 
@@ -23,6 +21,7 @@ from robotsix_agent_comm.protocol import Error, Message, Request, Response
 from robotsix_agent_comm.sdk.agent import Agent
 from robotsix_agent_comm.transport.brokered import create_transport_pair
 
+from ._lifecycle import _ThreadedLoopMixin
 from .client import BoardAPIError, BoardClient
 from .config import BoardAgentSettings
 from .constants import BoardErrorCode
@@ -58,7 +57,7 @@ _MANAGER_SYSTEM = (
 )
 
 
-class BoardManager:
+class BoardManager(_ThreadedLoopMixin):
     """Conversational, tool-using manager for a single board over the broker."""
 
     def __init__(
@@ -95,46 +94,8 @@ class BoardManager:
             self.agent_id, registry, transport=transport, pull=True, timeout=timeout
         )
         self._agent.on_request(self._handle_request)
-        self._loop: asyncio.AbstractEventLoop | None = None
-        self._loop_thread: threading.Thread | None = None
-
-    # -- lifecycle ---------------------------------------------------------
-
-    def start(self) -> None:
-        if self._loop is not None:
-            return
-        loop = asyncio.new_event_loop()
-        thread = threading.Thread(
-            target=loop.run_forever, name=f"{self.agent_id}-loop", daemon=True
-        )
-        thread.start()
-        self._loop = loop
-        self._loop_thread = thread
-        self._agent.start()
-        logger.info("BoardManager %r listening via broker", self.agent_id)
-
-    def stop(self) -> None:
-        self._agent.stop()
-        loop = self._loop
-        thread = self._loop_thread
         self._loop = None
         self._loop_thread = None
-        if loop is None:
-            return
-        try:
-            asyncio.run_coroutine_threadsafe(self.client.close(), loop).result(timeout=5.0)
-        except Exception:
-            logger.warning("board client close failed during stop", exc_info=True)
-        loop.call_soon_threadsafe(loop.stop)
-        if thread is not None:
-            thread.join(timeout=2.0)
-        loop.close()
-
-    def _run(self, coro: Any) -> Any:
-        assert self._loop is not None  # noqa: S101 — set in start() before use
-        return asyncio.run_coroutine_threadsafe(coro, self._loop).result()
-
-    # -- request handling --------------------------------------------------
 
     def _handle_request(self, request: Request) -> Message:
         body = request.body if isinstance(request.body, dict) else {}

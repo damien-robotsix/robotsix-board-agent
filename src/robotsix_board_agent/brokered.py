@@ -17,24 +17,24 @@ dedicated event loop the responder owns, so the client's persistent
 from __future__ import annotations
 
 import asyncio
-import json
 import logging
 import threading
-from typing import Any
 
 from robotsix_agent_comm.protocol import Error, Message, Request, Response
 from robotsix_agent_comm.sdk.agent import Agent
 from robotsix_agent_comm.transport.brokered import create_transport_pair
 
+from ._lifecycle import _ThreadedLoopMixin
+from ._request_handler import _parse_and_validate
 from .client import BoardAPIError, BoardClient
 from .config import BoardAgentSettings
 from .constants import BoardErrorCode
-from .ops import OP_TABLE, WRITE_OPS, BoardOp, dispatch
+from .ops import dispatch
 
 logger = logging.getLogger(__name__)
 
 
-class BrokeredBoardResponder:
+class BrokeredBoardResponder(_ThreadedLoopMixin):
     """Serve board operations over an agent-comm broker in pull (mailbox) mode.
 
     Construct with the board settings and the broker coordinates, then
@@ -75,91 +75,14 @@ class BrokeredBoardResponder:
         self._loop: asyncio.AbstractEventLoop | None = None
         self._loop_thread: threading.Thread | None = None
 
-    # -- lifecycle ---------------------------------------------------------
-
-    def start(self) -> None:
-        """Start the async runtime, then register + listen on the broker."""
-        if self._loop is not None:
-            return
-        loop = asyncio.new_event_loop()
-        thread = threading.Thread(
-            target=loop.run_forever, name=f"{self.agent_id}-loop", daemon=True
-        )
-        thread.start()
-        self._loop = loop
-        self._loop_thread = thread
-        self._agent.start()
-        logger.info("BrokeredBoardResponder %r listening via broker", self.agent_id)
-
-    def stop(self) -> None:
-        """Stop listening, close the board client, and stop the runtime."""
-        self._agent.stop()
-        loop = self._loop
-        thread = self._loop_thread
-        self._loop = None
-        self._loop_thread = None
-        if loop is None:
-            return
-        try:
-            asyncio.run_coroutine_threadsafe(self.client.close(), loop).result(timeout=5.0)
-        except Exception:
-            logger.warning("board client close failed during stop", exc_info=True)
-        loop.call_soon_threadsafe(loop.stop)
-        if thread is not None:
-            thread.join(timeout=2.0)
-        loop.close()
-
     # -- request handling --------------------------------------------------
-
-    def _run(self, coro: Any) -> Any:
-        """Run *coro* to completion on the responder's event loop."""
-        assert self._loop is not None  # noqa: S101 — set in start() before use
-        return asyncio.run_coroutine_threadsafe(coro, self._loop).result()
 
     def _handle_request(self, request: Request) -> Message:
         """Validate the structured op, enforce the write gate, and dispatch."""
-        body: dict[str, Any]
-        if isinstance(request.body, dict):
-            body = request.body
-        elif isinstance(request.body, str):
-            try:
-                body = json.loads(request.body)
-            except json.JSONDecodeError:
-                return Error.to(
-                    request,
-                    code=BoardErrorCode.BAD_REQUEST.value,
-                    message="Request body must be valid JSON",
-                )
-        else:
-            return Error.to(
-                request,
-                code=BoardErrorCode.BAD_REQUEST.value,
-                message="Request body must be a JSON object",
-            )
-
-        try:
-            op = BoardOp.model_validate(body)
-        except Exception as exc:
-            return Error.to(
-                request,
-                code=BoardErrorCode.BAD_REQUEST.value,
-                message=f"Invalid operation: {exc}",
-            )
-
-        if op.op not in OP_TABLE:
-            return Error.to(
-                request,
-                code=BoardErrorCode.UNKNOWN_OP.value,
-                message=f"Unknown op: {op.op}",
-            )
-
-        if op.op in WRITE_OPS and not self.settings.enable_write_ops:
-            return Error.to(
-                request,
-                code=BoardErrorCode.WRITE_OPS_DISABLED.value,
-                message=(f"Write operation '{op.op}' rejected: enable_write_ops is False"),
-            )
-
+        op, error = _parse_and_validate(request, self.settings)
+        if error is not None:
+            return error
+        assert op is not None  # noqa: S101 — _parse_and_validate invariant
         try:
             result = self._run(dispatch(self.client, op))
         except BoardAPIError as exc:
