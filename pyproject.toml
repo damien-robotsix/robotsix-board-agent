@@ -27,6 +27,11 @@ prod = [
 ]
 tracing = []
 
+[project.scripts]
+# CLI to talk to the board manager over the broker (needs the `prod` extra for
+# robotsix-agent-comm).
+robotsix-board-manager = "robotsix_board_agent.manager_cli:main"
+
 [tool.hatch.metadata]
 allow-direct-references = true
 
