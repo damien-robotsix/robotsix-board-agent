@@ -14,18 +14,12 @@ concurrency:
 
 jobs:
   ci:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v5
-      - run: uv sync --frozen
-      - run: uv run ruff check .
-      - run: uv run ruff format . --check
-      - run: uv run mypy
-      - run: uv run pytest --cov=robotsix_board_agent --cov-report=term-missing
-      - run: uv run --with deptry deptry .
+    uses: damien-robotsix/robotsix-mill/.github/workflows/python-ci.yml@main
+    with:
+      python-version: "3.12"
+      cov-package: "robotsix_board_agent"
+      install-extras: ""
+      coverage-threshold: "60"
 
   codeql:
     permissions:
@@ -46,20 +40,6 @@ jobs:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
       - run: uv audit
-
-  pip-audit:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v5
-      - run: uv sync --frozen
-      # Export the locked deps for pip-audit. --no-emit-project drops the
-      # editable self-ref; --no-emit-package drops the first-party VCS deps
-      # (audited in their own repos' CI) because pip-audit cannot hash git
-      # sources, which is fatal under --require-hashes. Mirrors the mill's
-      # python-security.yml reusable workflow.
-      - run: uv export --frozen --no-emit-project --no-emit-package robotsix-llmio --no-emit-package robotsix-agent-comm -o /tmp/requirements.txt
-      - run: uv run --with pip-audit pip-audit -r /tmp/requirements.txt
 
   vulture:
     runs-on: ubuntu-latest
