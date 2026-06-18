@@ -47,6 +47,20 @@ jobs:
       - uses: astral-sh/setup-uv@v5
       - run: uv audit
 
+  pip-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: uv sync --frozen
+      # Export the locked deps for pip-audit. --no-emit-project drops the
+      # editable self-ref; --no-emit-package drops the first-party VCS deps
+      # (audited in their own repos' CI) because pip-audit cannot hash git
+      # sources, which is fatal under --require-hashes. Mirrors the mill's
+      # python-security.yml reusable workflow.
+      - run: uv export --frozen --no-emit-project --no-emit-package robotsix-llmio --no-emit-package robotsix-agent-comm -o /tmp/requirements.txt
+      - run: uv run --with pip-audit pip-audit -r /tmp/requirements.txt
+
   vulture:
     runs-on: ubuntu-latest
     steps:
