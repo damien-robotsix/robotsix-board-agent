@@ -6,15 +6,15 @@ other agents can drive a board programmatically.
 
 from __future__ import annotations
 
-import json
 import logging
 import sys
 from typing import Any
 
+from ._request_handler import _parse_and_validate
 from .client import BoardAPIError, BoardClient
 from .config import BoardAgentSettings
 from .constants import BoardErrorCode
-from .ops import OP_TABLE, WRITE_OPS, BoardOp, dispatch
+from .ops import dispatch
 
 logger = logging.getLogger(__name__)
 
@@ -102,57 +102,11 @@ class BoardAgent:
         Parses ``{"op": "...", "args": {...}}`` from the request body,
         validates the operation, and dispatches to the board client.
         """
-        # Parse the structured operation from the request body.
-        body: dict[str, Any]
-        if isinstance(request.body, dict):
-            body = request.body
-        elif isinstance(request.body, str):
-            try:
-                body = json.loads(request.body)
-            except json.JSONDecodeError:
-                return Error.to(
-                    request,
-                    code=BoardErrorCode.BAD_REQUEST.value,
-                    message="Request body must be valid JSON",
-                )
-        else:
-            return Error.to(
-                request,
-                code=BoardErrorCode.BAD_REQUEST.value,
-                message="Request body must be a JSON object",
-            )
-
-        try:
-            op = BoardOp.model_validate(body)
-        except Exception as exc:
-            logger.warning("Bad request: %s", exc)
-            return Error.to(
-                request,
-                code=BoardErrorCode.BAD_REQUEST.value,
-                message=f"Invalid operation: {exc}",
-            )
-
+        op, error = _parse_and_validate(request, self.settings)
+        if error is not None:
+            return error
+        assert op is not None  # noqa: S101 — _parse_and_validate invariant
         logger.info("Request received: op=%s", op.op)
-
-        # Unknown op check.
-        if op.op not in OP_TABLE:
-            logger.warning("Unknown op requested: %s", op.op)
-            return Error.to(
-                request,
-                code=BoardErrorCode.UNKNOWN_OP.value,
-                message=f"Unknown op: {op.op}",
-            )
-
-        # Write gate.
-        if op.op in WRITE_OPS and not self.settings.enable_write_ops:
-            logger.warning("Write op rejected (disabled): op=%s", op.op)
-            return Error.to(
-                request,
-                code=BoardErrorCode.WRITE_OPS_DISABLED.value,
-                message=f"Write operation '{op.op}' rejected: enable_write_ops is False",
-            )
-
-        # Dispatch.
         try:
             result = await dispatch(self.client, op)
         except BoardAPIError as exc:
