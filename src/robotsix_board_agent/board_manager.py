@@ -49,7 +49,12 @@ _MANAGER_SYSTEM = (
     "— the user has authorized you to make changes. Prefer reading first when a "
     "request is ambiguous about which ticket(s) it targets. When you transition "
     "a ticket, use a valid board state. Keep your final reply concise and tell "
-    "the user exactly what you did (ids + outcomes) or answer their question."
+    "the user exactly what you did (ids + outcomes) or answer their question.\n\n"
+    "You keep a MAINTAINED MEMORY — a short, curated note of durable board state, "
+    "ongoing/standing tasks, and user preferences (NOT a transcript). It is shown "
+    "to you below each turn. When something worth remembering changes, call "
+    "update_memory(memory) with the full revised note; keep it concise and "
+    "coherent — rewrite/trim rather than letting it grow."
 )
 
 
@@ -170,10 +175,14 @@ class BoardManager:
                 label="board-manager-recall",
             )
 
-        # 2) Level-3 manager: act on the board via tools.
+        # 2) Level-3 manager: act on the board via tools, with both its curated
+        #    maintained memory and the recalled prior context in view.
         system = _MANAGER_SYSTEM.format(repo=self.settings.board_repo_id)
+        notes = self._memory.load_notes()
+        if notes.strip():
+            system += f"\n\nYour maintained memory:\n{notes.strip()}"
         if relevant and relevant.strip().lower() != "none":
-            system += f"\n\nRelevant prior context:\n{relevant.strip()}"
+            system += f"\n\nRelevant prior exchanges:\n{relevant.strip()}"
         h3 = provider.build_agent(
             level=3,
             model=self._manager_model,
@@ -252,6 +261,13 @@ class BoardManager:
             """Set or clear a ticket's priority flag."""
             return _safe(client.set_priority(ticket_id=ticket_id, priority=priority))
 
+        def update_memory(memory: str) -> str:
+            """Replace your maintained memory with `memory` — a concise, coherent
+            note of durable board state, ongoing tasks, and user preferences to
+            remember across conversations. Pass the full revised note."""
+            self._memory.save_notes(memory)
+            return "maintained memory updated"
+
         return [
             list_tickets,
             get_ticket,
@@ -267,4 +283,5 @@ class BoardManager:
             merge_now,
             resume_blocked,
             set_priority,
+            update_memory,
         ]

@@ -37,6 +37,29 @@ def test_as_prompt_empty_and_nonempty(tmp_path: Path) -> None:
     assert "Q: hi" in rendered and "A: hello" in rendered
 
 
+def test_maintained_notes_roundtrip(tmp_path: Path) -> None:
+    mem = BoardManagerMemory(tmp_path / "mem.json")
+    assert mem.load_notes() == ""
+    mem.save_notes("auth epic split into 3 sub-tickets; user prefers terse replies")
+    assert mem.load_notes() == "auth epic split into 3 sub-tickets; user prefers terse replies"
+    # Stored separately from the conversation trace.
+    assert (tmp_path / "mem_notes.md").exists()
+
+
+def test_maintained_notes_capped(tmp_path: Path) -> None:
+    mem = BoardManagerMemory(tmp_path / "mem.json", max_notes_chars=10)
+    mem.save_notes("x" * 50)
+    assert mem.load_notes() == "x" * 10
+
+
+def test_notes_independent_of_conversations(tmp_path: Path) -> None:
+    mem = BoardManagerMemory(tmp_path / "mem.json")
+    mem.append("q", "a", timestamp="t0")
+    mem.save_notes("a durable note")
+    assert len(mem.load()) == 1
+    assert mem.load_notes() == "a durable note"
+
+
 def test_corrupt_file_is_ignored(tmp_path: Path) -> None:
     p = tmp_path / "mem.json"
     p.write_text("{ not json")
