@@ -53,9 +53,46 @@ modules:
       entry point.  Also defines BoardOp (the incoming request model)
       and UnknownOpError.
 
+  - name: brokered
+    path:
+      - src/robotsix_board_agent/brokered.py
+      - docs/brokered/responder.md
+    description: >
+      BrokeredBoardResponder — production entry point for structured
+      board operations over the agent-comm broker.  Pull/mailbox mode,
+      write gate, synchronous facade over a dedicated event loop.
+
+  - name: board_manager
+    path:
+      - src/robotsix_board_agent/board_manager.py
+      - docs/board_manager/api.md
+    description: >
+      BoardManager — natural-language LLM-powered board manager.
+      Two-stage pipeline (level-1 recall + level-3 acting), 15 board
+      operation tools, maintained memory, persistent conversation trace.
+
+  - name: manager_cli
+    path:
+      - src/robotsix_board_agent/manager_cli.py
+      - docs/manager_cli/usage.md
+    description: >
+      CLI entry point (robotsix-board-manager) for talking to a
+      BoardManager over the broker in natural language.  Environment-
+      configurable broker coordinates, three exit codes.
+
+  - name: memory
+    path:
+      - src/robotsix_board_agent/memory.py
+      - docs/memory/reference.md
+    description: >
+      BoardManagerMemory — two-track persistence (conversation trace
+      JSON + maintained memory Markdown).  Capped at 200 Q→A pairs and
+      8000-char notes; oldest-first pruning on overflow.
+
   - name: tests
     path: tests/
     description: >
       Test suite — conftest.py (shared fixtures, mock transports),
       test_agent.py, test_client.py, config/test_config.py,
-      ops/test_ops.py.
+      ops/test_ops.py, test_brokered.py, test_board_manager.py,
+      test_manager_cli.py, test_memory.py.
