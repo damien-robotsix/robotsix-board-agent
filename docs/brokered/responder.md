@@ -9,7 +9,8 @@ the broker never dials back in).
 ## Initialisation
 
 ```python
-from robotsix_board_agent import BoardAgentSettings, BrokeredBoardResponder
+from robotsix_board_agent.brokered import BrokeredBoardResponder
+from robotsix_board_agent.config import BoardAgentSettings
 
 settings = BoardAgentSettings(
     board_api_url="https://mill.example.com",
@@ -90,9 +91,12 @@ dispatch. Write ops include `create_ticket`, `comment`, `transition`,
 
 | Condition              | Error code          | Meaning                                        |
 |------------------------|---------------------|------------------------------------------------|
+| Malformed body         | `BAD_REQUEST`       | Body is not a JSON object or not valid JSON    |
+| Invalid operation      | `BAD_REQUEST`       | `BoardOp` pydantic validation failed (missing/invalid `op` or `args`) |
 | Unknown op             | `UNKNOWN_OP`        | `op` is not a key in `OP_TABLE`                |
 | Write ops disabled     | `WRITE_OPS_DISABLED`| `enable_write_ops` is `False` and op is a write |
 | Board API failure      | `BOARD_API_ERROR`   | Board client raised `BoardAPIError` (non-2xx)  |
 
 Board API errors include the upstream `status_code` and `detail` in the error
-message.
+message. `BAD_REQUEST` errors include a human-readable description of the parse
+or validation failure.

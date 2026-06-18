@@ -9,7 +9,8 @@ epic?" — then acts directly on the board through its tool set.
 
 ```python
 from pathlib import Path
-from robotsix_board_agent import BoardAgentSettings, BoardManager
+from robotsix_board_agent.board_manager import BoardManager
+from robotsix_board_agent.config import BoardAgentSettings
 
 settings = BoardAgentSettings(
     board_api_url="https://mill.example.com",
