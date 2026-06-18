@@ -21,6 +21,9 @@ import pytest
 # Agent-comm stubs
 # ---------------------------------------------------------------------------
 
+# Union type alias used in brokered.py / board_manager.py return types.
+Message = Any
+
 
 @dataclass
 class Request:
@@ -33,11 +36,16 @@ class Request:
 
 @dataclass
 class Response:
-    """Minimal agent-comm Response stub."""
+    """Minimal agent-comm Response stub with ``Response.to()`` classmethod."""
 
     result: Any = None
     error: Any = None
     request_id: str = ""
+    body: Any = None
+
+    @classmethod
+    def to(cls, request: Request, *, body: Any = None) -> Response:
+        return Response(result=body, body=body)
 
 
 @dataclass
@@ -46,16 +54,56 @@ class Error:
 
     code: str = ""
     message: str = ""
+    body: Any = None
+
+    def __post_init__(self) -> None:
+        if self.body is None:
+            self.body = {"code": self.code, "message": self.message}
 
     @classmethod
     def to(cls, request: Request, *, code: str = "", message: str = "") -> Response:
         return Response(error={"code": code, "message": message})
 
 
+class _OnRequest:
+    """Callable attribute that stores a handler.
+
+    Supports three usage patterns:
+    - Constructor: ``Agent(on_request=fn)`` — sets the handler directly.
+    - Call-setter: ``agent.on_request(fn)`` — calls to store *fn*.
+    - Attribute read: ``agent.on_request`` — returns this wrapper, which
+      is callable and delegates to the stored handler.
+    """
+
+    __slots__ = ("_handler",)
+
+    def __init__(self, handler: Any = None) -> None:
+        self._handler = handler
+
+    def __call__(self, *args: Any, **kwargs: Any) -> Any:
+        # If no handler is stored yet, the first call with a callable
+        # sets it (brokered.py pattern: agent.on_request(fn)).
+        if self._handler is None and len(args) == 1 and callable(args[0]):
+            self._handler = args[0]
+            return None
+        # Otherwise, delegate to the stored handler.
+        if self._handler is None:
+            raise TypeError("No handler registered")
+        return self._handler(*args, **kwargs)
+
+    def __repr__(self) -> str:
+        return repr(self._handler)
+
+
 class Agent:
     """Minimal agent-comm Agent stub.
 
-    Captures the ``on_request`` handler for direct test invocation.
+    ``on_request`` is a :class:`_OnRequest` descriptor — it can be set
+    via constructor keyword, called as ``agent.on_request(fn)``, or read
+    as ``agent.on_request`` (returning the registered handler).
+
+    start()/stop() are async (for BoardAgent test compat) but also
+    work when called synchronously (the returned coroutine is discarded).
     """
 
     def __init__(
@@ -63,11 +111,21 @@ class Agent:
         agent_id: str = "",
         registry: Any = None,
         on_request: Any = None,
+        transport: Any = None,
+        pull: bool = False,
+        timeout: float = 30.0,
     ) -> None:
         self.agent_id = agent_id
         self.registry = registry
-        self.on_request = on_request
+        self.transport = transport
+        self.pull = pull
+        self.timeout = timeout
         self._started = False
+        # Wrap so both ``agent.on_request = x`` (via BoardAgent constructor)
+        # and ``agent.on_request(x)`` (brokered call-setter) work.
+        self.on_request: _OnRequest = (
+            on_request if isinstance(on_request, _OnRequest) else _OnRequest(on_request)
+        )
 
     async def start(self) -> None:
         self._started = True
@@ -78,6 +136,28 @@ class Agent:
         self._started = False
         if self.registry is not None:
             self.registry.agents.pop(self.agent_id, None)
+
+    def send_request(self, target: str, body: Any, timeout: float = 30.0) -> Any:
+        """Send a request to *target* and return the reply."""
+        agent = self.registry.agents.get(target) if self.registry else None
+        if agent is None or agent.on_request._handler is None:
+            return Error.to(
+                Request(),
+                code="NOT_FOUND",
+                message=f"agent {target} not found",
+            )
+        request = Request(body=body, sender=self.agent_id)
+        return agent.on_request._handler(request)
+
+    def __enter__(self) -> Agent:
+        # start() is async; call it but discard the coroutine — the
+        # registry is populated by tests directly, so the agent does
+        # not need to register itself to send requests.
+        self.start()
+        return self
+
+    def __exit__(self, *args: Any) -> None:
+        self.stop()
 
 
 class Registry:
@@ -90,7 +170,21 @@ class Registry:
         self.agents[agent.agent_id] = agent
 
 
-# Inject stubs into sys.modules.
+def create_transport_pair(
+    kind: str = "",
+    broker_host: str = "",
+    broker_port: int = 443,
+    broker_scheme: str = "https",
+    broker_token: str = "",
+) -> tuple[Registry, Any]:
+    """Return (registry, transport) for a brokered connection."""
+    return Registry(), None
+
+
+# ---------------------------------------------------------------------------
+# Inject stubs into sys.modules (top-level + sub-packages).
+# ---------------------------------------------------------------------------
+
 _AGENT_COMM_MODULE = "robotsix_agent_comm"
 if _AGENT_COMM_MODULE not in sys.modules:
     _mod = types.ModuleType(_AGENT_COMM_MODULE)
@@ -100,6 +194,44 @@ if _AGENT_COMM_MODULE not in sys.modules:
     _mod.Response = Response
     _mod.Error = Error
     sys.modules[_AGENT_COMM_MODULE] = _mod
+
+# Make the top-level module a package (add __path__) so sub-package
+# imports like ``from robotsix_agent_comm.sdk.agent import Agent`` work.
+_mod.__path__ = []  # type: ignore[attr-defined]
+
+# Intermediate namespace packages.
+for _pkg_name in (
+    "robotsix_agent_comm.sdk",
+    "robotsix_agent_comm.transport",
+):
+    if _pkg_name not in sys.modules:
+        _pkg = types.ModuleType(_pkg_name)
+        _pkg.__path__ = []  # type: ignore[attr-defined]
+        sys.modules[_pkg_name] = _pkg
+
+# Sub-package: robotsix_agent_comm.protocol
+_PROTOCOL_MODULE = "robotsix_agent_comm.protocol"
+if _PROTOCOL_MODULE not in sys.modules:
+    _pmod = types.ModuleType(_PROTOCOL_MODULE)
+    _pmod.Message = Message
+    _pmod.Request = Request
+    _pmod.Response = Response
+    _pmod.Error = Error
+    sys.modules[_PROTOCOL_MODULE] = _pmod
+
+# Sub-package: robotsix_agent_comm.sdk.agent
+_SDK_AGENT_MODULE = "robotsix_agent_comm.sdk.agent"
+if _SDK_AGENT_MODULE not in sys.modules:
+    _smod = types.ModuleType(_SDK_AGENT_MODULE)
+    _smod.Agent = Agent
+    sys.modules[_SDK_AGENT_MODULE] = _smod
+
+# Sub-package: robotsix_agent_comm.transport.brokered
+_BROKERED_MODULE = "robotsix_agent_comm.transport.brokered"
+if _BROKERED_MODULE not in sys.modules:
+    _bmod = types.ModuleType(_BROKERED_MODULE)
+    _bmod.create_transport_pair = create_transport_pair
+    sys.modules[_BROKERED_MODULE] = _bmod
 
 
 # ---------------------------------------------------------------------------
