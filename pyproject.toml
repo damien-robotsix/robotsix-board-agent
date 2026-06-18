@@ -84,7 +84,7 @@ module = "tests.*"
 disallow_untyped_defs = false
 
 [[tool.mypy.overrides]]
-module = "robotsix_agent_comm"
+module = ["robotsix_agent_comm", "robotsix_agent_comm.*"]
 ignore_missing_imports = true
 
 [tool.deptry]
