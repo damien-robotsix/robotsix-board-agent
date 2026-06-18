@@ -877,7 +877,7 @@ wheels = [
 [[package]]
 name = "robotsix-agent-comm"
 version = "0.1.0"
-source = { git = "https://github.com/damien-robotsix/robotsix-agent-comm.git?rev=main#4a433bb736e844c0cc4ff808bf159e3e3dec3fdf" }
+source = { git = "https://github.com/damien-robotsix/robotsix-agent-comm.git?rev=main#8a95587d63b1fa143b37b4ce16313e7597a0234f" }
 
 [[package]]
 name = "robotsix-board-agent"

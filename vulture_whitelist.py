@@ -37,3 +37,6 @@ SetPriorityArgs
 
 # -- agent.py indirect references ------------------------------------------
 _handle_request
+
+# -- brokered.py: public API consumed by mill, not within board-agent ------
+BrokeredBoardResponder

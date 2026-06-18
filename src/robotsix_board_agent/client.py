@@ -51,9 +51,13 @@ class BoardClient:
     async def _get_client(self) -> httpx.AsyncClient:
         """Lazily create or return the shared ``AsyncClient``."""
         if self._http is None:
+            # Omit the Authorization header when no token is configured —
+            # an empty token yields ``Bearer `` which httpx rejects, and some
+            # board APIs (e.g. a loopback management plane) need no auth.
+            headers = {"Authorization": f"Bearer {self._token}"} if self._token else {}
             self._http = httpx.AsyncClient(
                 base_url=self._base_url,
-                headers={"Authorization": f"Bearer {self._token}"},
+                headers=headers,
                 transport=self._transport,
             )
         return self._http
