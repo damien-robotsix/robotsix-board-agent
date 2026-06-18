@@ -18,13 +18,31 @@ logger = logging.getLogger(__name__)
 #: Hard cap on retained conversations; the oldest beyond this are pruned.
 MAX_CONVERSATIONS = 200
 
+#: Cap on the agent-maintained memory note, so it stays coherent (not too long).
+MAX_NOTES_CHARS = 8000
+
 
 class BoardManagerMemory:
-    """A JSON-backed list of ``{timestamp, question, answer}`` conversations."""
+    """Persistence for the board manager's two memories.
 
-    def __init__(self, path: Path, *, max_conversations: int = MAX_CONVERSATIONS) -> None:
+    * the **conversation trace** — a JSON list of ``{timestamp, question,
+      answer}`` (the recall source; capped at ``max_conversations``);
+    * the **maintained memory** — a single free-form note the agent itself
+      curates (board state, ongoing tasks, user preferences), capped at
+      ``max_notes_chars`` and always shown back to the agent.
+    """
+
+    def __init__(
+        self,
+        path: Path,
+        *,
+        max_conversations: int = MAX_CONVERSATIONS,
+        max_notes_chars: int = MAX_NOTES_CHARS,
+    ) -> None:
         self._path = Path(path)
         self._max = max(1, max_conversations)
+        self._notes_path = self._path.with_name(f"{self._path.stem}_notes.md")
+        self._max_notes = max(0, max_notes_chars)
 
     def load(self) -> list[dict[str, str]]:
         """Return the stored conversations (oldest first); empty on any error."""
@@ -63,3 +81,20 @@ class BoardManagerMemory:
             f"[{e.get('timestamp', '?')}]\nQ: {e['question']}\nA: {e.get('answer', '')}"
             for e in entries
         )
+
+    # -- maintained memory (the agent's own curated note) -----------------
+
+    def load_notes(self) -> str:
+        """Return the agent-maintained memory note ('' when none/unreadable)."""
+        if not self._notes_path.exists():
+            return ""
+        try:
+            return self._notes_path.read_text()
+        except OSError:
+            logger.warning("could not read board-manager notes at %s", self._notes_path)
+            return ""
+
+    def save_notes(self, text: str) -> None:
+        """Replace the maintained memory note (truncated to ``max_notes_chars``)."""
+        self._notes_path.parent.mkdir(parents=True, exist_ok=True)
+        self._notes_path.write_text((text or "")[: self._max_notes])
