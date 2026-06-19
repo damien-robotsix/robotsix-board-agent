@@ -1,0 +1,16 @@
+name: Deps Bump
+
+on:
+  schedule:
+    - cron: "0 0 * * 0" # weekly on Sunday
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deps-bump:
+    permissions:
+      contents: write
+      pull-requests: write
+    uses: damien-robotsix/robotsix-mill/.github/workflows/deps-bump.yml@06f8807049ed8c16f584d2bf1e87f023e8a7e89a
