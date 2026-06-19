@@ -1,9 +1,20 @@
 #!/usr/bin/env python3
 """Cross-module completeness checks for ``robotsix_board_agent``.
 
-Performs seven deterministic runtime-introspection checks (A-G) that verify
-the five tightly-coupled modules — ``ops.py``, ``client.py``, ``agent.py``,
-``config.py``, ``__init__.py`` — haven't drifted out of sync.
+The package contains 12 modules:
+
+    ``__init__.py``        ``_lifecycle.py``       ``_request_handler.py``
+    ``agent.py``           ``board_manager.py``    ``brokered.py``
+    ``client.py``          ``config.py``           ``constants.py``
+    ``manager_cli.py``     ``memory.py``           ``ops.py``
+
+Checks A-G validate only the core cluster — ``ops.py`` ↔ ``client.py`` ↔
+``agent.py`` → ``config.py`` → ``__init__.py`` — to ensure the OP_TABLE,
+client methods, config fields and public exports haven't drifted out of
+sync.  The remaining modules (``board_manager``, ``brokered``, ``memory``,
+``manager_cli``, ``_lifecycle``, ``_request_handler``, ``constants``) are
+covered (if at all) only by the cross-module checks (H and later) added
+below.
 
 Usage::
 
@@ -17,6 +28,7 @@ from __future__ import annotations
 import ast
 import inspect
 import sys
+import types
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any
@@ -358,6 +370,104 @@ def check_g(config_mod: Any, pkg_dir: Path) -> list[str]:
 
 
 # ===========================================================================
+# Cross-module checks (H+)
+# ===========================================================================
+
+
+def check_h(
+    lifecycle_mixin: type,
+    board_manager_cls: type,
+    brokered_cls: type,
+) -> list[str]:
+    """Check H — threaded-loop responder lifecycle contract.
+
+    Asserts that ``_ThreadedLoopMixin`` defines the required callable
+    attributes and that both ``BoardManager`` and
+    ``BrokeredBoardResponder`` are subclasses of it.
+    """
+    errors: list[str] = []
+
+    # (1) _ThreadedLoopMixin must expose start, stop, _run as callables.
+    for attr in ("start", "stop", "_run"):
+        obj = getattr(lifecycle_mixin, attr, None)
+        if obj is None or not callable(obj):
+            errors.append(f"Check H: _ThreadedLoopMixin missing callable {attr!r}")
+
+    # (2) BoardManager and BrokeredBoardResponder must be subclasses.
+    for cls, cls_name in (
+        (board_manager_cls, "BoardManager"),
+        (brokered_cls, "BrokeredBoardResponder"),
+    ):
+        if not issubclass(cls, lifecycle_mixin):
+            errors.append(f"Check H: {cls_name} is not a subclass of _ThreadedLoopMixin")
+
+    return errors
+
+
+def _env_keys_in_test_patches(test_source_path: Path) -> set[str]:
+    """Parse the test file AST and return every string key used inside
+    ``patch.dict(os.environ, {...})`` calls."""
+    try:
+        tree = ast.parse(test_source_path.read_text())
+    except OSError, SyntaxError:
+        return set()
+
+    keys: set[str] = set()
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Call):
+            continue
+        # Match patch.dict(...) or unittest.mock.patch.dict(...)
+        func = node.func
+        if not isinstance(func, ast.Attribute):
+            continue
+        if func.attr != "dict":
+            continue
+        if not isinstance(func.value, ast.Name):
+            continue
+        if func.value.id != "patch":
+            continue
+        # First positional arg must be os.environ
+        if not node.args:
+            continue
+        first_arg = node.args[0]
+        if not isinstance(first_arg, ast.Attribute):
+            continue
+        if not isinstance(first_arg.value, ast.Name):
+            continue
+        if not (first_arg.value.id == "os" and first_arg.attr == "environ"):
+            continue
+        # Second positional arg (the dict literal) — extract string keys
+        if len(node.args) < 2:
+            continue
+        second_arg = node.args[1]
+        if not isinstance(second_arg, ast.Dict):
+            continue
+        for k in second_arg.keys:
+            if isinstance(k, ast.Constant) and isinstance(k.value, str):
+                keys.add(k.value)
+
+    return keys
+
+
+def check_i(manager_cli_source: str, test_source_path: Path) -> list[str]:
+    """Check I — manager_cli env-var drift guard.
+
+    Collects env-var name strings from ``patch.dict(os.environ, {...})``
+    calls in the manager_cli test file and asserts that each such name
+    still appears in the ``manager_cli.py`` source.  This catches the real
+    drift case — a test mocking an env var the code no longer reads —
+    without flagging the env vars that the code reads via defaults (which
+    the test never mocks).
+    """
+    errors: list[str] = []
+    env_keys = _env_keys_in_test_patches(test_source_path)
+    for key in sorted(env_keys):
+        if key not in manager_cli_source:
+            errors.append(f"Check I: test mocks {key!r} but manager_cli.py no longer reads it")
+    return errors
+
+
+# ===========================================================================
 # Main
 # ===========================================================================
 
@@ -371,6 +481,58 @@ def main() -> int:
     init_path = Path(inspect.getfile(robotsix_board_agent))
     init_source = init_path.read_text()
 
+    # Source of manager_cli.py and its test file (for Check I).
+    manager_cli_path = pkg_dir / "manager_cli.py"
+    manager_cli_source = manager_cli_path.read_text()
+    test_manager_cli_path = pkg_dir.parent.parent / "tests" / "test_manager_cli.py"
+
+    # ------------------------------------------------------------------
+    # Agent-comm stub injection.
+    #
+    # board_manager.py and brokered.py import from both
+    #   robotsix_agent_comm.protocol  (Error, Message, Request, Response)
+    #   robotsix_agent_comm.sdk       (BrokeredAgent)
+    #
+    # robotsix-agent-comm is an optional 'prod' extra; the CI
+    # ``uv sync --frozen`` with ``default-groups = ["dev"]`` does NOT
+    # install it.  Inject minimal stdlib stubs so those modules can be
+    # loaded for introspection.
+    # ------------------------------------------------------------------
+
+    # Parent package (must exist before any subpackage import).
+    _comm_mod = sys.modules.get("robotsix_agent_comm")
+    if _comm_mod is None:
+        _comm_mod = types.ModuleType("robotsix_agent_comm")
+        _comm_mod.__path__ = []
+        sys.modules["robotsix_agent_comm"] = _comm_mod
+
+    # robotsix_agent_comm.sdk — BrokeredAgent.
+    _sdk_mod = sys.modules.get("robotsix_agent_comm.sdk")
+    if _sdk_mod is None:
+        _sdk_mod = types.ModuleType("robotsix_agent_comm.sdk")
+        _sdk_mod.__path__ = []
+        sys.modules["robotsix_agent_comm.sdk"] = _sdk_mod
+    if not hasattr(_sdk_mod, "BrokeredAgent"):
+
+        class _BrokeredAgentStub:
+            pass
+
+        _sdk_mod.BrokeredAgent = _BrokeredAgentStub  # type: ignore[attr-defined]
+
+    # robotsix_agent_comm.protocol — Error, Message, Request, Response.
+    _proto_mod = sys.modules.get("robotsix_agent_comm.protocol")
+    if _proto_mod is None:
+        _proto_mod = types.ModuleType("robotsix_agent_comm.protocol")
+        sys.modules["robotsix_agent_comm.protocol"] = _proto_mod
+    for _proto_name in ("Error", "Message", "Request", "Response"):
+        if not hasattr(_proto_mod, _proto_name):
+            setattr(_proto_mod, _proto_name, type(_proto_name, (), {}))
+
+    # Imports for cross-module checks (must follow the stub injection above).
+    from robotsix_board_agent._lifecycle import _ThreadedLoopMixin
+    from robotsix_board_agent.board_manager import BoardManager
+    from robotsix_board_agent.brokered import BrokeredBoardResponder
+
     # Ordered checks — label, function, args.
     checks: list[tuple[str, Callable[..., list[str]], tuple[Any, ...]]] = [
         ("A", check_a, (OP_TABLE, _ops_mod)),
@@ -380,6 +542,8 @@ def main() -> int:
         ("E", check_e, (OP_TABLE, WRITE_OPS, BoardClient)),
         ("F", check_f, (robotsix_board_agent, init_source)),
         ("G", check_g, (_config_mod, pkg_dir)),
+        ("H", check_h, (_ThreadedLoopMixin, BoardManager, BrokeredBoardResponder)),
+        ("I", check_i, (manager_cli_source, test_manager_cli_path)),
     ]
 
     all_errors: list[tuple[str, list[str]]] = []
