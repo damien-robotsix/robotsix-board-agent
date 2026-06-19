@@ -11,7 +11,7 @@ jobs:
   verify-tag:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@1d96c772d19494a3b5c832cd2b073cdb3247de42 # v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
       - name: Verify tag matches pyproject.toml version
         run: |
           TAG_VERSION="${GITHUB_REF_NAME#v}"

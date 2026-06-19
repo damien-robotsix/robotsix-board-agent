@@ -30,7 +30,7 @@ jobs:
       security-events: write
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@1d96c772d19494a3b5c832cd2b073cdb3247de42 # v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
       - uses: github/codeql-action/init@8aad20d150bbac5944a9f9d289da16a4b0d87c1e # v4
         with:
           languages: python
@@ -40,23 +40,23 @@ jobs:
   audit:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@1d96c772d19494a3b5c832cd2b073cdb3247de42 # v4
-      - uses: astral-sh/setup-uv@e58605a9b6da7c637471fab8847a5e5a6b8df081 # v5
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v5
       - run: uv audit
 
   vulture:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@1d96c772d19494a3b5c832cd2b073cdb3247de42 # v4
-      - uses: astral-sh/setup-uv@e58605a9b6da7c637471fab8847a5e5a6b8df081 # v5
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v5
       - run: uv sync --frozen
       - run: uv run vulture src/ vulture_whitelist.py
 
   completeness:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@1d96c772d19494a3b5c832cd2b073cdb3247de42 # v4
-      - uses: astral-sh/setup-uv@e58605a9b6da7c637471fab8847a5e5a6b8df081 # v5
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v5
       - run: uv python install 3.14
       - run: uv sync --frozen --extra prod
       - run: uv run python scripts/completeness_check.py
