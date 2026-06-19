@@ -129,10 +129,10 @@ class BoardAgent:
     async def start(self) -> None:
         """Register the agent and start listening."""
         if self._agent is not None:
-            await self._agent.start()
+            self._agent.start()
 
     async def stop(self) -> None:
         """Deregister the agent and stop listening."""
         if self._agent is not None:
-            await self._agent.stop()
+            self._agent.stop()
         await self.client.close()

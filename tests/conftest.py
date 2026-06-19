@@ -102,8 +102,8 @@ class Agent:
     via constructor keyword, called as ``agent.on_request(fn)``, or read
     as ``agent.on_request`` (returning the registered handler).
 
-    start()/stop() are async (for BoardAgent test compat) but also
-    work when called synchronously (the returned coroutine is discarded).
+    start()/stop() are synchronous, matching the real
+    ``robotsix_agent_comm.sdk.agent.Agent``.
     """
 
     def __init__(
@@ -127,12 +127,12 @@ class Agent:
             on_request if isinstance(on_request, _OnRequest) else _OnRequest(on_request)
         )
 
-    async def start(self) -> None:
+    def start(self) -> None:
         self._started = True
         if self.registry is not None:
             self.registry.register(self)
 
-    async def stop(self) -> None:
+    def stop(self) -> None:
         self._started = False
         if self.registry is not None:
             self.registry.agents.pop(self.agent_id, None)
