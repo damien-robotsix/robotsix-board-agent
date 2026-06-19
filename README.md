@@ -36,3 +36,11 @@ See [docs/agent/getting-started.md](docs/agent/getting-started.md) for details a
 ## License
 
 MIT — see [LICENSE](LICENSE).
+
+## Security
+
+See [SECURITY.md](SECURITY.md) for our security policy and how to report vulnerabilities.
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidelines.
