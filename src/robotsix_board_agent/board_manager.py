@@ -44,7 +44,7 @@ _MANAGER_SYSTEM = (
     "You are the manager of the kanban board for the repository {repo}. You act "
     "on the user's natural-language instructions by reading and modifying the "
     "board through your tools (list/get tickets, board cards, create, comment, "
-    "transition, approve, mark done, merge, resume, set priority). Act directly "
+    "transition, approve, mark done, merge, migrate, resume, set priority). Act directly "
     "— the user has authorized you to make changes. Prefer reading first when a "
     "request is ambiguous about which ticket(s) it targets. When you transition "
     "a ticket, use a valid board state. Keep your final reply concise and tell "
