@@ -32,6 +32,16 @@ logger = logging.getLogger(__name__)
 #: Cap a tool result handed back to the LLM (tickets lists can be large).
 _RESULT_CAP = 12_000
 
+#: llmio provider used for the manager's agents. The Claude-SDK provider also
+#: works but its agents get host file/bash tools (unsafe for a board manager),
+#: so we use the pydantic-ai OpenRouter provider — only our board tools.
+_PROVIDER = "openrouter-deepseek"
+
+#: Default level-3 model. The tier-3 default routes to the Claude SDK (``opus``),
+#: which the OpenRouter provider can't serve, so the manager uses the strongest
+#: llmio-known OpenRouter model by default (override via board_manager.model).
+_DEFAULT_MANAGER_MODEL = "deepseek/deepseek-v4-pro"
+
 _RECALL_SYSTEM = (
     "You retrieve relevant context for a board-management assistant. Given a NEW "
     "user question and a log of PRIOR question→answer exchanges, return only the "
@@ -116,7 +126,7 @@ class BoardManager(_ThreadedLoopMixin):
         from robotsix_llmio.core.factory import get_provider
         from robotsix_llmio.core.run import run_agent
 
-        provider = get_provider(provider="openrouter", api_key=self._openrouter_key)
+        provider = get_provider(provider=_PROVIDER, api_key=self._openrouter_key)
 
         # 1) Level-1 recall: scan prior Q→A for anything relevant.
         relevant = ""
@@ -124,7 +134,7 @@ class BoardManager(_ThreadedLoopMixin):
         if history:
             h1 = provider.build_agent(
                 level=1,
-                model=self._recall_model,
+                model=self._recall_model or None,
                 system_prompt=_RECALL_SYSTEM,
                 output_type=str,
                 name="board-manager-recall",
@@ -146,7 +156,7 @@ class BoardManager(_ThreadedLoopMixin):
             system += f"\n\nRelevant prior exchanges:\n{relevant.strip()}"
         h3 = provider.build_agent(
             level=3,
-            model=self._manager_model,
+            model=self._manager_model or _DEFAULT_MANAGER_MODEL,
             system_prompt=system,
             tools=self._build_tools(),
             output_type=str,
