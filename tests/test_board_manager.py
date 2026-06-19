@@ -118,9 +118,7 @@ class TestConverse:
     @pytest.fixture
     def mock_run_agent(self) -> MagicMock:
         """Patch run_agent to return canned output for each call."""
-        with patch(
-            "robotsix_llmio.core.run.run_agent"
-        ) as ra:
+        with patch("robotsix_llmio.core.run.run_agent") as ra:
             yield ra
 
     # -- history absent -------------------------------------------------

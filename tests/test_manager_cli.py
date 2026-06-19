@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+from typing import Any
 from unittest.mock import patch
 
 from robotsix_board_agent.manager_cli import main
@@ -47,6 +48,17 @@ def _default_target_agent(registry):
 # -- tests -------------------------------------------------------------------
 
 
+def _brokered_using(registry: Any) -> Any:
+    """A ``BrokeredAgent`` replacement binding the CLI agent to *registry* so it
+    shares the target agent's in-memory registry."""
+    from tests.conftest import Agent
+
+    def _factory(agent_id: str, **_kwargs: Any) -> Agent:
+        return Agent(agent_id, registry=registry)
+
+    return _factory
+
+
 class TestMainErrors:
     """Test main() error paths."""
 
@@ -78,8 +90,8 @@ class TestMainSuccess:
         with (
             patch.dict(os.environ, env),
             patch(
-                "robotsix_board_agent.manager_cli.create_transport_pair",
-                return_value=(registry, None),
+                "robotsix_board_agent.manager_cli.BrokeredAgent",
+                new=_brokered_using(registry),
             ),
         ):
             rc = main(argv=["list all tickets"])
@@ -96,8 +108,8 @@ class TestMainSuccess:
         with (
             patch.dict(os.environ, env),
             patch(
-                "robotsix_board_agent.manager_cli.create_transport_pair",
-                return_value=(registry, None),
+                "robotsix_board_agent.manager_cli.BrokeredAgent",
+                new=_brokered_using(registry),
             ),
         ):
             rc = main(argv=["close", "all", "stale", "drafts"])
@@ -114,8 +126,8 @@ class TestMainSuccess:
         with (
             patch.dict(os.environ, env),
             patch(
-                "robotsix_board_agent.manager_cli.create_transport_pair",
-                return_value=(registry, None),
+                "robotsix_board_agent.manager_cli.BrokeredAgent",
+                new=_brokered_using(registry),
             ),
         ):
             rc = main(argv=["do something"])
@@ -130,8 +142,8 @@ class TestMainSuccess:
         with (
             patch.dict(os.environ, env),
             patch(
-                "robotsix_board_agent.manager_cli.create_transport_pair",
-                return_value=(registry, None),
+                "robotsix_board_agent.manager_cli.BrokeredAgent",
+                new=_brokered_using(registry),
             ),
         ):
             rc = main(argv=["hi"])
@@ -148,8 +160,8 @@ class TestMainSuccess:
         with (
             patch.dict(os.environ, env),
             patch(
-                "robotsix_board_agent.manager_cli.create_transport_pair",
-                return_value=(registry, None),
+                "robotsix_board_agent.manager_cli.BrokeredAgent",
+                new=_brokered_using(registry),
             ),
         ):
             rc = main(argv=["hello"])

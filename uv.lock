@@ -877,7 +877,7 @@ wheels = [
 [[package]]
 name = "robotsix-agent-comm"
 version = "0.1.0"
-source = { git = "https://github.com/damien-robotsix/robotsix-agent-comm.git?rev=main#8a95587d63b1fa143b37b4ce16313e7597a0234f" }
+source = { git = "https://github.com/damien-robotsix/robotsix-agent-comm.git?rev=fcf9adab4c0aa70de8221ce6c402cf0d4c1ddc4d#fcf9adab4c0aa70de8221ce6c402cf0d4c1ddc4d" }
 
 [[package]]
 name = "robotsix-board-agent"
@@ -928,7 +928,7 @@ requires-dist = [
     { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=0.21" },
     { name = "pytest-cov", marker = "extra == 'dev'", specifier = ">=7" },
     { name = "pytest-xdist", marker = "extra == 'dev'", specifier = ">=3" },
-    { name = "robotsix-agent-comm", marker = "extra == 'prod'", git = "https://github.com/damien-robotsix/robotsix-agent-comm.git?rev=main" },
+    { name = "robotsix-agent-comm", marker = "extra == 'prod'", git = "https://github.com/damien-robotsix/robotsix-agent-comm.git?rev=fcf9adab4c0aa70de8221ce6c402cf0d4c1ddc4d" },
     { name = "robotsix-llmio", git = "https://github.com/damien-robotsix/robotsix-llmio.git?rev=2af509cfbfb6f35e99f02651143dfa265a400a27" },
     { name = "ruff", marker = "extra == 'dev'", specifier = "==0.15.15" },
     { name = "vulture", marker = "extra == 'dev'", specifier = ">=2.14" },

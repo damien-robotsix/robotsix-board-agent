@@ -20,8 +20,7 @@ import os
 import sys
 
 from robotsix_agent_comm.protocol import Error
-from robotsix_agent_comm.sdk.agent import Agent
-from robotsix_agent_comm.transport.brokered import create_transport_pair
+from robotsix_agent_comm.sdk import BrokeredAgent
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -39,18 +38,12 @@ def main(argv: list[str] | None = None) -> int:
         print("BOARD_MANAGER_CLI_TOKEN is required", file=sys.stderr)
         return 2
 
-    registry, transport = create_transport_pair(
-        "brokered",
+    agent = BrokeredAgent(
+        os.environ.get("BOARD_MANAGER_CLI_ID", "board-manager-cli"),
         broker_host=os.environ.get("ROBOTSIX_BROKER_HOST", "ai-broker.robotsix.net"),
         broker_port=int(os.environ.get("ROBOTSIX_BROKER_PORT", "443")),
         broker_scheme=os.environ.get("ROBOTSIX_BROKER_SCHEME", "https"),
         broker_token=token,
-    )
-    agent = Agent(
-        os.environ.get("BOARD_MANAGER_CLI_ID", "board-manager-cli"),
-        registry,
-        transport=transport,
-        pull=True,
         timeout=180.0,
     )
     target = os.environ.get("BOARD_MANAGER_TARGET", "board-manager-robotsix-mill")

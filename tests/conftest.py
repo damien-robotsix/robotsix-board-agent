@@ -181,6 +181,64 @@ def create_transport_pair(
     return Registry(), None
 
 
+class BrokeredAgent:
+    """Minimal ``robotsix_agent_comm.sdk.BrokeredAgent`` stub.
+
+    Mirrors the real one: wraps :class:`Agent` over a registry/transport from
+    :func:`create_transport_pair`, wires handlers, and delegates send/lifecycle.
+    """
+
+    def __init__(
+        self,
+        agent_id: str,
+        *,
+        broker_host: str = "",
+        broker_token: str | None = "",
+        broker_port: int = 443,
+        broker_scheme: str = "https",
+        tls_ca: Any = None,
+        ssl_context: Any = None,
+        timeout: float = 30.0,
+        on_request: Any = None,
+        on_notification: Any = None,
+    ) -> None:
+        registry, transport = create_transport_pair(
+            "brokered",
+            broker_host=broker_host,
+            broker_port=broker_port,
+            broker_scheme=broker_scheme,
+            broker_token=broker_token or "",
+        )
+        self.agent_id = agent_id
+        self._agent = Agent(agent_id, registry, transport=transport, pull=True, timeout=timeout)
+        if on_request is not None:
+            self._agent.on_request(on_request)
+
+    def on_request(self, handler: Any) -> Any:
+        self._agent.on_request(handler)
+        return handler
+
+    def send_request(
+        self, recipient: str, body: Any = None, *, timeout: float | None = None, **_: Any
+    ) -> Any:
+        return self._agent.send_request(
+            recipient, body, timeout=timeout if timeout is not None else 30.0
+        )
+
+    def start(self) -> None:
+        self._agent.start()
+
+    def stop(self) -> None:
+        self._agent.stop()
+
+    def __enter__(self) -> BrokeredAgent:
+        self.start()
+        return self
+
+    def __exit__(self, *args: Any) -> None:
+        self.stop()
+
+
 # ---------------------------------------------------------------------------
 # Inject stubs into sys.modules (top-level + sub-packages).
 # ---------------------------------------------------------------------------
@@ -225,6 +283,11 @@ if _SDK_AGENT_MODULE not in sys.modules:
     _smod = types.ModuleType(_SDK_AGENT_MODULE)
     _smod.Agent = Agent
     sys.modules[_SDK_AGENT_MODULE] = _smod
+
+# The sdk package exposes Agent + BrokeredAgent (consumers do
+# ``from robotsix_agent_comm.sdk import BrokeredAgent``).
+sys.modules["robotsix_agent_comm.sdk"].Agent = Agent  # type: ignore[attr-defined]
+sys.modules["robotsix_agent_comm.sdk"].BrokeredAgent = BrokeredAgent  # type: ignore[attr-defined]
 
 # Sub-package: robotsix_agent_comm.transport.brokered
 _BROKERED_MODULE = "robotsix_agent_comm.transport.brokered"
