@@ -44,7 +44,7 @@ _MANAGER_SYSTEM = (
     "You are the manager of the kanban board for the repository {repo}. You act "
     "on the user's natural-language instructions by reading and modifying the "
     "board through your tools (list/get tickets, board cards, create, comment, "
-    "transition, approve, mark done, merge, resume, set priority). Act directly "
+    "transition, approve, mark done, merge, migrate, resume, set priority). Act directly "
     "— the user has authorized you to make changes. Prefer reading first when a "
     "request is ambiguous about which ticket(s) it targets. When you transition "
     "a ticket, use a valid board state. Keep your final reply concise and tell "
@@ -214,6 +214,10 @@ class BoardManager(_ThreadedLoopMixin):
             """Trigger an immediate merge for a ticket."""
             return _safe(client.merge_now(ticket_id=ticket_id))
 
+        def migrate(ticket_id: str, target_repo_id: str) -> str:
+            """Migrate a ticket to another repository."""
+            return _safe(client.migrate(ticket_id=ticket_id, target_repo_id=target_repo_id))
+
         def resume_blocked(ticket_id: str) -> str:
             """Resume a blocked ticket."""
             return _safe(client.resume_blocked(ticket_id=ticket_id))
@@ -242,6 +246,7 @@ class BoardManager(_ThreadedLoopMixin):
             approve,
             mark_done,
             merge_now,
+            migrate,
             resume_blocked,
             set_priority,
             update_memory,
