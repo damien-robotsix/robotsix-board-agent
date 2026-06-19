@@ -122,13 +122,17 @@ class BoardManager(_ThreadedLoopMixin):
                 code=BoardErrorCode.BAD_REQUEST.value,
                 message="provide a 'message' (natural-language instruction)",
             )
-        answer = self._converse(question)
+        # Real agent-comm carries the sender on request.metadata.sender; the
+        # test stubs put it on request.sender — accept either.
+        meta = getattr(request, "metadata", None)
+        requester = getattr(meta, "sender", None) or getattr(request, "sender", None) or "agent"
+        answer = self._converse(question, requester)
         self._memory.append(question, answer)
         return Response.to(request, body={"reply": answer})
 
     # -- the LLM pipeline (level-1 recall -> level-3 act) ------------------
 
-    def _converse(self, question: str) -> str:
+    def _converse(self, question: str, requester: str = "agent") -> str:
         from robotsix_llmio.core.factory import get_provider
         from robotsix_llmio.core.run import run_agent
 
@@ -160,11 +164,15 @@ class BoardManager(_ThreadedLoopMixin):
             system += f"\n\nYour maintained memory:\n{notes.strip()}"
         if relevant and relevant.strip().lower() != "none":
             system += f"\n\nRelevant prior exchanges:\n{relevant.strip()}"
+        system += (
+            f"\n\nThis turn's requester is '{requester}'. Any ticket you create is "
+            f"sourced to it automatically, but you may pass an explicit source."
+        )
         h3 = provider.build_agent(
             level=3,
             model=self._manager_model or _DEFAULT_MANAGER_MODEL,
             system_prompt=system,
-            tools=self._build_tools(),
+            tools=self._build_tools(requester),
             output_type=str,
             name="board-manager",
         )
@@ -172,7 +180,7 @@ class BoardManager(_ThreadedLoopMixin):
 
     # -- board ops exposed as tools ---------------------------------------
 
-    def _build_tools(self) -> list[Any]:
+    def _build_tools(self, requester: str = "agent") -> list[Any]:
         client = self.client
         repo = self.settings.board_repo_id
 
@@ -206,9 +214,17 @@ class BoardManager(_ThreadedLoopMixin):
             """Get a ticket's full description."""
             return _safe(client.description(ticket_id=ticket_id))
 
-        def create_ticket(title: str, description: str) -> str:
-            """Create a new ticket with a title and description."""
-            return _safe(client.create_ticket(title=title, description=description, repo_id=repo))
+        def create_ticket(title: str, description: str, source: str = "") -> str:
+            """Create a new ticket. `source` records the origin; leave blank to
+            default to the requester so we always know where it came from."""
+            return _safe(
+                client.create_ticket(
+                    title=title,
+                    description=description,
+                    source=source or requester,
+                    repo_id=repo,
+                )
+            )
 
         def comment(ticket_id: str, body: str) -> str:
             """Add a comment to a ticket."""

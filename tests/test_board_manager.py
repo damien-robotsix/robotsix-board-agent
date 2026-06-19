@@ -78,7 +78,7 @@ class TestHandleRequest:
             reply = manager._handle_request(
                 Request(body={"message": "use this", "question": "not this"})
             )
-        mock_conv.assert_called_once_with("use this")
+        mock_conv.assert_called_once_with("use this", "agent")
         assert reply.result == {"reply": "from message"}
 
     def test_converse_result_appended_to_memory(self, manager: BoardManager) -> None:
