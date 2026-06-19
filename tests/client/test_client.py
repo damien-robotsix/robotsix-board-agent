@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import json
 from typing import Any
 
 import httpx
@@ -276,6 +277,8 @@ async def test_migrate(client: BoardClient, mock_transport: httpx.MockTransport)
     def handler(req: httpx.Request) -> httpx.Response:
         assert req.method == "POST"
         assert "/tickets/T-1/migrate" in str(req.url)
+        # The board API's TicketMigrate body field is `repo_id`, not target_repo_id.
+        assert json.loads(req.content)["repo_id"] == "other-repo"
         return json_response({"target": "other-repo"})
 
     mock_transport.handler = handler  # type: ignore[attr-defined]
