@@ -39,6 +39,14 @@ class BoardManagerMemory:
         max_conversations: int = MAX_CONVERSATIONS,
         max_notes_chars: int = MAX_NOTES_CHARS,
     ) -> None:
+        """Initialise the memory store.
+
+        *path* — filesystem path to the JSON conversation-trace file (a sibling
+        ``_notes.md`` file is derived for the maintained memory note).
+        *max_conversations* — maximum number of question/answer pairs to retain
+        (oldest pruned first).  *max_notes_chars* — character cap on the
+        agent-maintained memory note.
+        """
         self._path = Path(path)
         self._max = max(1, max_conversations)
         self._notes_path = self._path.with_name(f"{self._path.stem}_notes.md")

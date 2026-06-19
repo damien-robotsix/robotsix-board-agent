@@ -53,6 +53,14 @@ class BrokeredBoardResponder(_ThreadedLoopMixin):
         agent_id: str | None = None,
         timeout: float = 30.0,
     ) -> None:
+        """Initialise the brokered board responder.
+
+        *settings* — the board configuration (repo id, board URL, auth token).
+        *broker_host*/*broker_port*/*broker_scheme*/*broker_token* — broker
+        connection details for the agent-comm layer.  *agent_id* — custom broker
+        agent id (defaults to ``board-{repo_id}``).  *timeout* — broker operation
+        timeout in seconds.
+        """
         self.settings = settings
         self.client = BoardClient(settings)
         self.agent_id = agent_id or f"board-{settings.board_repo_id}"

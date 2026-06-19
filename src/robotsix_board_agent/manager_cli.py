@@ -24,6 +24,13 @@ from robotsix_agent_comm.sdk import BrokeredAgent
 
 
 def main(argv: list[str] | None = None) -> int:
+    """Send a natural-language instruction to the board manager via the broker.
+
+    *argv* — optional argument list (defaults to ``sys.argv[1:]``).  The first
+    argument (or the joined argument string) is sent as a message to the
+    broker-registered board manager.  Returns 0 on success, 2 on usage or config
+    errors.
+    """
     args = list(sys.argv[1:] if argv is None else argv)
     if not args:
         print(

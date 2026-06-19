@@ -92,6 +92,19 @@ class BoardManager(_ThreadedLoopMixin):
         max_conversations: int = MAX_CONVERSATIONS,
         timeout: float = 120.0,
     ) -> None:
+        """Initialise the board manager.
+
+        *settings* — the board configuration (repo id, board URL, auth token).
+        *broker_host*/*broker_port*/*broker_scheme*/*broker_token* — broker
+        connection details for the agent-comm layer.  *openrouter_key* — API key
+        for the LLM provider.  *memory_path* — filesystem path for persisting
+        conversation traces and the maintained memory note.  *agent_id* — custom
+        broker agent id (defaults to ``board-manager-{repo_id}``).
+        *manager_model*/*recall_model* — optional model overrides for the primary
+        manager LLM and the lower-tier recall scanner.  *max_conversations* — cap
+        on stored conversation pairs.  *timeout* — broker operation timeout in
+        seconds.
+        """
         self.settings = settings
         self.client = BoardClient(settings)
         self.agent_id = agent_id or f"board-manager-{settings.board_repo_id}"
