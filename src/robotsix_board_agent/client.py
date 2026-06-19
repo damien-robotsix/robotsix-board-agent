@@ -220,10 +220,12 @@ class BoardClient:
         note: str = DEFAULT_NOTE,
     ) -> dict[str, Any]:
         """Migrate a ticket to another repo."""
+        # The board API's TicketMigrate body field is ``repo_id`` (the target
+        # board); our param is named target_repo_id for clarity at call sites.
         return await self._request(  # type: ignore[no-any-return]
             "POST",
             f"/tickets/{ticket_id}/migrate",
-            json_body={"target_repo_id": target_repo_id, "note": note},
+            json_body={"repo_id": target_repo_id, "note": note},
         )
 
     async def set_priority(
