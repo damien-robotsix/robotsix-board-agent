@@ -18,8 +18,7 @@ from pathlib import Path
 from typing import Any
 
 from robotsix_agent_comm.protocol import Error, Message, Request, Response
-from robotsix_agent_comm.sdk.agent import Agent
-from robotsix_agent_comm.transport.brokered import create_transport_pair
+from robotsix_agent_comm.sdk import BrokeredAgent
 
 from ._lifecycle import _ThreadedLoopMixin
 from .client import BoardAPIError, BoardClient
@@ -100,17 +99,15 @@ class BoardManager(_ThreadedLoopMixin):
         self._manager_model = manager_model
         self._recall_model = recall_model
         self._memory = BoardManagerMemory(memory_path, max_conversations=max_conversations)
-        registry, transport = create_transport_pair(
-            "brokered",
+        self._agent = BrokeredAgent(
+            self.agent_id,
             broker_host=broker_host,
             broker_port=broker_port,
             broker_scheme=broker_scheme,
             broker_token=broker_token,
+            timeout=timeout,
+            on_request=self._handle_request,
         )
-        self._agent = Agent(
-            self.agent_id, registry, transport=transport, pull=True, timeout=timeout
-        )
-        self._agent.on_request(self._handle_request)
         self._loop = None
         self._loop_thread = None
 

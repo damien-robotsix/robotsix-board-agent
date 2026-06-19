@@ -21,8 +21,7 @@ import logging
 import threading
 
 from robotsix_agent_comm.protocol import Error, Message, Request, Response
-from robotsix_agent_comm.sdk.agent import Agent
-from robotsix_agent_comm.transport.brokered import create_transport_pair
+from robotsix_agent_comm.sdk import BrokeredAgent
 
 from ._lifecycle import _ThreadedLoopMixin
 from ._request_handler import _parse_and_validate
@@ -57,21 +56,15 @@ class BrokeredBoardResponder(_ThreadedLoopMixin):
         self.settings = settings
         self.client = BoardClient(settings)
         self.agent_id = agent_id or f"board-{settings.board_repo_id}"
-        registry, transport = create_transport_pair(
-            "brokered",
+        self._agent = BrokeredAgent(
+            self.agent_id,
             broker_host=broker_host,
             broker_port=broker_port,
             broker_scheme=broker_scheme,
             broker_token=broker_token,
-        )
-        self._agent = Agent(
-            self.agent_id,
-            registry,
-            transport=transport,
-            pull=True,
             timeout=timeout,
+            on_request=self._handle_request,
         )
-        self._agent.on_request(self._handle_request)
         self._loop: asyncio.AbstractEventLoop | None = None
         self._loop_thread: threading.Thread | None = None
 
