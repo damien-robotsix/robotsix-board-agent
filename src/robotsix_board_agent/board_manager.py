@@ -47,7 +47,8 @@ _RECALL_SYSTEM = (
     "user question and a log of PRIOR question→answer exchanges, return only the "
     "prior exchanges that are genuinely relevant to the new question (decisions, "
     "tickets, or tasks it references or follows up on). Be terse — quote just the "
-    "relevant bits. If nothing is relevant, reply exactly with 'none'."
+    "relevant bits. If nothing is relevant, reply with the single word NONE "
+    "and nothing else."
 )
 
 _MANAGER_SYSTEM = (
