@@ -109,6 +109,7 @@ strings.
 | `approve`            | `ticket_id: str`                            | `POST /tickets/{id}/approve`           |
 | `mark_done`          | `ticket_id: str, note: str = ""`            | `POST /tickets/{id}/mark-done`         |
 | `merge_now`          | `ticket_id: str`                            | `POST /tickets/{id}/merge-now`         |
+| `migrate`            | `ticket_id: str, target_repo_id: str`       | `POST /tickets/{id}/migrate`           |
 | `resume_blocked`     | `ticket_id: str`                            | `POST /tickets/{id}/resume-blocked`    |
 | `set_priority`       | `ticket_id: str, priority: bool`            | `POST /tickets/{id}/priority`          |
 | `update_memory`      | `memory: str`                               | (internal — writes maintained memory)  |
