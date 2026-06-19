@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -91,6 +91,321 @@ class TestHandleRequest:
         assert len(entries) == 1
         assert entries[0]["question"] == "the question"
         assert entries[0]["answer"] == "the answer"
+
+
+# -- _converse (LLM pipeline) ------------------------------------------------
+
+
+class TestConverse:
+    """Test BoardManager._converse — mock the provider to isolate."""
+
+    @pytest.fixture
+    def mock_provider(self) -> MagicMock:
+        """Return a mock provider with build_agent returning fresh mocks."""
+        provider = MagicMock()
+        provider.build_agent.return_value = MagicMock()
+        return provider
+
+    @pytest.fixture
+    def mock_get_provider(self, mock_provider: MagicMock) -> MagicMock:
+        """Patch get_provider to return *mock_provider*."""
+        with patch(
+            "robotsix_llmio.core.factory.get_provider",
+            return_value=mock_provider,
+        ) as gp:
+            yield gp
+
+    @pytest.fixture
+    def mock_run_agent(self) -> MagicMock:
+        """Patch run_agent to return canned output for each call."""
+        with patch(
+            "robotsix_llmio.core.run.run_agent"
+        ) as ra:
+            yield ra
+
+    # -- history absent -------------------------------------------------
+
+    def test_no_history_skips_recall(
+        self,
+        manager: BoardManager,
+        mock_provider: MagicMock,
+        mock_get_provider: MagicMock,
+        mock_run_agent: MagicMock,
+    ) -> None:
+        """When memory is empty, no recall agent is built or run."""
+        mock_run_agent.return_value = "final answer"
+
+        result = manager._converse("some question")
+
+        assert result == "final answer"
+        # Only one build_agent call (the level-3 manager), not two.
+        assert mock_provider.build_agent.call_count == 1
+        call_kwargs = mock_provider.build_agent.call_args.kwargs
+        assert call_kwargs["level"] == 3
+        assert call_kwargs["name"] == "board-manager"
+
+    def test_no_history_omits_relevant_from_system(
+        self,
+        manager: BoardManager,
+        mock_provider: MagicMock,
+        mock_get_provider: MagicMock,
+        mock_run_agent: MagicMock,
+    ) -> None:
+        """When memory is empty, the system prompt has no 'Relevant prior'."""
+        mock_run_agent.return_value = "ok"
+
+        manager._converse("q")
+
+        system = mock_provider.build_agent.call_args.kwargs["system_prompt"]
+        assert "Relevant prior exchanges" not in system
+
+    # -- history present -------------------------------------------------
+
+    def test_history_present_builds_and_runs_recall(
+        self,
+        manager: BoardManager,
+        mock_provider: MagicMock,
+        mock_get_provider: MagicMock,
+        mock_run_agent: MagicMock,
+    ) -> None:
+        """When memory has entries, a level-1 recall agent is built and run."""
+        manager._memory.append("prior Q", "prior A")
+        # Return distinct values for recall and manager runs.
+        mock_run_agent.side_effect = ["relevant context", "manager answer"]
+
+        result = manager._converse("new question")
+
+        assert result == "manager answer"
+        assert mock_provider.build_agent.call_count == 2
+        # First call: recall agent.
+        recall_kwargs = mock_provider.build_agent.call_args_list[0].kwargs
+        assert recall_kwargs["level"] == 1
+        assert recall_kwargs["name"] == "board-manager-recall"
+        assert recall_kwargs["model"] is None  # recall_model not set
+        assert recall_kwargs["output_type"] is str
+        # Second call: manager agent.
+        mgr_kwargs = mock_provider.build_agent.call_args_list[1].kwargs
+        assert mgr_kwargs["level"] == 3
+
+    def test_recall_output_in_system_prompt(
+        self,
+        manager: BoardManager,
+        mock_provider: MagicMock,
+        mock_get_provider: MagicMock,
+        mock_run_agent: MagicMock,
+    ) -> None:
+        """The recall output text appears in the manager's system prompt."""
+        manager._memory.append("q1", "a1")
+        mock_run_agent.side_effect = ["remembered context", "final"]
+
+        manager._converse("q2")
+
+        system = mock_provider.build_agent.call_args_list[1].kwargs["system_prompt"]
+        assert "remembered context" in system
+        assert "Relevant prior exchanges:" in system
+
+    def test_recall_none_output_omitted_from_system(
+        self,
+        manager: BoardManager,
+        mock_provider: MagicMock,
+        mock_get_provider: MagicMock,
+        mock_run_agent: MagicMock,
+    ) -> None:
+        """When recall returns 'none', 'Relevant prior' NOT in system prompt."""
+        manager._memory.append("q", "a")
+        mock_run_agent.side_effect = ["none", "ok"]
+
+        manager._converse("q2")
+
+        system = mock_provider.build_agent.call_args_list[1].kwargs["system_prompt"]
+        assert "Relevant prior exchanges" not in system
+
+    # -- notes present / absent ------------------------------------------
+
+    def test_notes_present_in_system_prompt(
+        self,
+        manager: BoardManager,
+        mock_provider: MagicMock,
+        mock_get_provider: MagicMock,
+        mock_run_agent: MagicMock,
+    ) -> None:
+        """When load_notes() returns content, it appears in the system prompt."""
+        manager._memory.save_notes("Task 1 is ongoing.")
+        mock_run_agent.return_value = "ok"
+
+        manager._converse("q")
+
+        system = mock_provider.build_agent.call_args.kwargs["system_prompt"]
+        assert "Your maintained memory:" in system
+        assert "Task 1 is ongoing." in system
+
+    def test_notes_absent_omitted_from_system(
+        self,
+        manager: BoardManager,
+        mock_provider: MagicMock,
+        mock_get_provider: MagicMock,
+        mock_run_agent: MagicMock,
+    ) -> None:
+        """When load_notes() returns '', no memory section in system prompt."""
+        mock_run_agent.return_value = "ok"
+
+        manager._converse("q")
+
+        system = mock_provider.build_agent.call_args.kwargs["system_prompt"]
+        assert "Your maintained memory:" not in system
+
+    # -- recall_model ----------------------------------------------------
+
+    def test_recall_model_override(
+        self,
+        manager: BoardManager,
+        mock_provider: MagicMock,
+        mock_get_provider: MagicMock,
+        mock_run_agent: MagicMock,
+    ) -> None:
+        """When _recall_model is set, it is passed to build_agent for recall."""
+        manager._recall_model = "custom-recall-model"
+        manager._memory.append("q", "a")
+        mock_run_agent.side_effect = ["ctx", "ans"]
+
+        manager._converse("q2")
+
+        recall_kwargs = mock_provider.build_agent.call_args_list[0].kwargs
+        assert recall_kwargs["model"] == "custom-recall-model"
+
+    def test_recall_model_unset_passes_none(
+        self,
+        manager: BoardManager,
+        mock_provider: MagicMock,
+        mock_get_provider: MagicMock,
+        mock_run_agent: MagicMock,
+    ) -> None:
+        """When _recall_model is None, None is passed to build_agent."""
+        manager._recall_model = None
+        manager._memory.append("q", "a")
+        mock_run_agent.side_effect = ["ctx", "ans"]
+
+        manager._converse("q2")
+
+        recall_kwargs = mock_provider.build_agent.call_args_list[0].kwargs
+        assert recall_kwargs["model"] is None
+
+    # -- system prompt structure -----------------------------------------
+
+    def test_system_prompt_includes_repo_id(
+        self,
+        manager: BoardManager,
+        mock_provider: MagicMock,
+        mock_get_provider: MagicMock,
+        mock_run_agent: MagicMock,
+    ) -> None:
+        """The manager system prompt includes the board repo id."""
+        mock_run_agent.return_value = "ok"
+
+        manager._converse("q")
+
+        system = mock_provider.build_agent.call_args.kwargs["system_prompt"]
+        assert "test-repo" in system
+
+    def test_system_prompt_includes_requester(
+        self,
+        manager: BoardManager,
+        mock_provider: MagicMock,
+        mock_get_provider: MagicMock,
+        mock_run_agent: MagicMock,
+    ) -> None:
+        """The system prompt names the requester."""
+        mock_run_agent.return_value = "ok"
+
+        manager._converse("q", requester="alice")
+
+        system = mock_provider.build_agent.call_args.kwargs["system_prompt"]
+        assert "requester is 'alice'" in system
+
+    # -- manager model ---------------------------------------------------
+
+    def test_manager_model_uses_configured_value(
+        self,
+        manager: BoardManager,
+        mock_provider: MagicMock,
+        mock_get_provider: MagicMock,
+        mock_run_agent: MagicMock,
+    ) -> None:
+        """When _manager_model is set, it is used for the level-3 agent."""
+        manager._manager_model = "custom-manager-model"
+        mock_run_agent.return_value = "ok"
+
+        manager._converse("q")
+
+        mgr_kwargs = mock_provider.build_agent.call_args.kwargs
+        assert mgr_kwargs["model"] == "custom-manager-model"
+
+    def test_manager_model_defaults_when_unset(
+        self,
+        manager: BoardManager,
+        mock_provider: MagicMock,
+        mock_get_provider: MagicMock,
+        mock_run_agent: MagicMock,
+    ) -> None:
+        """When _manager_model is None, the default model is used."""
+        manager._manager_model = None
+        mock_run_agent.return_value = "ok"
+
+        manager._converse("q")
+
+        mgr_kwargs = mock_provider.build_agent.call_args.kwargs
+        from robotsix_board_agent.board_manager import _DEFAULT_MANAGER_MODEL
+
+        assert mgr_kwargs["model"] == _DEFAULT_MANAGER_MODEL
+
+    # -- error path ------------------------------------------------------
+
+    def test_provider_raises_propagates(
+        self,
+        manager: BoardManager,
+        mock_provider: MagicMock,
+        mock_get_provider: MagicMock,
+        mock_run_agent: MagicMock,
+    ) -> None:
+        """When the provider raises, the exception propagates (no catch in _converse)."""
+        mock_run_agent.side_effect = RuntimeError("provider down")
+
+        with pytest.raises(RuntimeError, match="provider down"):
+            manager._converse("q")
+
+    # -- tool assembly ---------------------------------------------------
+
+    def test_tools_are_built_for_level3_agent(
+        self,
+        manager: BoardManager,
+        mock_provider: MagicMock,
+        mock_get_provider: MagicMock,
+        mock_run_agent: MagicMock,
+    ) -> None:
+        """The level-3 agent is built with tools from _build_tools."""
+        mock_run_agent.return_value = "ok"
+
+        manager._converse("q")
+
+        mgr_kwargs = mock_provider.build_agent.call_args.kwargs
+        assert "tools" in mgr_kwargs
+        assert mgr_kwargs["tools"] is not None
+
+    def test_provider_uses_openrouter_key(
+        self,
+        manager: BoardManager,
+        mock_get_provider: MagicMock,
+        mock_run_agent: MagicMock,
+    ) -> None:
+        """get_provider is called with the correct provider and api_key."""
+        mock_run_agent.return_value = "ok"
+
+        manager._converse("q")
+
+        mock_get_provider.assert_called_once()
+        _, kwargs = mock_get_provider.call_args
+        assert kwargs["provider"] == "openrouter-deepseek"
+        assert kwargs["api_key"] == "test-openrouter-key"
 
 
 # -- start / stop lifecycle --------------------------------------------------
