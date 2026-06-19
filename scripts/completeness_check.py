@@ -25,8 +25,6 @@ from typing import Any
 # Import the package under inspection
 # ---------------------------------------------------------------------------
 import robotsix_board_agent
-import robotsix_board_agent.agent as _agent_mod
-import robotsix_board_agent.client as _client_mod
 import robotsix_board_agent.config as _config_mod
 import robotsix_board_agent.ops as _ops_mod
 from robotsix_board_agent.client import BoardClient
@@ -313,12 +311,12 @@ def check_f(pkg: Any, init_source: str) -> list[str]:
     return errors
 
 
-def check_g(config_mod: Any, client_path: Path, agent_path: Path) -> list[str]:
+def check_g(config_mod: Any, pkg_dir: Path) -> list[str]:
     """Check G — Config field consumption.
 
     Every field name declared in ``BoardAgentSettings.model_fields`` must
-    appear as a substring in at least one of ``client.py`` or ``agent.py``
-    source text.
+    appear as a substring in at least one ``.py`` source file under the
+    package directory.
     """
     errors: list[str] = []
     settings_cls = getattr(config_mod, "BoardAgentSettings", None)
@@ -335,22 +333,25 @@ def check_g(config_mod: Any, client_path: Path, agent_path: Path) -> list[str]:
         errors.append("Check G: BoardAgentSettings.model_fields is empty or missing")
         return errors
 
-    try:
-        client_src = client_path.read_text()
-    except OSError as exc:
-        errors.append(f"Check G: cannot read client.py: {exc}")
-        return errors
-
-    try:
-        agent_src = agent_path.read_text()
-    except OSError as exc:
-        errors.append(f"Check G: cannot read agent.py: {exc}")
-        return errors
+    # Collect all .py source files under the package directory.
+    source_paths: list[Path] = []
+    for py_file in pkg_dir.rglob("*.py"):
+        source_paths.append(py_file)
 
     for field_name in model_fields:
-        if field_name not in client_src and field_name not in agent_src:
+        found = False
+        for py_file in source_paths:
+            try:
+                src = py_file.read_text()
+            except OSError:
+                continue
+            if field_name in src:
+                found = True
+                break
+        if not found:
             errors.append(
-                f"Check G: Config field {field_name!r} is not consumed in client.py or agent.py"
+                f"Check G: Config field {field_name!r} is not consumed "
+                f"in any .py file under {pkg_dir}"
             )
 
     return errors
@@ -363,9 +364,8 @@ def check_g(config_mod: Any, client_path: Path, agent_path: Path) -> list[str]:
 
 def main() -> int:
     """Run all checks and return 0 on success, 1 on any failure."""
-    # Paths to source files (for Check G).
-    client_path = Path(inspect.getfile(_client_mod))
-    agent_path = Path(inspect.getfile(_agent_mod))
+    # Package directory (for Check G).
+    pkg_dir = Path(inspect.getfile(_config_mod)).parent
 
     # Source of __init__.py (for Check F).
     init_path = Path(inspect.getfile(robotsix_board_agent))
@@ -379,7 +379,7 @@ def main() -> int:
         ("D", check_d, (OP_TABLE, BoardClient)),
         ("E", check_e, (OP_TABLE, WRITE_OPS, BoardClient)),
         ("F", check_f, (robotsix_board_agent, init_source)),
-        ("G", check_g, (_config_mod, client_path, agent_path)),
+        ("G", check_g, (_config_mod, pkg_dir)),
     ]
 
     all_errors: list[tuple[str, list[str]]] = []
