@@ -486,8 +486,27 @@ def main() -> int:
     manager_cli_source = manager_cli_path.read_text()
     test_manager_cli_path = pkg_dir.parent.parent / "tests" / "test_manager_cli.py"
 
-    # Ensure robotsix_agent_comm.sdk.BrokeredAgent is importable so that
-    # board_manager and brokered can be loaded for introspection.
+    # ------------------------------------------------------------------
+    # Agent-comm stub injection.
+    #
+    # board_manager.py and brokered.py import from both
+    #   robotsix_agent_comm.protocol  (Error, Message, Request, Response)
+    #   robotsix_agent_comm.sdk       (BrokeredAgent)
+    #
+    # robotsix-agent-comm is an optional 'prod' extra; the CI
+    # ``uv sync --frozen`` with ``default-groups = ["dev"]`` does NOT
+    # install it.  Inject minimal stdlib stubs so those modules can be
+    # loaded for introspection.
+    # ------------------------------------------------------------------
+
+    # Parent package (must exist before any subpackage import).
+    _comm_mod = sys.modules.get("robotsix_agent_comm")
+    if _comm_mod is None:
+        _comm_mod = types.ModuleType("robotsix_agent_comm")
+        _comm_mod.__path__ = []
+        sys.modules["robotsix_agent_comm"] = _comm_mod
+
+    # robotsix_agent_comm.sdk — BrokeredAgent.
     _sdk_mod = sys.modules.get("robotsix_agent_comm.sdk")
     if _sdk_mod is None:
         _sdk_mod = types.ModuleType("robotsix_agent_comm.sdk")
@@ -499,6 +518,15 @@ def main() -> int:
             pass
 
         _sdk_mod.BrokeredAgent = _BrokeredAgentStub  # type: ignore[attr-defined]
+
+    # robotsix_agent_comm.protocol — Error, Message, Request, Response.
+    _proto_mod = sys.modules.get("robotsix_agent_comm.protocol")
+    if _proto_mod is None:
+        _proto_mod = types.ModuleType("robotsix_agent_comm.protocol")
+        sys.modules["robotsix_agent_comm.protocol"] = _proto_mod
+    for _proto_name in ("Error", "Message", "Request", "Response"):
+        if not hasattr(_proto_mod, _proto_name):
+            setattr(_proto_mod, _proto_name, type(_proto_name, (), {}))
 
     # Imports for cross-module checks (must follow the stub injection above).
     from robotsix_board_agent._lifecycle import _ThreadedLoopMixin
