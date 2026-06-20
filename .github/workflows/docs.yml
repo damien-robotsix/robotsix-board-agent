@@ -11,4 +11,4 @@ jobs:
   docs:
     permissions:
       contents: write
-    uses: damien-robotsix/robotsix-mill/.github/workflows/python-docs.yml@main
+    uses: damien-robotsix/robotsix-mill/.github/workflows/python-docs.yml@c3a9aa5d58116b96e5a0c36991b0b202986130f9 # main
