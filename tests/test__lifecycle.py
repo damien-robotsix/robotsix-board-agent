@@ -10,7 +10,6 @@ import pytest
 
 from robotsix_board_agent._lifecycle import _build_brokered_agent, _ThreadedLoopMixin
 
-
 # ---------------------------------------------------------------------------
 # _build_brokered_agent
 # ---------------------------------------------------------------------------
