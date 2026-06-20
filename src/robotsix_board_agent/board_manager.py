@@ -31,10 +31,13 @@ logger = logging.getLogger(__name__)
 #: Cap a tool result handed back to the LLM (tickets lists can be large).
 _RESULT_CAP = 12_000
 
-#: llmio provider used for the manager's agents. The Claude-SDK provider also
-#: works but its agents get host file/bash tools (unsafe for a board manager),
-#: so we use the pydantic-ai OpenRouter provider — only our board tools.
-_PROVIDER = "openrouter-deepseek"
+#: Combined provider-model identifier selecting the OpenRouter (DeepSeek)
+#: backend. The Claude-SDK provider also works but its agents get host
+#: file/bash tools (unsafe for a board manager), so we resolve the pydantic-ai
+#: OpenRouter provider via llmio's factory — only our board tools. The concrete
+#: model is chosen per-agent (``build_agent(model=...)``), so the identifier's
+#: model part is a valid placeholder that only selects the backend.
+_PROVIDER_IDENTIFIER = "openrouter[deepseek]-deepseek/deepseek-v4-pro"
 
 #: Default level-3 model. The tier-3 default routes to the Claude SDK (``opus``),
 #: which the OpenRouter provider can't serve, so the manager uses the strongest
@@ -144,10 +147,10 @@ class BoardManager(_ThreadedLoopMixin):
     # -- the LLM pipeline (level-1 recall -> level-3 act) ------------------
 
     def _converse(self, question: str, requester: str = "agent") -> str:
-        from robotsix_llmio.core.factory import get_provider
+        from robotsix_llmio.core.factory import get_provider_for_identifier
         from robotsix_llmio.core.run import run_agent
 
-        provider = get_provider(provider=_PROVIDER, api_key=self._openrouter_key)
+        provider = get_provider_for_identifier(_PROVIDER_IDENTIFIER, api_key=self._openrouter_key)
 
         # 1) Level-1 recall: scan prior Q→A for anything relevant.
         relevant = ""
