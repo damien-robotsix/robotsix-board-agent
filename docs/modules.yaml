@@ -71,6 +71,7 @@ modules:
     path:
       - src/robotsix_board_agent/board_manager.py
       - docs/board_manager/api.md
+      - tests/board_manager/
     description: >
       BoardManager — natural-language LLM-powered board manager.
       Two-stage pipeline (level-1 recall + level-3 acting), 15 board
