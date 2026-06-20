@@ -7,6 +7,7 @@ modules:
       - src/robotsix_board_agent/__init__.py
       - src/robotsix_board_agent/py.typed
       - src/robotsix_board_agent/_lifecycle.py
+      - tests/test__lifecycle.py
       - src/robotsix_board_agent/_request_handler.py
       - src/robotsix_board_agent/constants.py
       - docs/architecture.md
