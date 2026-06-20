@@ -62,6 +62,7 @@ modules:
     path:
       - src/robotsix_board_agent/brokered.py
       - docs/brokered/responder.md
+      - tests/brokered/
     description: >
       BrokeredBoardResponder — production entry point for structured
       board operations over the agent-comm broker.  Pull/mailbox mode,
