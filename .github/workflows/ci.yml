@@ -16,7 +16,7 @@ jobs:
   ci:
     uses: damien-robotsix/robotsix-mill/.github/workflows/python-ci.yml@main
     with:
-      python-version: "3.12"
+      python-version: "3.14"
       cov-package: "robotsix_board_agent"
       install-extras: ""
       coverage-threshold: "60"
@@ -54,6 +54,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
+      - run: uv python install 3.14
       - run: uv sync --frozen
       - run: uv run python scripts/completeness_check.py
 
