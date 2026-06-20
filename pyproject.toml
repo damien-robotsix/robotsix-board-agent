@@ -104,3 +104,17 @@ filterwarnings = [
     "ignore::DeprecationWarning",
 ]
 
+[tool.coverage.run]
+source = ["robotsix_board_agent"]
+branch = true
+relative_files = true
+omit = ["*/__init__.py"]
+
+[tool.coverage.report]
+fail_under = 60
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "raise NotImplementedError",
+]
+
