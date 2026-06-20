@@ -23,7 +23,7 @@ from robotsix_agent_comm.sdk import BrokeredAgent
 from ._lifecycle import _ThreadedLoopMixin
 from .client import BoardAPIError, BoardClient
 from .config import BoardAgentSettings
-from .constants import BoardErrorCode
+from .constants import DEFAULT_TICKET_SOURCE, BoardErrorCode
 from .memory import MAX_CONVERSATIONS, BoardManagerMemory
 
 logger = logging.getLogger(__name__)
@@ -139,7 +139,11 @@ class BoardManager(_ThreadedLoopMixin):
         # Real agent-comm carries the sender on request.metadata.sender; the
         # test stubs put it on request.sender — accept either.
         meta = getattr(request, "metadata", None)
-        requester = getattr(meta, "sender", None) or getattr(request, "sender", None) or "agent"
+        requester = (
+            getattr(meta, "sender", None)
+            or getattr(request, "sender", None)
+            or DEFAULT_TICKET_SOURCE
+        )
         answer = self._converse(question, requester)
         self._memory.append(question, answer)
         return Response.to(request, body={"reply": answer})
