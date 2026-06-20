@@ -108,9 +108,13 @@ class TestConverse:
 
     @pytest.fixture
     def mock_get_provider(self, mock_provider: MagicMock) -> MagicMock:
-        """Patch get_provider to return *mock_provider*."""
+        """Patch get_provider_for_identifier to return *mock_provider*.
+
+        Patched in ``core.factory`` (importable without the openrouter extra,
+        which board-agent does not install) so the test stays hermetic — the
+        concrete provider is never imported."""
         with patch(
-            "robotsix_llmio.core.factory.get_provider",
+            "robotsix_llmio.core.factory.get_provider_for_identifier",
             return_value=mock_provider,
         ) as gp:
             yield gp
@@ -395,14 +399,14 @@ class TestConverse:
         mock_get_provider: MagicMock,
         mock_run_agent: MagicMock,
     ) -> None:
-        """get_provider is called with the correct provider and api_key."""
+        """The OpenRouterDeepseek provider is constructed with the api_key."""
         mock_run_agent.return_value = "ok"
 
         manager._converse("q")
 
         mock_get_provider.assert_called_once()
         _, kwargs = mock_get_provider.call_args
-        assert kwargs["provider"] == "openrouter-deepseek"
+        assert kwargs["api_key"] == "test-openrouter-key"
         assert kwargs["api_key"] == "test-openrouter-key"
 
 
