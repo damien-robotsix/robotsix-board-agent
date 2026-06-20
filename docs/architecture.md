@@ -85,7 +85,8 @@ Additionally, the **`BoardAgent`** class (`agent.py`) is a legacy async
 entry point that uses the same structured-op dispatch but wraps the
 agent-comm `Agent` directly (no mixin). It is the original integration
 and remains available, though the brokered responder is preferred for new
-structured-op deployments.
+structured-op deployments. See [request path 3](#3-structured-operation--boardagent-legacy)
+below for its flow.
 
 ---
 
@@ -149,6 +150,27 @@ The `BoardManager`'s tools are the structured ops from `ops.py` but
 called indirectly through `BoardClient` methods. The LLM decides which
 tool to use and with what arguments — the manager never calls
 `_parse_and_validate` or `dispatch` directly.
+
+### 3. Structured operation → `BoardAgent` (legacy)
+
+```
+Incoming message (from Registry callback)
+        │
+        ▼
+BoardAgent._handle
+  └─ _parse_and_validate(request, settings)   ← _request_handler.py
+        │
+        ▼
+  dispatch(client, op)                        ← ops.py
+        │
+        ▼
+  Return result dict (or error) to caller
+```
+
+`BoardAgent` follows the same `_parse_and_validate` → `dispatch` path as
+`BrokeredBoardResponder` but does **not** use `_ThreadedLoopMixin` — it
+wraps `agent_comm.Agent` directly and is fully async. This is the original
+integration and remains available for backward compatibility.
 
 ---
 
