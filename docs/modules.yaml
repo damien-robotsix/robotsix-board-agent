@@ -82,6 +82,7 @@ modules:
     path:
       - src/robotsix_board_agent/manager_cli.py
       - docs/manager_cli/usage.md
+      - tests/manager_cli/
     description: >
       CLI entry point (robotsix-board-manager) for talking to a
       BoardManager over the broker in natural language.  Environment-
