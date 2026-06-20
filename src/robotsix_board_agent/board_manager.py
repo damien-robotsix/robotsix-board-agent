@@ -18,9 +18,8 @@ from pathlib import Path
 from typing import Any
 
 from robotsix_agent_comm.protocol import Error, Message, Request, Response
-from robotsix_agent_comm.sdk import BrokeredAgent
 
-from ._lifecycle import _ThreadedLoopMixin
+from ._lifecycle import _build_brokered_agent, _ThreadedLoopMixin
 from .client import BoardAPIError, BoardClient
 from .config import BoardAgentSettings
 from .constants import BoardErrorCode
@@ -115,7 +114,7 @@ class BoardManager(_ThreadedLoopMixin):
         self._manager_model = manager_model
         self._recall_model = recall_model
         self._memory = BoardManagerMemory(memory_path, max_conversations=max_conversations)
-        self._agent = BrokeredAgent(
+        self._agent = _build_brokered_agent(
             self.agent_id,
             broker_host=broker_host,
             broker_port=broker_port,

@@ -13,6 +13,8 @@ import logging
 import threading
 from typing import Any
 
+from robotsix_agent_comm.sdk import BrokeredAgent
+
 logger = logging.getLogger(__name__)
 
 
@@ -77,3 +79,30 @@ class _ThreadedLoopMixin:
         """Run *coro* to completion on the owned event loop."""
         assert self._loop is not None  # noqa: S101 — set in start()
         return asyncio.run_coroutine_threadsafe(coro, self._loop).result()
+
+
+def _build_brokered_agent(
+    agent_id: str,
+    *,
+    broker_host: str,
+    broker_port: int,
+    broker_scheme: str,
+    broker_token: str,
+    timeout: float,
+    on_request: Any,
+) -> BrokeredAgent:
+    """Construct a :class:`~robotsix_agent_comm.sdk.BrokeredAgent` with the
+    supplied broker connection parameters and request handler.
+
+    Centralises the duplicated construction that every
+    :class:`_ThreadedLoopMixin` subclass previously performed inline.
+    """
+    return BrokeredAgent(
+        agent_id,
+        broker_host=broker_host,
+        broker_port=broker_port,
+        broker_scheme=broker_scheme,
+        broker_token=broker_token,
+        timeout=timeout,
+        on_request=on_request,
+    )

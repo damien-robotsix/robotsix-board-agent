@@ -21,9 +21,8 @@ import logging
 import threading
 
 from robotsix_agent_comm.protocol import Error, Message, Request, Response
-from robotsix_agent_comm.sdk import BrokeredAgent
 
-from ._lifecycle import _ThreadedLoopMixin
+from ._lifecycle import _build_brokered_agent, _ThreadedLoopMixin
 from ._request_handler import _parse_and_validate
 from .client import BoardAPIError, BoardClient
 from .config import BoardAgentSettings
@@ -64,7 +63,7 @@ class BrokeredBoardResponder(_ThreadedLoopMixin):
         self.settings = settings
         self.client = BoardClient(settings)
         self.agent_id = agent_id or f"board-{settings.board_repo_id}"
-        self._agent = BrokeredAgent(
+        self._agent = _build_brokered_agent(
             self.agent_id,
             broker_host=broker_host,
             broker_port=broker_port,
