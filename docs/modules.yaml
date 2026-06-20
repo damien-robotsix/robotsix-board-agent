@@ -9,6 +9,7 @@ modules:
       - src/robotsix_board_agent/_lifecycle.py
       - src/robotsix_board_agent/_request_handler.py
       - src/robotsix_board_agent/constants.py
+      - docs/architecture.md
       - docs/modules.yaml
       - docs/reference.md
     description: >
