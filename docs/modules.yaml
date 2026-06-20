@@ -99,7 +99,10 @@ modules:
       8000-char notes; oldest-first pruning on overflow.
 
   - name: tests
-    path: tests/
+    path:
+      - tests/
+      - tests/test__lifecycle.py
+      - tests/test__request_handler.py
     description: >
       Test suite — conftest.py (shared fixtures, mock transports),
       test_agent.py, test_client.py, config/test_config.py,
