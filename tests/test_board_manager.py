@@ -8,6 +8,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from robotsix_board_agent.board_manager import BoardManager
+from robotsix_board_agent.client import BoardAPIError
 from robotsix_board_agent.config import BoardAgentSettings
 from robotsix_board_agent.constants import BoardErrorCode
 
@@ -458,3 +459,103 @@ class TestLifecycle:
             fut.result(timeout=2.0)
             manager.stop()
             assert manager._loop is None
+
+
+# -- _build_tools ------------------------------------------------------------
+
+
+class TestBuildTools:
+    """Direct unit tests for BoardManager._build_tools()."""
+
+    # -- tool count & names --------------------------------------------------
+
+    def test_returns_exactly_16_callables(self, manager: BoardManager) -> None:
+        tools = manager._build_tools("test-requester")
+        assert len(tools) == 16
+        assert all(callable(t) for t in tools)
+
+    def test_tool_names_match_expected(self, manager: BoardManager) -> None:
+        tools = manager._build_tools("test-requester")
+        expected = [
+            "list_tickets",
+            "get_ticket",
+            "board_cards",
+            "ticket_history",
+            "merge_status",
+            "ticket_description",
+            "create_ticket",
+            "comment",
+            "transition",
+            "approve",
+            "mark_done",
+            "merge_now",
+            "migrate",
+            "resume_blocked",
+            "set_priority",
+            "update_memory",
+        ]
+        assert [t.__name__ for t in tools] == expected
+
+    # -- create_ticket -------------------------------------------------------
+
+    def test_create_ticket_defaults_source_to_requester(self, manager: BoardManager) -> None:
+        manager._run = MagicMock(return_value={"id": "ticket-1"})
+        manager.client.create_ticket = MagicMock(return_value=MagicMock())
+
+        tools = manager._build_tools("test-requester")
+        create_ticket = next(t for t in tools if t.__name__ == "create_ticket")
+
+        create_ticket(title="x", description="y")
+
+        manager.client.create_ticket.assert_called_once_with(
+            title="x",
+            description="y",
+            source="test-requester",
+            repo_id=manager.settings.board_repo_id,
+        )
+
+    def test_create_ticket_respects_explicit_source(self, manager: BoardManager) -> None:
+        manager._run = MagicMock(return_value={"id": "ticket-2"})
+        manager.client.create_ticket = MagicMock(return_value=MagicMock())
+
+        tools = manager._build_tools("test-requester")
+        create_ticket = next(t for t in tools if t.__name__ == "create_ticket")
+
+        create_ticket(title="x", description="y", source="custom-source")
+
+        manager.client.create_ticket.assert_called_once_with(
+            title="x",
+            description="y",
+            source="custom-source",
+            repo_id=manager.settings.board_repo_id,
+        )
+
+    # -- update_memory -------------------------------------------------------
+
+    def test_update_memory_delegates_to_save_notes(self, manager: BoardManager) -> None:
+        manager._memory.save_notes = MagicMock()
+
+        tools = manager._build_tools("test-requester")
+        update_memory = next(t for t in tools if t.__name__ == "update_memory")
+
+        result = update_memory("new notes")
+
+        manager._memory.save_notes.assert_called_once_with("new notes")
+        assert result == "maintained memory updated"
+
+    # -- _safe error wrapping ------------------------------------------------
+
+    def test_safe_propagates_board_api_error_as_string(self, manager: BoardManager) -> None:
+        error = BoardAPIError(422, "validation failed")
+        manager._run = MagicMock(side_effect=error)
+        manager.client.list_tickets = MagicMock(return_value=MagicMock())
+
+        tools = manager._build_tools("test-requester")
+        list_tickets = next(t for t in tools if t.__name__ == "list_tickets")
+
+        result = list_tickets(state="open")
+
+        # _safe must convert BoardAPIError to a string, never let it propagate.
+        assert isinstance(result, str)
+        assert "board API error 422" in result
+        assert "validation failed" in result
