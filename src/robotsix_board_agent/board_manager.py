@@ -161,7 +161,7 @@ class BoardManager(_ThreadedLoopMixin):
 
     # -- the LLM pipeline (level-1 recall -> level-3 act) ------------------
 
-    def _converse(self, question: str, requester: str = "agent") -> str:
+    def _converse(self, question: str, requester: str = DEFAULT_TICKET_SOURCE) -> str:
         from robotsix_llmio.core.factory import get_provider_for_identifier
         from robotsix_llmio.core.run import run_agent
 
@@ -209,7 +209,7 @@ class BoardManager(_ThreadedLoopMixin):
 
     # -- board ops exposed as tools ---------------------------------------
 
-    def _build_tools(self, requester: str = "agent") -> list[Any]:
+    def _build_tools(self, requester: str = DEFAULT_TICKET_SOURCE) -> list[Any]:
         client = self.client
         repo = self.settings.board_repo_id
 
