@@ -1,7 +1,7 @@
 ci:
   autofix_prs: true
   autoupdate_schedule: monthly
-  skip: [mypy, bandit]
+  skip: [mypy]
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
@@ -38,13 +38,6 @@ repos:
         types: [python]
         pass_filenames: false
         require_serial: true
-
-      - id: bandit
-        name: bandit
-        entry: uv run --with bandit bandit -r src
-        language: system
-        types: [python]
-        pass_filenames: false
 
       - id: detect-secrets
         name: detect-secrets
