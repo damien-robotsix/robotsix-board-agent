@@ -31,9 +31,7 @@ logger = logging.getLogger(__name__)
 _RESULT_CAP = 12_000
 
 #: Combined provider-model identifier selecting the Claude-SDK backend.
-#: The factory resolves ``"claudeSDK"`` to :class:`ClaudeSDKProvider`, and the
-#: level-3 manager passes ``builtin_tools=False`` on ``build_agent(...)`` so the
-#: agent receives ONLY the board MCP tools — no Bash/Read/Write/host access.
+#: The factory resolves ``"claudeSDK"`` to :class:`ClaudeSDKProvider`.
 #: The concrete model is chosen per-agent (``build_agent(model=...)``), so the
 #: identifier's model part is a valid placeholder that only selects the backend.
 _PROVIDER_IDENTIFIER = "claudeSDK-opus"
@@ -192,7 +190,6 @@ class BoardManager(_ThreadedLoopMixin):
             tools=self._build_tools(requester),
             output_type=str,
             name="board-manager",
-            builtin_tools=False,
         )
         return str(run_agent(h3, lambda: h3.run_sync(question).output, label="board-manager"))
 
