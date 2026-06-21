@@ -1,5 +1,7 @@
 # robotsix-board-agent
 
+[![pre-commit.ci status](https://results.pre-commit.ci/badge/github/damien-robotsix/robotsix-board-agent/main.svg)](https://results.pre-commit.ci/latest/github/damien-robotsix/robotsix-board-agent/main)
+
 A reusable **agent-comm** agent that exposes the mill board's full ticket
 lifecycle over structured messages — query, file, comment, transition,
 approve, merge, resume, migrate — so other agents can drive a board
