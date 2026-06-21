@@ -64,21 +64,11 @@ class TestHandleRequest:
         assert reply.error is None
         assert reply.result == {"reply": "I did the thing."}
 
-    def test_question_key_also_accepted(self, manager: BoardManager) -> None:
-        from tests.conftest import Request
-
-        with patch.object(manager, "_converse", return_value="answer"):
-            reply = manager._handle_request(Request(body={"question": "what is this?"}))
-        assert reply.error is None
-        assert reply.result == {"reply": "answer"}
-
-    def test_message_preferred_over_question(self, manager: BoardManager) -> None:
+    def test_message_key_accepted(self, manager: BoardManager) -> None:
         from tests.conftest import Request
 
         with patch.object(manager, "_converse", return_value="from message") as mock_conv:
-            reply = manager._handle_request(
-                Request(body={"message": "use this", "question": "not this"})
-            )
+            reply = manager._handle_request(Request(body={"message": "use this"}))
         mock_conv.assert_called_once_with("use this", "agent")
         assert reply.result == {"reply": "from message"}
 
