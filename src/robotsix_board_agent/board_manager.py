@@ -34,6 +34,8 @@ _RESULT_CAP = 12_000
 #: The factory resolves ``"claudeSDK"`` to :class:`ClaudeSDKProvider`.
 #: The concrete model is chosen per-agent (``build_agent(model=...)``), so the
 #: identifier's model part is a valid placeholder that only selects the backend.
+#: The level-3 agent is created with ``builtin_tools=False`` so it only has
+#: access to the injected board tools — no host-level Bash/Read/Write/Edit etc.
 _PROVIDER_IDENTIFIER = "claudeSDK-opus"
 
 #: Default level-3 model.  Matches Claude's ``opus`` tier (strongest reasoning).
@@ -204,6 +206,7 @@ class BoardManager(_ThreadedLoopMixin):
             tools=self._build_tools(requester),
             output_type=str,
             name="board-manager",
+            builtin_tools=False,  # type: ignore[call-arg]  # ClaudeSDKProvider supports it; LLMProvider base doesn't declare it
         )
         return str(run_agent(h3, lambda: h3.run_sync(question).output, label="board-manager"))
 
