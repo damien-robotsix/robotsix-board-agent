@@ -70,7 +70,7 @@ _MANAGER_SYSTEM = (
     "You keep a MAINTAINED MEMORY — a short, curated note of durable board state, "
     "ongoing/standing tasks, and user preferences (NOT a transcript). It is shown "
     "to you below each turn. When something worth remembering changes, call "
-    "update_memory(memory) with the full revised note; keep it concise and "
+    "update_memory with the full revised note; keep it concise and "
     "coherent — rewrite/trim rather than letting it grow."
 )
 
