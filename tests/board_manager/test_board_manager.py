@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
@@ -400,6 +401,73 @@ class TestConverse:
         assert kwargs["api_key"] == "test-openrouter-key"
         assert kwargs["api_key"] == "test-openrouter-key"
 
+    # -- prompt id-handling guidance ---------------------------------------
+
+    def test_system_prompt_includes_id_handling_guidance(
+        self,
+        manager: BoardManager,
+        mock_provider: MagicMock,
+        mock_get_provider: MagicMock,
+        mock_run_agent: MagicMock,
+    ) -> None:
+        """The system prompt contains explicit ticket id handling instructions."""
+        mock_run_agent.return_value = "ok"
+
+        manager._converse("q")
+
+        system = mock_provider.build_agent.call_args.kwargs["system_prompt"]
+        assert "TICKET ID HANDLING" in system
+        assert "opaque strings" in system
+        assert "complete id" in system.lower() or "complete id" in system
+        assert "verbatim" in system
+
+    def test_system_prompt_warns_against_truncating_to_timestamp(
+        self,
+        manager: BoardManager,
+        mock_provider: MagicMock,
+        mock_get_provider: MagicMock,
+        mock_run_agent: MagicMock,
+    ) -> None:
+        """The system prompt warns never to truncate an id to its timestamp."""
+        mock_run_agent.return_value = "ok"
+
+        manager._converse("q")
+
+        system = mock_provider.build_agent.call_args.kwargs["system_prompt"]
+        assert "never truncate" in system.lower()
+
+    def test_system_prompt_includes_anti_duplicate_404_guard(
+        self,
+        manager: BoardManager,
+        mock_provider: MagicMock,
+        mock_get_provider: MagicMock,
+        mock_run_agent: MagicMock,
+    ) -> None:
+        """The system prompt includes the 404 anti-duplicate guard."""
+        mock_run_agent.return_value = "ok"
+
+        manager._converse("q")
+
+        system = mock_provider.build_agent.call_args.kwargs["system_prompt"]
+        assert "ANTI-DUPLICATE GUARD" in system
+        assert "do NOT re-create" in system
+        assert "404" in system
+
+    def test_system_prompt_example_id_is_not_truncated(
+        self,
+        manager: BoardManager,
+        mock_provider: MagicMock,
+        mock_get_provider: MagicMock,
+        mock_run_agent: MagicMock,
+    ) -> None:
+        """The example id in the prompt is a full timestamp-slug-suffix string."""
+        mock_run_agent.return_value = "ok"
+
+        manager._converse("q")
+
+        system = mock_provider.build_agent.call_args.kwargs["system_prompt"]
+        assert "20260621T182023Z-add-automatic-conversation-restart-after-4cb7" in system
+
 
 # -- start / stop lifecycle --------------------------------------------------
 
@@ -549,3 +617,112 @@ class TestBuildTools:
         assert isinstance(result, str)
         assert "board API error 422" in result
         assert "validation failed" in result
+
+    # -- _safe truncation id-safety ----------------------------------------
+
+    def test_safe_truncation_drops_trailing_list_elements(self, manager: BoardManager) -> None:
+        """When a list result exceeds _RESULT_CAP, whole trailing elements
+        are dropped and an omission marker is appended, never mangling ids."""
+        from robotsix_board_agent.board_manager import _RESULT_CAP
+
+        # Build a list large enough that its JSON exceeds _RESULT_CAP.
+        # Each dict ~150 chars → ~80 items needed.
+        items: list[dict[str, object]] = [
+            {
+                "id": f"ticket-{i:04d}-a-long-suffix-to-fill-json-payload-space",
+                "title": f"issue number {i}",
+                "data": "x" * 80,
+            }
+            for i in range(200)
+        ]
+        assert len(json.dumps(items)) > _RESULT_CAP
+
+        manager._run = MagicMock(return_value=items.copy())
+        manager.client.list_tickets = MagicMock(return_value=MagicMock())
+
+        tools = manager._build_tools("test-requester")
+        list_tickets_fn = next(t for t in tools if t.__name__ == "list_tickets")
+
+        result = list_tickets_fn()
+
+        # Must be valid JSON.
+        parsed = json.loads(result)
+        assert isinstance(parsed, list)
+        # Fewer items returned than originally.
+        assert len(parsed) < len(items)
+        # Every ticket id in the result is a full, unmangled id from the input.
+        input_ids = {item["id"] for item in items}
+        for entry in parsed:
+            if "_truncated" in entry:
+                continue
+            assert entry["id"] in input_ids, f"id {entry['id']!r} not in input ids"
+        # An omission marker is present.
+        markers = [e for e in parsed if "_truncated" in e]
+        assert len(markers) == 1
+        assert "omitted" in markers[0]["_truncated"]
+
+    def test_safe_truncation_marker_is_last_element(self, manager: BoardManager) -> None:
+        """The _truncated marker is the last element of the list."""
+        from robotsix_board_agent.board_manager import _RESULT_CAP
+
+        items = [
+            {
+                "id": f"ticket-{i:04d}-padding-padding-padding-padding-padding",
+                "x": "y" * 100,
+            }
+            for i in range(200)
+        ]
+        assert len(json.dumps(items)) > _RESULT_CAP
+
+        manager._run = MagicMock(return_value=items.copy())
+        manager.client.list_tickets = MagicMock(return_value=MagicMock())
+
+        tools = manager._build_tools("test-requester")
+        list_tickets_fn = next(t for t in tools if t.__name__ == "list_tickets")
+
+        result = list_tickets_fn()
+        parsed = json.loads(result)
+        assert "_truncated" in parsed[-1]
+
+    def test_safe_does_not_truncate_single_dict(self, manager: BoardManager) -> None:
+        """A single dict result (e.g. get_ticket) is returned whole — never
+        sliced mid-field even if it exceeds _RESULT_CAP (though single tickets
+        are far under 12 KB in practice)."""
+        ticket = {
+            "id": "20260621T182023Z-my-ticket-a1b2",
+            "title": "test",
+            "description": "x" * 15000,  # push past _RESULT_CAP
+        }
+
+        manager._run = MagicMock(return_value=ticket)
+        manager.client.get_ticket = MagicMock(return_value=MagicMock())
+
+        tools = manager._build_tools("test-requester")
+        get_ticket_fn = next(t for t in tools if t.__name__ == "get_ticket")
+
+        result = get_ticket_fn(ticket_id=ticket["id"])
+
+        parsed = json.loads(result)
+        # The full id is present and unmangled.
+        assert parsed["id"] == ticket["id"]
+        # The description is complete (no slicing).
+        assert parsed["description"] == ticket["description"]
+
+    def test_safe_small_list_not_truncated(self, manager: BoardManager) -> None:
+        """A small list under _RESULT_CAP is returned as-is with no marker."""
+        items = [
+            {"id": "ticket-0001-short", "title": "small"},
+            {"id": "ticket-0002-short", "title": "list"},
+        ]
+        assert len(json.dumps(items)) < 12_000  # well under _RESULT_CAP
+
+        manager._run = MagicMock(return_value=items.copy())
+        manager.client.list_tickets = MagicMock(return_value=MagicMock())
+
+        tools = manager._build_tools("test-requester")
+        list_tickets_fn = next(t for t in tools if t.__name__ == "list_tickets")
+
+        result = list_tickets_fn()
+        parsed = json.loads(result)
+        assert parsed == items
+        assert not any("_truncated" in e for e in parsed)

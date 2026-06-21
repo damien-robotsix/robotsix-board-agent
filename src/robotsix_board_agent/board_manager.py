@@ -65,6 +65,20 @@ _MANAGER_SYSTEM = (
     "same issue. If a near-duplicate exists, do NOT create another — add a comment "
     "to (or update) the existing ticket instead, and tell the user which one. Only "
     "create a new ticket when none matches.\n\n"
+    "TICKET ID HANDLING: Ticket ids are opaque strings of the form "
+    "<timestamp>-<slug>-<suffix> (e.g. "
+    "'20260621T182023Z-add-automatic-conversation-restart-after-4cb7'). ALWAYS "
+    "use the complete id string exactly as it appeared in a tool result — never "
+    "truncate an id to its leading timestamp, never reconstruct or derive an id "
+    "from a timestamp, and never shorten it. When acting on a ticket from "
+    "board_cards or list_tickets, copy its 'id' field verbatim. After "
+    "create_ticket, use the 'id' field from the returned record verbatim for any "
+    "follow-up operation.\n\n"
+    "ANTI-DUPLICATE GUARD: if a single-ticket operation (get_ticket, transition, "
+    "migrate, comment, mark_done) returns a 404 ('board API error 404') right "
+    "after you created a ticket, do NOT re-create the ticket — a 404 there "
+    "means an id was passed incorrectly, not that the ticket is missing. Re-read "
+    "the create response or board_cards and retry with the full id.\n\n"
     "Keep your final reply concise and tell the user exactly what you did "
     "(ids + outcomes) or answer their question.\n\n"
     "You keep a MAINTAINED MEMORY — a short, curated note of durable board state, "
@@ -203,7 +217,26 @@ class BoardManager(_ThreadedLoopMixin):
 
         def _safe(coro: Any) -> str:
             try:
-                return json.dumps(self._run(coro))[:_RESULT_CAP]
+                result = self._run(coro)
+                serialised = json.dumps(result)
+                if len(serialised) > _RESULT_CAP and isinstance(result, list):
+                    original_len = len(result)
+                    # Drop trailing elements until the serialised payload fits.
+                    while len(json.dumps(result)) > _RESULT_CAP and result:
+                        result.pop()
+                    omitted = original_len - len(result)
+                    if omitted > 0:
+                        # Make room for the omission marker.
+                        marker: dict[str, str] = {
+                            "_truncated": f"{omitted} item(s) omitted (result cap)"
+                        }
+                        if len(json.dumps([*result, marker])) > _RESULT_CAP and result:
+                            result.pop()
+                            omitted = original_len - len(result)
+                            marker["_truncated"] = f"{omitted} item(s) omitted (result cap)"
+                        result.append(marker)
+                    return json.dumps(result)
+                return serialised
             except BoardAPIError as exc:
                 return f"board API error {exc.status_code}: {exc.detail}"
 
