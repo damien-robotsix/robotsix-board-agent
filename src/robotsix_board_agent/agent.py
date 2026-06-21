@@ -42,6 +42,16 @@ except ImportError:
         format="%(levelname)s:%(name)s:%(message)s",
     )
 
+# ---------------------------------------------------------------------------
+# Setup Langfuse tracing (idempotent; reads LANGFUSE_* env vars).
+# ---------------------------------------------------------------------------
+try:
+    from robotsix_llmio.core import setup_langfuse_tracing as _llmio_setup_langfuse_tracing
+
+    _llmio_setup_langfuse_tracing()
+except ImportError:
+    pass
+
 
 class BoardAgent:
     """An agent-comm Agent that wraps the board REST API.
