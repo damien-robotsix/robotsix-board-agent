@@ -7,9 +7,12 @@ other agents can drive a board programmatically.
 from __future__ import annotations
 
 import logging
-import sys
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
+if TYPE_CHECKING:
+    from robotsix_agent_comm import Registry, Request, Response
+
+from ._imports import _resolve_agent_comm
 from ._request_handler import _parse_and_validate
 from .client import BoardAPIError, BoardClient
 from .config import BoardAgentSettings
@@ -22,25 +25,7 @@ logger = logging.getLogger(__name__)
 # Import robotsix-agent-comm, with a fallback for sandbox environments where
 # pip cannot resolve the uv-specific git source.
 # ---------------------------------------------------------------------------
-_agent_comm_available = True
-try:
-    from robotsix_agent_comm import Agent, Error, Registry, Request, Response
-except ImportError:
-    _agent_comm_available = False
-    # Try the bundled checkout fallback.
-    from pathlib import Path as _Path
-
-    _REF = _Path(__file__).resolve().parent.parent.parent / "_agent_comm_ref" / "src"
-    if _REF.is_dir() and str(_REF) not in sys.path:
-        sys.path.insert(0, str(_REF))
-    try:
-        from robotsix_agent_comm import Agent, Error, Registry, Request, Response
-    except ImportError:
-        Agent = None
-        Error = None
-        Registry = None
-        Request = None
-        Response = None
+_agent_comm_available, _Agent, _Error, _Registry, _Request, _Response = _resolve_agent_comm()
 
 # ---------------------------------------------------------------------------
 # Setup structured logging via robotsix-llmio's shared helper (idempotent).
@@ -88,7 +73,7 @@ class BoardAgent:
 
         self._agent: Any = None
         if _agent_comm_available:
-            self._agent = Agent(
+            self._agent = _Agent(
                 agent_id=self.agent_id,
                 registry=registry,
                 on_request=self._handle_request,
@@ -116,13 +101,13 @@ class BoardAgent:
                 exc.status_code,
                 exc.detail,
             )
-            return Error.to(
+            return _Error.to(
                 request,
                 code=BoardErrorCode.BOARD_API_ERROR.value,
                 message=f"Board API error {exc.status_code}: {exc.detail}",
             )
         logger.info("Response sent: op=%s", op.op)
-        return Response(result=result)
+        return _Response(result=result)
 
     # -- lifecycle ---------------------------------------------------------
 
