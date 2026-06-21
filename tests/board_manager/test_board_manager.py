@@ -102,9 +102,8 @@ class TestConverse:
     def mock_get_provider(self, mock_provider: MagicMock) -> MagicMock:
         """Patch get_provider_for_identifier to return *mock_provider*.
 
-        Patched in ``core.factory`` (importable without the openrouter extra,
-        which board-agent does not install) so the test stays hermetic — the
-        concrete provider is never imported."""
+        Patched in ``core.factory`` so the test stays hermetic — the concrete
+        provider is never imported."""
         with patch(
             "robotsix_llmio.core.factory.get_provider_for_identifier",
             return_value=mock_provider,
@@ -385,21 +384,20 @@ class TestConverse:
         assert "tools" in mgr_kwargs
         assert mgr_kwargs["tools"] is not None
 
-    def test_provider_uses_openrouter_key(
+    def test_provider_constructed_without_api_key(
         self,
         manager: BoardManager,
         mock_get_provider: MagicMock,
         mock_run_agent: MagicMock,
     ) -> None:
-        """The OpenRouterDeepseek provider is constructed with the api_key."""
+        """The ClaudeSDK provider is constructed without an api_key (uses claude login)."""
         mock_run_agent.return_value = "ok"
 
         manager._converse("q")
 
         mock_get_provider.assert_called_once()
         _, kwargs = mock_get_provider.call_args
-        assert kwargs["api_key"] == "test-openrouter-key"
-        assert kwargs["api_key"] == "test-openrouter-key"
+        assert "api_key" not in kwargs
 
     # -- prompt id-handling guidance ---------------------------------------
 

@@ -30,18 +30,15 @@ logger = logging.getLogger(__name__)
 #: Cap a tool result handed back to the LLM (tickets lists can be large).
 _RESULT_CAP = 12_000
 
-#: Combined provider-model identifier selecting the OpenRouter (DeepSeek)
-#: backend. The Claude-SDK provider also works but its agents get host
-#: file/bash tools (unsafe for a board manager), so we resolve the pydantic-ai
-#: OpenRouter provider via llmio's factory — only our board tools. The concrete
-#: model is chosen per-agent (``build_agent(model=...)``), so the identifier's
-#: model part is a valid placeholder that only selects the backend.
-_PROVIDER_IDENTIFIER = "openrouter[deepseek]-deepseek/deepseek-v4-pro"
+#: Combined provider-model identifier selecting the Claude-SDK backend.
+#: The factory resolves ``"claudeSDK"`` to :class:`ClaudeSDKProvider`.
+#: The concrete model is chosen per-agent (``build_agent(model=...)``), so the
+#: identifier's model part is a valid placeholder that only selects the backend.
+_PROVIDER_IDENTIFIER = "claudeSDK-opus"
 
-#: Default level-3 model. The tier-3 default routes to the Claude SDK (``opus``),
-#: which the OpenRouter provider can't serve, so the manager uses the strongest
-#: llmio-known OpenRouter model by default (override via board_manager.model).
-_DEFAULT_MANAGER_MODEL = "deepseek/deepseek-v4-pro"
+#: Default level-3 model.  Matches Claude's ``opus`` tier (strongest reasoning).
+#: Override via ``board_manager.model``.
+_DEFAULT_MANAGER_MODEL = "opus"
 
 _RECALL_SYSTEM = (
     "You retrieve relevant context for a board-management assistant. Given a NEW "
@@ -112,8 +109,9 @@ class BoardManager(_ThreadedLoopMixin):
 
         *settings* — the board configuration (repo id, board URL, auth token).
         *broker_host*/*broker_port*/*broker_scheme*/*broker_token* — broker
-        connection details for the agent-comm layer.  *openrouter_key* — API key
-        for the LLM provider.  *memory_path* — filesystem path for persisting
+        connection details for the agent-comm layer.  *openrouter_key* — unused
+        with the current Claude-SDK backend (auth is via ``claude login``);
+        retained for API compatibility.  *memory_path* — filesystem path for persisting
         conversation traces and the maintained memory note.  *agent_id* — custom
         broker agent id (defaults to ``board-manager-{repo_id}``).
         *manager_model*/*recall_model* — optional model overrides for the primary
@@ -167,7 +165,7 @@ class BoardManager(_ThreadedLoopMixin):
         from robotsix_llmio.core.factory import get_provider_for_identifier
         from robotsix_llmio.core.run import run_agent
 
-        provider = get_provider_for_identifier(_PROVIDER_IDENTIFIER, api_key=self._openrouter_key)
+        provider = get_provider_for_identifier(_PROVIDER_IDENTIFIER)
 
         # 1) Level-1 recall: scan prior Q→A for anything relevant.
         relevant = ""
