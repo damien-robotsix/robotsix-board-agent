@@ -128,7 +128,7 @@ class BoardManager(_ThreadedLoopMixin):
 
     def _handle_request(self, request: Request) -> Message:
         body = request.body if isinstance(request.body, dict) else {}
-        question = body.get("message") or body.get("question")
+        question = body.get("message")
         if not isinstance(question, str) or not question.strip():
             return Error.to(
                 request,

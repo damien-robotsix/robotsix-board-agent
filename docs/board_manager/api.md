@@ -54,8 +54,8 @@ manager = BoardManager(
 
 ## Natural-language interface
 
-Incoming requests must include a JSON body with a `"message"` (or `"question"`)
-field containing the user's natural-language instruction. Missing or blank
+Incoming requests must include a JSON body with a `"message"` field containing
+the user's natural-language instruction. Missing or blank
 messages return a `BAD_REQUEST` error.
 
 ```python
