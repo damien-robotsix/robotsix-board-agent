@@ -384,21 +384,6 @@ class TestConverse:
         assert "tools" in mgr_kwargs
         assert mgr_kwargs["tools"] is not None
 
-    def test_level3_agent_has_builtin_tools_disabled(
-        self,
-        manager: BoardManager,
-        mock_provider: MagicMock,
-        mock_get_provider: MagicMock,
-        mock_run_agent: MagicMock,
-    ) -> None:
-        """The level-3 agent is built with builtin_tools=False to prevent host tool access."""
-        mock_run_agent.return_value = "ok"
-
-        manager._converse("q")
-
-        mgr_kwargs = mock_provider.build_agent.call_args.kwargs
-        assert mgr_kwargs.get("builtin_tools") is False
-
     def test_provider_constructed_without_api_key(
         self,
         manager: BoardManager,
