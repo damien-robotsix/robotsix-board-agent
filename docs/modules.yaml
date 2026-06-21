@@ -93,6 +93,7 @@ modules:
     path:
       - src/robotsix_board_agent/memory.py
       - docs/memory/reference.md
+      - tests/memory/
     description: >
       BoardManagerMemory — two-track persistence (conversation trace
       JSON + maintained memory Markdown).  Capped at 200 Q→A pairs and
@@ -107,4 +108,4 @@ modules:
       Test suite — conftest.py (shared fixtures, mock transports),
       test_agent.py, test_client.py, config/test_config.py,
       ops/test_ops.py, test_brokered.py, test_board_manager.py,
-      test_manager_cli.py, test_memory.py.
+      test_manager_cli.py.
