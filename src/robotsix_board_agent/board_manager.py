@@ -59,9 +59,7 @@ def _truncate_result(result: Any) -> str:
         omitted = original_len - len(result)
         if omitted > 0:
             # Make room for the omission marker.
-            marker: dict[str, str] = {
-                "_truncated": f"{omitted} item(s) omitted (result cap)"
-            }
+            marker: dict[str, str] = {"_truncated": f"{omitted} item(s) omitted (result cap)"}
             if len(json.dumps([*result, marker])) > _RESULT_CAP and result:
                 result.pop()
                 omitted = original_len - len(result)
