@@ -27,6 +27,7 @@ class UnknownOpError(Exception):
     """Raised when the requested operation name is not in the op table."""
 
     def __init__(self, op: str) -> None:
+        """Initialise with the unknown operation name."""
         self.op = op
         super().__init__(f"Unknown operation: {op}")
 
