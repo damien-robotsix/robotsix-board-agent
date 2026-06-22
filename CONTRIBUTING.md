@@ -74,9 +74,14 @@ uv run pre-commit run --all-files
    ```bash
    uv run ruff check . && uv run ruff format . --check && uv run mypy && uv run pytest
    ```
-4. Open a pull request.  CI will run the same checks automatically.
-5. Wait for review; address feedback if requested.
-6. Once approved and CI passes, your PR will be merged.
+4. **Update the changelog.**  Add an entry under `## [Unreleased]` in
+   `CHANGELOG.md` describing your change.  Use the appropriate subheading:
+   `### Added`, `### Fixed`, `### Changed`, `### Deprecated`, `### Removed`,
+   or `### Security`.  If your PR does not need a changelog entry (e.g.
+   docs-only, refactoring, dependency bump), add the `skip-changelog` label.
+5. Open a pull request.  CI will run the same checks automatically.
+6. Wait for review; address feedback if requested.
+7. Once approved and CI passes, your PR will be merged.
 
 ## Style conventions
 
