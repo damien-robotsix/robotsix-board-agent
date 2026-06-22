@@ -22,7 +22,7 @@ jobs:
       python-version: "3.14"
       cov-package: "robotsix_board_agent"
       install-extras: ""
-      coverage-threshold: "60"
+      coverage-threshold: "85"
 
   codeql:
     permissions:
