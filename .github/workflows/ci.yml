@@ -61,6 +61,23 @@ jobs:
       - run: uv sync --frozen --extra prod
       - run: uv run python scripts/completeness_check.py
 
+  changelog-enforce:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: dangoslen/changelog-enforcer@7ed65a335f79f76aad31a84c3057782f0df176bf # v3.7.0
+        with:
+          expectedLatestVersion: unreleased
+          missingUpdateErrorMessage: >
+            Please add a changelog entry under the '## [Unreleased]' heading in
+            CHANGELOG.md describing your change. If this PR does not need a
+            changelog entry, add the 'skip-changelog' label.
+          skipLabels: "documentation, refactor, dependencies, skip-changelog"
+
   security:
     uses: damien-robotsix/robotsix-mill/.github/workflows/python-security.yml@c3a9aa5d58116b96e5a0c36991b0b202986130f9 # main
     with:
