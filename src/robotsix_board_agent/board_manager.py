@@ -93,7 +93,7 @@ class BoardManager(_ThreadedLoopMixin):
         *,
         broker_host: str,
         broker_token: str,
-        openrouter_key: str,
+        openrouter_key: str | None = None,
         memory_path: Path,
         broker_port: int = 443,
         broker_scheme: str = "https",
