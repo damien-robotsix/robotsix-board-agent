@@ -67,7 +67,7 @@ class MergeStatusArgs(BaseModel):
 
 
 class DescriptionArgs(BaseModel):
-    """Arguments for the ``get_description`` operation — identifies a ticket by id."""
+    """Arguments for the ``description`` operation — identifies a ticket by id."""
 
     ticket_id: str
 
@@ -83,7 +83,7 @@ class CreateTicketArgs(BaseModel):
 
 
 class AddCommentArgs(BaseModel):
-    """Arguments for the ``add_comment`` operation — ticket id, body, and optional author."""
+    """Arguments for the ``comment`` operation — ticket id, body, and optional author."""
 
     ticket_id: str
     body: str
