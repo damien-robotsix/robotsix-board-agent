@@ -134,4 +134,4 @@ manager.stop()
 
 | Condition          | Error code     | Meaning                                   |
 |--------------------|----------------|-------------------------------------------|
-| Missing/blank body | `BAD_REQUEST`  | No `message` or `question` field provided |
+| Missing/blank body | `BAD_REQUEST`  | No `message` field provided |
