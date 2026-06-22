@@ -32,6 +32,7 @@ from .client import BoardAPIError, BoardClient
 from .config import BoardAgentSettings
 from .constants import DEFAULT_TICKET_SOURCE, BoardErrorCode
 from .memory import MAX_CONVERSATIONS, BoardManagerMemory
+from .ops import WRITE_OPS
 
 logger = logging.getLogger(__name__)
 
@@ -105,7 +106,9 @@ class BoardManager(_ThreadedLoopMixin):
     ) -> None:
         """Initialise the board manager.
 
-        *settings* — the board configuration (repo id, board URL, auth token).
+        *settings* — the board configuration (repo id, board URL, auth token,
+        and ``enable_write_ops`` which gates whether board-mutating tools are
+        exposed).
         *broker_host*/*broker_port*/*broker_scheme*/*broker_token* — broker
         connection details for the agent-comm layer.  *openrouter_key* — unused
         with the current Claude-SDK backend (auth is via ``claude login``);
@@ -208,6 +211,12 @@ class BoardManager(_ThreadedLoopMixin):
             f"\n\nThis turn's requester is '{requester}'. Any ticket you create is "
             f"sourced to it automatically, but you may pass an explicit source."
         )
+        if not self.settings.enable_write_ops:
+            system += (
+                "\n\nWrite operations are disabled — you may only read the board and "
+                "answer questions. Explain this to the user rather than attempting "
+                "any board mutations."
+            )
         # Level-3's own default provider/model (Claude opus over the Claude-SDK)
         # is used; a model override changes only the bare model name.
         h3 = build_agent_for_level(
@@ -326,7 +335,7 @@ class BoardManager(_ThreadedLoopMixin):
             self._memory.save_notes(memory)
             return "maintained memory updated"
 
-        return [
+        tools = [
             list_tickets,
             get_ticket,
             board_cards,
@@ -344,3 +353,6 @@ class BoardManager(_ThreadedLoopMixin):
             set_priority,
             update_memory,
         ]
+        if not self.settings.enable_write_ops:
+            tools = [t for t in tools if t.__name__ not in WRITE_OPS]
+        return tools
