@@ -25,6 +25,7 @@ class BoardAPIError(Exception):
     """Raised when the board API returns a non-2xx status code."""
 
     def __init__(self, status_code: int, detail: str) -> None:
+        """Initialise the exception with HTTP status and detail message."""
         self.status_code = status_code
         self.detail = detail
         super().__init__(f"Board API error {status_code}: {detail}")
@@ -42,6 +43,11 @@ class BoardClient:
         *,
         transport: httpx.AsyncBaseTransport | None = None,
     ) -> None:
+        """Initialise the board client.
+
+        *settings* — board configuration (URL, token, repo).
+        *transport* — optional ``httpx.AsyncBaseTransport`` for network-free testing.
+        """
         self._base_url: str = settings.board_api_url.rstrip("/")
         self._token: str = settings.board_api_token
         self._repo_id: str = settings.board_repo_id

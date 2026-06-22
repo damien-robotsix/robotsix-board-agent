@@ -77,6 +77,12 @@ class BoardAgent:
         registry: Registry,
         agent_id: str | None = None,
     ) -> None:
+        """Initialise the board agent.
+
+        *settings* — board configuration (URL, token, repo).
+        *registry* — the agent-comm Registry for registration.
+        *agent_id* — optional custom agent id (defaults to ``board-{repo_id}``).
+        """
         self.settings: BoardAgentSettings = settings
         self.client: BoardClient = BoardClient(settings)
         self.agent_id: str = agent_id or f"board-{settings.board_repo_id}"

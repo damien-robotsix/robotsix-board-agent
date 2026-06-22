@@ -42,7 +42,7 @@ class _ThreadedLoopMixin:
     agent_id: str
 
     def start(self) -> None:
-        """Start the async runtime, then register and listen."""
+        """Register with the broker and begin listening for operations."""
         if self._loop is not None:
             return
         loop = asyncio.new_event_loop()
@@ -58,7 +58,7 @@ class _ThreadedLoopMixin:
         logger.info("%s %r listening via broker", type(self).__name__, self.agent_id)
 
     def stop(self) -> None:
-        """Stop listening, close the board client, and stop the runtime."""
+        """Deregister from the broker and tear down the event loop."""
         self._agent.stop()
         loop = self._loop
         thread = self._loop_thread
