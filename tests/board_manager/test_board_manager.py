@@ -480,6 +480,53 @@ class TestConverse:
         system = mock_build_agent.call_args.kwargs["system_prompt"]
         assert "20260621T182023Z-add-automatic-conversation-restart-after-4cb7" in system
 
+    # -- enable_write_ops system prompt notice ---------------------------
+
+    @pytest.fixture
+    def read_only_manager(self, tmp_path: Path) -> BoardManager:
+        """Return a BoardManager with enable_write_ops=False."""
+        settings = BoardAgentSettings(
+            board_api_url="http://mock-board.test",
+            board_api_token="test-token",
+            board_repo_id="test-repo",
+            enable_write_ops=False,
+        )
+        return BoardManager(
+            settings,
+            broker_host="test-broker.robotsix.net",
+            broker_token="test-broker-token",
+            openrouter_key="test-openrouter-key",
+            memory_path=tmp_path / "memory",
+        )
+
+    def test_read_only_notice_in_system_prompt(
+        self,
+        read_only_manager: BoardManager,
+        mock_build_agent: MagicMock,
+        mock_run_agent: MagicMock,
+    ) -> None:
+        """When enable_write_ops=False, system prompt contains read-only notice."""
+        mock_run_agent.return_value = "ok"
+
+        read_only_manager._converse("q")
+
+        system = mock_build_agent.call_args.kwargs["system_prompt"]
+        assert "Write operations are disabled" in system
+
+    def test_read_write_no_notice_in_system_prompt(
+        self,
+        manager: BoardManager,
+        mock_build_agent: MagicMock,
+        mock_run_agent: MagicMock,
+    ) -> None:
+        """When enable_write_ops=True (default), no read-only notice."""
+        mock_run_agent.return_value = "ok"
+
+        manager._converse("q")
+
+        system = mock_build_agent.call_args.kwargs["system_prompt"]
+        assert "Write operations are disabled" not in system
+
 
 # -- start / stop lifecycle --------------------------------------------------
 
@@ -738,3 +785,53 @@ class TestBuildTools:
         parsed = json.loads(result)
         assert parsed == items
         assert not any("_truncated" in e for e in parsed)
+
+    # -- enable_write_ops gating ------------------------------------------
+
+    @pytest.fixture
+    def read_only_manager(self, tmp_path: Path) -> BoardManager:
+        """Return a BoardManager with enable_write_ops=False."""
+        settings = BoardAgentSettings(
+            board_api_url="http://mock-board.test",
+            board_api_token="test-token",
+            board_repo_id="test-repo",
+            enable_write_ops=False,
+        )
+        return BoardManager(
+            settings,
+            broker_host="test-broker.robotsix.net",
+            broker_token="test-broker-token",
+            openrouter_key="test-openrouter-key",
+            memory_path=tmp_path / "memory",
+        )
+
+    def test_read_only_returns_7_tools(self, read_only_manager: BoardManager) -> None:
+        tools = read_only_manager._build_tools("test-requester")
+        assert len(tools) == 7
+        assert all(callable(t) for t in tools)
+
+    def test_read_only_tool_names_are_read_only(self, read_only_manager: BoardManager) -> None:
+        tools = read_only_manager._build_tools("test-requester")
+        names = {t.__name__ for t in tools}
+        expected = {
+            "list_tickets",
+            "get_ticket",
+            "board_cards",
+            "ticket_history",
+            "merge_status",
+            "ticket_description",
+            "update_memory",
+        }
+        assert names == expected
+
+    def test_read_only_excludes_all_write_ops(self, read_only_manager: BoardManager) -> None:
+        from robotsix_board_agent.ops import WRITE_OPS
+
+        tools = read_only_manager._build_tools("test-requester")
+        names = {t.__name__ for t in tools}
+        assert names.isdisjoint(WRITE_OPS)
+
+    def test_read_write_returns_full_16(self, manager: BoardManager) -> None:
+        """When enable_write_ops=True (default fixture), still 16 tools."""
+        tools = manager._build_tools("test-requester")
+        assert len(tools) == 16
