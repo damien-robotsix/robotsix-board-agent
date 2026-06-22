@@ -84,31 +84,63 @@ class TestHandleRequest:
         assert entries[0]["question"] == "the question"
         assert entries[0]["answer"] == "the answer"
 
+    def test_converse_failure_returns_error_reply(self, manager: BoardManager) -> None:
+        """When _converse raises, _handle_request returns a clear error reply
+        (with error=True) instead of letting the broker emit an opaque
+        'internal handler error'."""
+        from tests.conftest import Request
+
+        with patch.object(
+            manager,
+            "_converse",
+            side_effect=RuntimeError("model may not exist"),
+        ):
+            reply = manager._handle_request(Request(body={"message": "do the thing"}))
+
+        # conftest's Response.to maps body=... into result.
+        assert reply.error is None
+        assert reply.result is not None
+        assert reply.result["error"] is True
+        assert "could not complete your request" in reply.result["reply"]
+        # The error class + message are surfaced for diagnosis.
+        assert "RuntimeError" in reply.result["reply"]
+        assert "model may not exist" in reply.result["reply"]
+
+    def test_converse_failure_not_appended_to_memory(self, manager: BoardManager) -> None:
+        """A failed turn is not written to conversation memory."""
+        from tests.conftest import Request
+
+        with patch.object(manager, "_converse", side_effect=RuntimeError("boom")):
+            manager._handle_request(Request(body={"message": "the question"}))
+
+        assert manager._memory.load() == []
+
 
 # -- _converse (LLM pipeline) ------------------------------------------------
 
 
 class TestConverse:
-    """Test BoardManager._converse — mock the provider to isolate."""
+    """Test BoardManager._converse — mock build_agent_for_level to isolate.
+
+    The recall pass and the manager pass each resolve their OWN provider via
+    llmio's per-level defaults (``build_agent_for_level``): recall is level-1
+    (DeepSeek), manager is level-3 (Claude).  Patching the single entry point
+    keeps the test hermetic — no concrete provider/transport is constructed.
+    """
 
     @pytest.fixture
-    def mock_provider(self) -> MagicMock:
-        """Return a mock provider with build_agent returning fresh mocks."""
-        provider = MagicMock()
-        provider.build_agent.return_value = MagicMock()
-        return provider
+    def mock_build_agent(self) -> MagicMock:
+        """Patch build_agent_for_level to return fresh agent mocks per call.
 
-    @pytest.fixture
-    def mock_get_provider(self, mock_provider: MagicMock) -> MagicMock:
-        """Patch get_provider_for_identifier to return *mock_provider*.
-
-        Patched in ``core.factory`` so the test stays hermetic — the concrete
-        provider is never imported."""
+        Patched at the source (``robotsix_llmio``) since ``_converse`` does a
+        ``from robotsix_llmio import build_agent_for_level`` *inside* the function
+        (so there is no module-level name to patch on ``board_manager``).
+        """
         with patch(
-            "robotsix_llmio.core.factory.get_provider_for_identifier",
-            return_value=mock_provider,
-        ) as gp:
-            yield gp
+            "robotsix_llmio.build_agent_for_level",
+            side_effect=lambda *a, **k: MagicMock(),
+        ) as ba:
+            yield ba
 
     @pytest.fixture
     def mock_run_agent(self) -> MagicMock:
@@ -121,8 +153,7 @@ class TestConverse:
     def test_no_history_skips_recall(
         self,
         manager: BoardManager,
-        mock_provider: MagicMock,
-        mock_get_provider: MagicMock,
+        mock_build_agent: MagicMock,
         mock_run_agent: MagicMock,
     ) -> None:
         """When memory is empty, no recall agent is built or run."""
@@ -131,17 +162,16 @@ class TestConverse:
         result = manager._converse("some question")
 
         assert result == "final answer"
-        # Only one build_agent call (the level-3 manager), not two.
-        assert mock_provider.build_agent.call_count == 1
-        call_kwargs = mock_provider.build_agent.call_args.kwargs
-        assert call_kwargs["level"] == 3
-        assert call_kwargs["name"] == "board-manager"
+        # Only one build_agent_for_level call (the level-3 manager), not two.
+        assert mock_build_agent.call_count == 1
+        call = mock_build_agent.call_args
+        assert call.args[0] == 3  # manager is level-3
+        assert call.kwargs["name"] == "board-manager"
 
     def test_no_history_omits_relevant_from_system(
         self,
         manager: BoardManager,
-        mock_provider: MagicMock,
-        mock_get_provider: MagicMock,
+        mock_build_agent: MagicMock,
         mock_run_agent: MagicMock,
     ) -> None:
         """When memory is empty, the system prompt has no 'Relevant prior'."""
@@ -149,7 +179,7 @@ class TestConverse:
 
         manager._converse("q")
 
-        system = mock_provider.build_agent.call_args.kwargs["system_prompt"]
+        system = mock_build_agent.call_args.kwargs["system_prompt"]
         assert "Relevant prior exchanges" not in system
 
     # -- history present -------------------------------------------------
@@ -157,11 +187,14 @@ class TestConverse:
     def test_history_present_builds_and_runs_recall(
         self,
         manager: BoardManager,
-        mock_provider: MagicMock,
-        mock_get_provider: MagicMock,
+        mock_build_agent: MagicMock,
         mock_run_agent: MagicMock,
     ) -> None:
-        """When memory has entries, a level-1 recall agent is built and run."""
+        """When memory has entries, a level-1 recall agent is built and run.
+
+        Recall and manager are built on DISTINCT levels (1 vs 3) — each carries
+        its own provider via llmio's per-level defaults.
+        """
         manager._memory.append("prior Q", "prior A")
         # Return distinct values for recall and manager runs.
         mock_run_agent.side_effect = ["relevant context", "manager answer"]
@@ -169,22 +202,24 @@ class TestConverse:
         result = manager._converse("new question")
 
         assert result == "manager answer"
-        assert mock_provider.build_agent.call_count == 2
-        # First call: recall agent.
-        recall_kwargs = mock_provider.build_agent.call_args_list[0].kwargs
-        assert recall_kwargs["level"] == 1
-        assert recall_kwargs["name"] == "board-manager-recall"
-        assert recall_kwargs["model"] is None  # recall_model not set
-        assert recall_kwargs["output_type"] is str
-        # Second call: manager agent.
-        mgr_kwargs = mock_provider.build_agent.call_args_list[1].kwargs
-        assert mgr_kwargs["level"] == 3
+        assert mock_build_agent.call_count == 2
+        # First call: recall agent (level-1).
+        recall_call = mock_build_agent.call_args_list[0]
+        assert recall_call.args[0] == 1
+        assert recall_call.kwargs["name"] == "board-manager-recall"
+        assert recall_call.kwargs["model"] is None  # recall_model not set
+        assert recall_call.kwargs["output_type"] is str
+        # Second call: manager agent (level-3).
+        mgr_call = mock_build_agent.call_args_list[1]
+        assert mgr_call.args[0] == 3
+        assert mgr_call.kwargs["name"] == "board-manager"
+        # Recall and manager are distinct levels (distinct providers).
+        assert recall_call.args[0] != mgr_call.args[0]
 
     def test_recall_output_in_system_prompt(
         self,
         manager: BoardManager,
-        mock_provider: MagicMock,
-        mock_get_provider: MagicMock,
+        mock_build_agent: MagicMock,
         mock_run_agent: MagicMock,
     ) -> None:
         """The recall output text appears in the manager's system prompt."""
@@ -193,15 +228,14 @@ class TestConverse:
 
         manager._converse("q2")
 
-        system = mock_provider.build_agent.call_args_list[1].kwargs["system_prompt"]
+        system = mock_build_agent.call_args_list[1].kwargs["system_prompt"]
         assert "remembered context" in system
         assert "Relevant prior exchanges:" in system
 
     def test_recall_none_output_omitted_from_system(
         self,
         manager: BoardManager,
-        mock_provider: MagicMock,
-        mock_get_provider: MagicMock,
+        mock_build_agent: MagicMock,
         mock_run_agent: MagicMock,
     ) -> None:
         """When recall returns 'none', 'Relevant prior' NOT in system prompt."""
@@ -210,7 +244,7 @@ class TestConverse:
 
         manager._converse("q2")
 
-        system = mock_provider.build_agent.call_args_list[1].kwargs["system_prompt"]
+        system = mock_build_agent.call_args_list[1].kwargs["system_prompt"]
         assert "Relevant prior exchanges" not in system
 
     # -- notes present / absent ------------------------------------------
@@ -218,8 +252,7 @@ class TestConverse:
     def test_notes_present_in_system_prompt(
         self,
         manager: BoardManager,
-        mock_provider: MagicMock,
-        mock_get_provider: MagicMock,
+        mock_build_agent: MagicMock,
         mock_run_agent: MagicMock,
     ) -> None:
         """When load_notes() returns content, it appears in the system prompt."""
@@ -228,15 +261,14 @@ class TestConverse:
 
         manager._converse("q")
 
-        system = mock_provider.build_agent.call_args.kwargs["system_prompt"]
+        system = mock_build_agent.call_args.kwargs["system_prompt"]
         assert "Your maintained memory:" in system
         assert "Task 1 is ongoing." in system
 
     def test_notes_absent_omitted_from_system(
         self,
         manager: BoardManager,
-        mock_provider: MagicMock,
-        mock_get_provider: MagicMock,
+        mock_build_agent: MagicMock,
         mock_run_agent: MagicMock,
     ) -> None:
         """When load_notes() returns '', no memory section in system prompt."""
@@ -244,7 +276,7 @@ class TestConverse:
 
         manager._converse("q")
 
-        system = mock_provider.build_agent.call_args.kwargs["system_prompt"]
+        system = mock_build_agent.call_args.kwargs["system_prompt"]
         assert "Your maintained memory:" not in system
 
     # -- recall_model ----------------------------------------------------
@@ -252,44 +284,43 @@ class TestConverse:
     def test_recall_model_override(
         self,
         manager: BoardManager,
-        mock_provider: MagicMock,
-        mock_get_provider: MagicMock,
+        mock_build_agent: MagicMock,
         mock_run_agent: MagicMock,
     ) -> None:
-        """When _recall_model is set, it is passed to build_agent for recall."""
+        """When _recall_model is set, it is passed to the level-1 recall build."""
         manager._recall_model = "custom-recall-model"
         manager._memory.append("q", "a")
         mock_run_agent.side_effect = ["ctx", "ans"]
 
         manager._converse("q2")
 
-        recall_kwargs = mock_provider.build_agent.call_args_list[0].kwargs
-        assert recall_kwargs["model"] == "custom-recall-model"
+        recall_call = mock_build_agent.call_args_list[0]
+        assert recall_call.args[0] == 1
+        assert recall_call.kwargs["model"] == "custom-recall-model"
 
     def test_recall_model_unset_passes_none(
         self,
         manager: BoardManager,
-        mock_provider: MagicMock,
-        mock_get_provider: MagicMock,
+        mock_build_agent: MagicMock,
         mock_run_agent: MagicMock,
     ) -> None:
-        """When _recall_model is None, None is passed to build_agent."""
+        """When _recall_model is None, model=None is passed (level-1 default kept)."""
         manager._recall_model = None
         manager._memory.append("q", "a")
         mock_run_agent.side_effect = ["ctx", "ans"]
 
         manager._converse("q2")
 
-        recall_kwargs = mock_provider.build_agent.call_args_list[0].kwargs
-        assert recall_kwargs["model"] is None
+        recall_call = mock_build_agent.call_args_list[0]
+        assert recall_call.args[0] == 1
+        assert recall_call.kwargs["model"] is None
 
     # -- system prompt structure -----------------------------------------
 
     def test_system_prompt_includes_repo_id(
         self,
         manager: BoardManager,
-        mock_provider: MagicMock,
-        mock_get_provider: MagicMock,
+        mock_build_agent: MagicMock,
         mock_run_agent: MagicMock,
     ) -> None:
         """The manager system prompt includes the board repo id."""
@@ -297,14 +328,13 @@ class TestConverse:
 
         manager._converse("q")
 
-        system = mock_provider.build_agent.call_args.kwargs["system_prompt"]
+        system = mock_build_agent.call_args.kwargs["system_prompt"]
         assert "test-repo" in system
 
     def test_system_prompt_includes_requester(
         self,
         manager: BoardManager,
-        mock_provider: MagicMock,
-        mock_get_provider: MagicMock,
+        mock_build_agent: MagicMock,
         mock_run_agent: MagicMock,
     ) -> None:
         """The system prompt names the requester."""
@@ -312,7 +342,7 @@ class TestConverse:
 
         manager._converse("q", requester="alice")
 
-        system = mock_provider.build_agent.call_args.kwargs["system_prompt"]
+        system = mock_build_agent.call_args.kwargs["system_prompt"]
         assert "requester is 'alice'" in system
 
     # -- manager model ---------------------------------------------------
@@ -320,8 +350,7 @@ class TestConverse:
     def test_manager_model_uses_configured_value(
         self,
         manager: BoardManager,
-        mock_provider: MagicMock,
-        mock_get_provider: MagicMock,
+        mock_build_agent: MagicMock,
         mock_run_agent: MagicMock,
     ) -> None:
         """When _manager_model is set, it is used for the level-3 agent."""
@@ -330,37 +359,41 @@ class TestConverse:
 
         manager._converse("q")
 
-        mgr_kwargs = mock_provider.build_agent.call_args.kwargs
-        assert mgr_kwargs["model"] == "custom-manager-model"
+        mgr_call = mock_build_agent.call_args
+        assert mgr_call.args[0] == 3
+        assert mgr_call.kwargs["model"] == "custom-manager-model"
 
     def test_manager_model_defaults_when_unset(
         self,
         manager: BoardManager,
-        mock_provider: MagicMock,
-        mock_get_provider: MagicMock,
+        mock_build_agent: MagicMock,
         mock_run_agent: MagicMock,
     ) -> None:
-        """When _manager_model is None, the default model is used."""
+        """When _manager_model is None, model=None is passed (level-3 default kept).
+
+        The level-3 default (Claude opus) is resolved inside llmio, not here.
+        """
         manager._manager_model = None
         mock_run_agent.return_value = "ok"
 
         manager._converse("q")
 
-        mgr_kwargs = mock_provider.build_agent.call_args.kwargs
-        from robotsix_board_agent.board_manager import _DEFAULT_MANAGER_MODEL
-
-        assert mgr_kwargs["model"] == _DEFAULT_MANAGER_MODEL
+        mgr_call = mock_build_agent.call_args
+        assert mgr_call.args[0] == 3
+        assert mgr_call.kwargs["model"] is None
 
     # -- error path ------------------------------------------------------
 
     def test_provider_raises_propagates(
         self,
         manager: BoardManager,
-        mock_provider: MagicMock,
-        mock_get_provider: MagicMock,
+        mock_build_agent: MagicMock,
         mock_run_agent: MagicMock,
     ) -> None:
-        """When the provider raises, the exception propagates (no catch in _converse)."""
+        """When the run raises, the exception propagates out of _converse (no catch).
+
+        The catch lives one layer up in _handle_request (see TestHandleRequest).
+        """
         mock_run_agent.side_effect = RuntimeError("provider down")
 
         with pytest.raises(RuntimeError, match="provider down"):
@@ -371,8 +404,7 @@ class TestConverse:
     def test_tools_are_built_for_level3_agent(
         self,
         manager: BoardManager,
-        mock_provider: MagicMock,
-        mock_get_provider: MagicMock,
+        mock_build_agent: MagicMock,
         mock_run_agent: MagicMock,
     ) -> None:
         """The level-3 agent is built with tools from _build_tools."""
@@ -380,32 +412,17 @@ class TestConverse:
 
         manager._converse("q")
 
-        mgr_kwargs = mock_provider.build_agent.call_args.kwargs
-        assert "tools" in mgr_kwargs
-        assert mgr_kwargs["tools"] is not None
-
-    def test_provider_constructed_without_api_key(
-        self,
-        manager: BoardManager,
-        mock_get_provider: MagicMock,
-        mock_run_agent: MagicMock,
-    ) -> None:
-        """The ClaudeSDK provider is constructed without an api_key (uses claude login)."""
-        mock_run_agent.return_value = "ok"
-
-        manager._converse("q")
-
-        mock_get_provider.assert_called_once()
-        _, kwargs = mock_get_provider.call_args
-        assert "api_key" not in kwargs
+        mgr_call = mock_build_agent.call_args
+        assert mgr_call.args[0] == 3
+        assert "tools" in mgr_call.kwargs
+        assert mgr_call.kwargs["tools"] is not None
 
     # -- prompt id-handling guidance ---------------------------------------
 
     def test_system_prompt_includes_id_handling_guidance(
         self,
         manager: BoardManager,
-        mock_provider: MagicMock,
-        mock_get_provider: MagicMock,
+        mock_build_agent: MagicMock,
         mock_run_agent: MagicMock,
     ) -> None:
         """The system prompt contains explicit ticket id handling instructions."""
@@ -413,7 +430,7 @@ class TestConverse:
 
         manager._converse("q")
 
-        system = mock_provider.build_agent.call_args.kwargs["system_prompt"]
+        system = mock_build_agent.call_args.kwargs["system_prompt"]
         assert "TICKET ID HANDLING" in system
         assert "opaque strings" in system
         assert "complete id" in system.lower() or "complete id" in system
@@ -422,8 +439,7 @@ class TestConverse:
     def test_system_prompt_warns_against_truncating_to_timestamp(
         self,
         manager: BoardManager,
-        mock_provider: MagicMock,
-        mock_get_provider: MagicMock,
+        mock_build_agent: MagicMock,
         mock_run_agent: MagicMock,
     ) -> None:
         """The system prompt warns never to truncate an id to its timestamp."""
@@ -431,14 +447,13 @@ class TestConverse:
 
         manager._converse("q")
 
-        system = mock_provider.build_agent.call_args.kwargs["system_prompt"]
+        system = mock_build_agent.call_args.kwargs["system_prompt"]
         assert "never truncate" in system.lower()
 
     def test_system_prompt_includes_anti_duplicate_404_guard(
         self,
         manager: BoardManager,
-        mock_provider: MagicMock,
-        mock_get_provider: MagicMock,
+        mock_build_agent: MagicMock,
         mock_run_agent: MagicMock,
     ) -> None:
         """The system prompt includes the 404 anti-duplicate guard."""
@@ -446,7 +461,7 @@ class TestConverse:
 
         manager._converse("q")
 
-        system = mock_provider.build_agent.call_args.kwargs["system_prompt"]
+        system = mock_build_agent.call_args.kwargs["system_prompt"]
         assert "ANTI-DUPLICATE GUARD" in system
         assert "do NOT re-create" in system
         assert "404" in system
@@ -454,8 +469,7 @@ class TestConverse:
     def test_system_prompt_example_id_is_not_truncated(
         self,
         manager: BoardManager,
-        mock_provider: MagicMock,
-        mock_get_provider: MagicMock,
+        mock_build_agent: MagicMock,
         mock_run_agent: MagicMock,
     ) -> None:
         """The example id in the prompt is a full timestamp-slug-suffix string."""
@@ -463,7 +477,7 @@ class TestConverse:
 
         manager._converse("q")
 
-        system = mock_provider.build_agent.call_args.kwargs["system_prompt"]
+        system = mock_build_agent.call_args.kwargs["system_prompt"]
         assert "20260621T182023Z-add-automatic-conversation-restart-after-4cb7" in system
 
 

@@ -7,6 +7,14 @@ pass over its conversation memory, and acts directly on the board through the
 real :class:`BoardClient` ops exposed as tools. It registers on the central
 broker (pull/mailbox) so it can be reached from anywhere, NAT-safe.
 
+The two passes run on their OWN provider via llmio's per-level defaults
+(``build_agent_for_level``): the **recall** pass is level-1 (DeepSeek-flash over
+OpenRouter — cheap), and the **manager** pass is level-3 (Claude opus over the
+Claude-SDK — strongest reasoning). Each level resolves its own transport, so the
+recall model is never forced through the Claude transport (which would 400 with
+"model may not exist"). An optional ``model=`` override changes only the bare
+model name; the level's provider stays fixed.
+
 Memory keeps only question→answer pairs (see :mod:`.memory`).
 """
 
@@ -29,16 +37,6 @@ logger = logging.getLogger(__name__)
 
 #: Cap a tool result handed back to the LLM (tickets lists can be large).
 _RESULT_CAP = 12_000
-
-#: Combined provider-model identifier selecting the Claude-SDK backend.
-#: The factory resolves ``"claudeSDK"`` to :class:`ClaudeSDKProvider`.
-#: The concrete model is chosen per-agent (``build_agent(model=...)``), so the
-#: identifier's model part is a valid placeholder that only selects the backend.
-_PROVIDER_IDENTIFIER = "claudeSDK-opus"
-
-#: Default level-3 model.  Matches Claude's ``opus`` tier (strongest reasoning).
-#: Override via ``board_manager.model``.
-_DEFAULT_MANAGER_MODEL = "opus"
 
 _RECALL_SYSTEM = (
     "You retrieve relevant context for a board-management assistant. Given a NEW "
@@ -155,24 +153,37 @@ class BoardManager(_ThreadedLoopMixin):
             or getattr(request, "sender", None)
             or DEFAULT_TICKET_SOURCE
         )
-        answer = self._converse(question, requester)
+        try:
+            answer = self._converse(question, requester)
+        except Exception as exc:
+            logger.exception("board-manager: _converse failed for requester %s", requester)
+            return Response.to(
+                request,
+                body={
+                    "reply": (
+                        "⚠️ The board-manager could not complete your request — its "
+                        f"LLM call failed: {type(exc).__name__}: {exc}"
+                    ),
+                    "error": True,
+                },
+            )
         self._memory.append(question, answer)
         return Response.to(request, body={"reply": answer})
 
     # -- the LLM pipeline (level-1 recall -> level-3 act) ------------------
 
     def _converse(self, question: str, requester: str = DEFAULT_TICKET_SOURCE) -> str:
-        from robotsix_llmio.core.factory import get_provider_for_identifier
+        from robotsix_llmio import build_agent_for_level
         from robotsix_llmio.core.run import run_agent
 
-        provider = get_provider_for_identifier(_PROVIDER_IDENTIFIER)
-
-        # 1) Level-1 recall: scan prior Q→A for anything relevant.
+        # 1) Level-1 recall: scan prior Q→A for anything relevant.  Level-1's own
+        #    default provider/model (DeepSeek-flash over OpenRouter) is used; a
+        #    model override changes only the bare model name, not the transport.
         relevant = ""
         history = self._memory.as_prompt()
         if history:
-            h1 = provider.build_agent(
-                level=1,
+            h1 = build_agent_for_level(
+                1,
                 model=self._recall_model or None,
                 system_prompt=_RECALL_SYSTEM,
                 output_type=str,
@@ -197,9 +208,11 @@ class BoardManager(_ThreadedLoopMixin):
             f"\n\nThis turn's requester is '{requester}'. Any ticket you create is "
             f"sourced to it automatically, but you may pass an explicit source."
         )
-        h3 = provider.build_agent(
-            level=3,
-            model=self._manager_model or _DEFAULT_MANAGER_MODEL,
+        # Level-3's own default provider/model (Claude opus over the Claude-SDK)
+        # is used; a model override changes only the bare model name.
+        h3 = build_agent_for_level(
+            3,
+            model=self._manager_model or None,
             system_prompt=system,
             tools=self._build_tools(requester),
             output_type=str,
