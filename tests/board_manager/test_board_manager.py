@@ -835,3 +835,33 @@ class TestBuildTools:
         """When enable_write_ops=True (default fixture), still 16 tools."""
         tools = manager._build_tools("test-requester")
         assert len(tools) == 16
+
+    # -- _truncate_result fallback pop ------------------------------------
+
+    def test_truncate_result_fallback_pop_drops_last_element(self) -> None:
+        """When a single element + the omission marker still exceed
+        _RESULT_CAP, the last element is also dropped (secondary fallback pop)."""
+        from robotsix_board_agent.board_manager import _RESULT_CAP, _truncate_result
+
+        # Build a large element whose JSON is just under _RESULT_CAP so that
+        # after truncation [element, marker] overflows the cap.
+        pad_len = _RESULT_CAP - 20
+        big = {"data": "x" * pad_len}
+        big_json = json.dumps(big)
+        assert len(big_json) < _RESULT_CAP
+
+        # Sanity-check: [big, marker] really does overflow.
+        marker = {"_truncated": "1 item(s) omitted (result cap)"}
+        assert len(json.dumps([big, marker])) > _RESULT_CAP
+
+        # The list [big, small] exceeds _RESULT_CAP (big alone is just under,
+        # so the list is over).  After popping small, the remaining [big]
+        # + marker would still overflow → fallback pop fires.
+        small = {"id": "ticket-0001"}
+        result = _truncate_result([big, small])
+        parsed = json.loads(result)
+
+        # Both elements should be dropped; only the marker remains.
+        assert len(parsed) == 1
+        assert "_truncated" in parsed[0]
+        assert "2 item(s) omitted" in parsed[0]["_truncated"]
