@@ -34,6 +34,16 @@ from .constants import DEFAULT_TICKET_SOURCE, BoardErrorCode
 from .memory import MAX_CONVERSATIONS, BoardManagerMemory
 from .ops import WRITE_OPS
 
+# ---------------------------------------------------------------------------
+# Setup Langfuse tracing (idempotent; reads LANGFUSE_* env vars).
+# ---------------------------------------------------------------------------
+try:
+    from robotsix_llmio.core import setup_langfuse_tracing as _llmio_setup_langfuse_tracing
+
+    _llmio_setup_langfuse_tracing()
+except ImportError:
+    pass
+
 logger = logging.getLogger(__name__)
 
 #: Cap a tool result handed back to the LLM (tickets lists can be large).
