@@ -69,7 +69,7 @@ jobs:
       pull-requests: read
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
-      - uses: dangoslen/changelog-enforcer@7ed65a335f79f76aad31a84c3057782f0df176bf # v3.7.0
+      - uses: dangoslen/changelog-enforcer@v3.7.0
         with:
           expectedLatestVersion: unreleased
           missingUpdateErrorMessage: >
