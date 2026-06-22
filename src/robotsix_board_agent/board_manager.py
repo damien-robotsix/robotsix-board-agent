@@ -39,6 +39,36 @@ logger = logging.getLogger(__name__)
 #: Cap a tool result handed back to the LLM (tickets lists can be large).
 _RESULT_CAP = 12_000
 
+
+def _truncate_result(result: Any) -> str:
+    """Serialize *result* to JSON, truncating lists that exceed :data:`_RESULT_CAP`.
+
+    Trailing elements are dropped whole (never sliced mid-field) and an
+    ``{"_truncated": "…"}`` omission marker is appended.  When even a single
+    element plus the marker still overflows the cap the last element is also
+    dropped (the fallback pop) and the marker's count is updated accordingly.
+
+    Returns the (possibly truncated) JSON string.
+    """
+    serialised = json.dumps(result)
+    if len(serialised) > _RESULT_CAP and isinstance(result, list):
+        original_len = len(result)
+        # Drop trailing elements until the serialised payload fits.
+        while len(json.dumps(result)) > _RESULT_CAP and result:
+            result.pop()
+        omitted = original_len - len(result)
+        if omitted > 0:
+            # Make room for the omission marker.
+            marker: dict[str, str] = {"_truncated": f"{omitted} item(s) omitted (result cap)"}
+            if len(json.dumps([*result, marker])) > _RESULT_CAP and result:
+                result.pop()
+                omitted = original_len - len(result)
+                marker["_truncated"] = f"{omitted} item(s) omitted (result cap)"
+            result.append(marker)
+        return json.dumps(result)
+    return serialised
+
+
 _RECALL_SYSTEM = (
     "You retrieve relevant context for a board-management assistant. Given a NEW "
     "user question and a log of PRIOR question→answer exchanges, return only the "
@@ -238,25 +268,7 @@ class BoardManager(_ThreadedLoopMixin):
         def _safe(coro: Any) -> str:
             try:
                 result = self._run(coro)
-                serialised = json.dumps(result)
-                if len(serialised) > _RESULT_CAP and isinstance(result, list):
-                    original_len = len(result)
-                    # Drop trailing elements until the serialised payload fits.
-                    while len(json.dumps(result)) > _RESULT_CAP and result:
-                        result.pop()
-                    omitted = original_len - len(result)
-                    if omitted > 0:
-                        # Make room for the omission marker.
-                        marker: dict[str, str] = {
-                            "_truncated": f"{omitted} item(s) omitted (result cap)"
-                        }
-                        if len(json.dumps([*result, marker])) > _RESULT_CAP and result:
-                            result.pop()
-                            omitted = original_len - len(result)
-                            marker["_truncated"] = f"{omitted} item(s) omitted (result cap)"
-                        result.append(marker)
-                    return json.dumps(result)
-                return serialised
+                return _truncate_result(result)
             except BoardAPIError as exc:
                 return f"board API error {exc.status_code}: {exc.detail}"
 
