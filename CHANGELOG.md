@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   or partial — prevents wasted full-board-state loads (~5,000-15,000 tokens per
   lookup). The LLM is now instructed to use `list_tickets` with state filters or
   ask the user for the full ID instead.
+- Shortened the default report format in `BoardManager`'s system prompt: the LLM now uses
+  descriptive paragraph summaries at the file/function level and omits exhaustive file:line
+  references unless explicitly requested, reducing output tokens by ~30-40% on analysis
+  replies.
 
 ### Added
 
