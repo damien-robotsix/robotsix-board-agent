@@ -11,3 +11,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release.
 - AGENT.md with repo conventions and hard rules for agents.
+- Architecture overview page in documentation navigation.
