@@ -43,4 +43,3 @@ BrokeredBoardResponder
 
 # -- board_manager.py: public API consumed by mill + the CLI ---------------
 BoardManager
-_openrouter_key
