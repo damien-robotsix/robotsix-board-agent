@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added `ruff-check` CI job to `.github/workflows/ci.yml` for authoritative ruff enforcement
+  on every push and PR, independent of pre-commit.ci.
+
 - Extracted `_truncate_list` helper from `_truncate_result` — a pure, non-mutating function
   that returns a truncated copy and the omission count, reducing nesting depth and
   eliminating the in-place list mutation side-effect.
