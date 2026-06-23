@@ -50,6 +50,34 @@ logger = logging.getLogger(__name__)
 _RESULT_CAP = 12_000
 
 
+def _truncate_list(items: list[Any], cap: int) -> tuple[list[Any], int]:
+    """Return a truncated copy of *items* that fits under *cap* (JSON-serialised)
+    together with the count of dropped elements.
+
+    The input list is **not** mutated — the caller receives a new list.
+    """
+    result = list(items)
+    original_len = len(result)
+
+    # Drop trailing elements until the serialised payload fits.
+    while result and len(json.dumps(result)) > cap:
+        result.pop()
+
+    omitted = original_len - len(result)
+    if omitted == 0:
+        return result, 0
+
+    # Make room for the omission marker.  When even a single element plus the
+    # marker still overflows the cap the last element is also dropped (the
+    # fallback pop) and the omission count is updated accordingly.
+    marker: dict[str, str] = {"_truncated": f"{omitted} item(s) omitted (result cap)"}
+    if result and len(json.dumps([*result, marker])) > cap:
+        result.pop()
+        omitted = original_len - len(result)
+
+    return result, omitted
+
+
 def _truncate_result(result: Any) -> str:
     """Serialize *result* to JSON, truncating lists that exceed :data:`_RESULT_CAP`.
 
@@ -61,22 +89,14 @@ def _truncate_result(result: Any) -> str:
     Returns the (possibly truncated) JSON string.
     """
     serialised = json.dumps(result)
-    if len(serialised) > _RESULT_CAP and isinstance(result, list):
-        original_len = len(result)
-        # Drop trailing elements until the serialised payload fits.
-        while len(json.dumps(result)) > _RESULT_CAP and result:
-            result.pop()
-        omitted = original_len - len(result)
-        if omitted > 0:
-            # Make room for the omission marker.
-            marker: dict[str, str] = {"_truncated": f"{omitted} item(s) omitted (result cap)"}
-            if len(json.dumps([*result, marker])) > _RESULT_CAP and result:
-                result.pop()
-                omitted = original_len - len(result)
-                marker["_truncated"] = f"{omitted} item(s) omitted (result cap)"
-            result.append(marker)
-        return json.dumps(result)
-    return serialised
+    if len(serialised) <= _RESULT_CAP or not isinstance(result, list):
+        return serialised
+
+    truncated, omitted = _truncate_list(result, _RESULT_CAP)
+    if omitted > 0:
+        marker: dict[str, str] = {"_truncated": f"{omitted} item(s) omitted (result cap)"}
+        truncated.append(marker)
+    return json.dumps(truncated)
 
 
 _RECALL_SYSTEM = (
