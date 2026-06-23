@@ -23,7 +23,6 @@ manager = BoardManager(
     settings,
     broker_host="ai-broker.robotsix.net",
     broker_token="bk-...",
-    openrouter_key="sk-or-...",
     memory_path=Path("memory.json"),
     broker_port=443,
     broker_scheme="https",
@@ -42,7 +41,6 @@ manager = BoardManager(
 | `settings`         | `BoardAgentSettings` | (required)                        | Board API credentials and repository identity    |
 | `broker_host`      | `str`                | (required)                        | Central broker hostname                          |
 | `broker_token`     | `str`                | (required)                        | Bearer token for the broker                      |
-| `openrouter_key`   | `str`                | (required)                        | OpenRouter API key for LLM calls                 |
 | `memory_path`      | `Path`               | (required)                        | JSON file for conversation trace persistence     |
 | `broker_port`      | `int`                | `443`                             | Broker port                                      |
 | `broker_scheme`    | `str`                | `"https"`                         | `http` or `https`                                |

@@ -21,7 +21,6 @@ def manager(settings: BoardAgentSettings, tmp_path: Path) -> BoardManager:
         settings,
         broker_host="test-broker.robotsix.net",
         broker_token="test-broker-token",
-        openrouter_key="test-openrouter-key",
         memory_path=tmp_path / "memory",
     )
 
@@ -495,7 +494,6 @@ class TestConverse:
             settings,
             broker_host="test-broker.robotsix.net",
             broker_token="test-broker-token",
-            openrouter_key="test-openrouter-key",
             memory_path=tmp_path / "memory",
         )
 
@@ -801,7 +799,6 @@ class TestBuildTools:
             settings,
             broker_host="test-broker.robotsix.net",
             broker_token="test-broker-token",
-            openrouter_key="test-openrouter-key",
             memory_path=tmp_path / "memory",
         )
 

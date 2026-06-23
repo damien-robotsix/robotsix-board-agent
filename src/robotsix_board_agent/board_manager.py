@@ -134,7 +134,6 @@ class BoardManager(_ThreadedLoopMixin):
         *,
         broker_host: str,
         broker_token: str,
-        openrouter_key: str | None = None,
         memory_path: Path,
         broker_port: int = 443,
         broker_scheme: str = "https",
@@ -150,9 +149,7 @@ class BoardManager(_ThreadedLoopMixin):
         and ``enable_write_ops`` which gates whether board-mutating tools are
         exposed).
         *broker_host*/*broker_port*/*broker_scheme*/*broker_token* — broker
-        connection details for the agent-comm layer.  *openrouter_key* — unused
-        with the current Claude-SDK backend (auth is via ``claude login``);
-        retained for API compatibility.  *memory_path* — filesystem path for persisting
+        connection details for the agent-comm layer.  *memory_path* — filesystem path for persisting
         conversation traces and the maintained memory note.  *agent_id* — custom
         broker agent id (defaults to ``board-manager-{repo_id}``).
         *manager_model*/*recall_model* — optional model overrides for the primary
@@ -163,7 +160,6 @@ class BoardManager(_ThreadedLoopMixin):
         self.settings = settings
         self.client = BoardClient(settings)
         self.agent_id = agent_id or f"board-manager-{settings.board_repo_id}"
-        self._openrouter_key = openrouter_key
         self._manager_model = manager_model
         self._recall_model = recall_model
         self._memory = BoardManagerMemory(memory_path, max_conversations=max_conversations)
