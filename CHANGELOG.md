@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Updated system prompt to avoid `board_cards` fallback when a ticket ID is unknown
+  or partial — prevents wasted full-board-state loads (~5,000-15,000 tokens per
+  lookup). The LLM is now instructed to use `list_tickets` with state filters or
+  ask the user for the full ID instead.
+
 ### Added
 
 - Added `ruff-check` CI job to `.github/workflows/ci.yml` for authoritative ruff enforcement
