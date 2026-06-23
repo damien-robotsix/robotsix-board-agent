@@ -131,7 +131,7 @@ _MANAGER_SYSTEM = (
     "create_ticket, use the 'id' field from the returned record verbatim for any "
     "follow-up operation.\n\n"
     "MISSING/INCOMPLETE ID FALLBACK: when a user provides only a partial ticket id "
-    "(a bare slug suffix like \"-dc29\" or a bare timestamp) and get_ticket "
+    '(a bare slug suffix like "-dc29" or a bare timestamp) and get_ticket '
     "returns 404, do NOT scan the whole board with board_cards to find it — "
     "board_cards is expensive and its output may be truncated. Instead, use "
     "list_tickets with a state filter when you can narrow the search, or tell the "
