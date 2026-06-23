@@ -78,6 +78,15 @@ jobs:
             changelog entry, add the 'skip-changelog' label.
           skipLabels: "documentation, refactor, dependencies, skip-changelog"
 
+  ruff-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v5
+      - run: uv sync --frozen
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+
   security:
     uses: damien-robotsix/robotsix-mill/.github/workflows/python-security.yml@c3a9aa5d58116b96e5a0c36991b0b202986130f9 # main
     with:
