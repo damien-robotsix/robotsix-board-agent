@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Updated system prompt with a repository-structure policy: the board-manager now
+  trusts the architecture documentation for high-level design and module layout,
+  and only drills into individual source files when the doc is missing detail or
+  appears out of date. Reduces duplicate context tokens (~3,000-6,000 per run).
+
 - Updated system prompt to avoid `board_cards` fallback when a ticket ID is unknown
   or partial — prevents wasted full-board-state loads (~5,000-15,000 tokens per
   lookup). The LLM is now instructed to use `list_tickets` with state filters or
