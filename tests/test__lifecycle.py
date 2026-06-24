@@ -35,6 +35,10 @@ class TestBuildBrokeredAgent:
         )
         assert agent.agent_id == "my-agent"
         assert agent._agent.timeout == 45.0
+        assert agent._agent.broker_host == "broker.example.com"
+        assert agent._agent.broker_port == 8443
+        assert agent._agent.broker_scheme == "https"
+        assert agent._agent.broker_token == "secret"  # noqa: S105
 
     def test_on_request_handler_is_registered(self) -> None:
         """The on_request callable is bound to the agent's handler."""
