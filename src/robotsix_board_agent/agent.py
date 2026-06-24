@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING, Any
 if TYPE_CHECKING:
     from robotsix_agent_comm import Registry, Request, Response
 
-from ._imports import _resolve_agent_comm
+from ._imports import _resolve_agent_comm, _setup_langfuse_tracing
 from ._request_handler import _parse_and_validate
 from .client import BoardAPIError, BoardClient
 from .config import BoardAgentSettings
@@ -42,15 +42,7 @@ except ImportError:
         format="%(levelname)s:%(name)s:%(message)s",
     )
 
-# ---------------------------------------------------------------------------
-# Setup Langfuse tracing (idempotent; reads LANGFUSE_* env vars).
-# ---------------------------------------------------------------------------
-try:
-    from robotsix_llmio.core import setup_langfuse_tracing as _llmio_setup_langfuse_tracing
-
-    _llmio_setup_langfuse_tracing()
-except ImportError:
-    pass
+_setup_langfuse_tracing()
 
 
 class BoardAgent:

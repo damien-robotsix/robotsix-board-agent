@@ -37,3 +37,13 @@ def _resolve_agent_comm() -> tuple[bool, Any, Any, Any, Any, Any]:
         return False, None, None, None, None, None
     else:
         return False, Agent, Error, Registry, Request, Response
+
+
+def _setup_langfuse_tracing() -> None:
+    """Setup Langfuse tracing (idempotent; reads LANGFUSE_* env vars)."""
+    try:
+        from robotsix_llmio.core import setup_langfuse_tracing as _llmio_setup_langfuse_tracing
+
+        _llmio_setup_langfuse_tracing()
+    except ImportError:
+        pass

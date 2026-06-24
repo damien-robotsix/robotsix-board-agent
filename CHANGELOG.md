@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Pinned `dangoslen/changelog-enforcer` GitHub Action to a specific commit SHA
   in `.github/workflows/ci.yml` for supply-chain security.
 
+- Extracted duplicated Langfuse tracing setup into a shared `_setup_langfuse_tracing()`
+  helper in `_imports.py`, replacing the identical 8-line `try/except ImportError`
+  block that was duplicated in `agent.py` and `board_manager.py`.
+
 - Updated system prompt with a repository-structure policy: the board-manager now
   trusts the architecture documentation for high-level design and module layout,
   and only drills into individual source files when the doc is missing detail or
