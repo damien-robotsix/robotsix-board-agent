@@ -114,12 +114,20 @@ class Agent:
         transport: Any = None,
         pull: bool = False,
         timeout: float = 30.0,
+        broker_host: str = "",
+        broker_port: int = 443,
+        broker_scheme: str = "https",
+        broker_token: str = "",
     ) -> None:
         self.agent_id = agent_id
         self.registry = registry
         self.transport = transport
         self.pull = pull
         self.timeout = timeout
+        self.broker_host = broker_host
+        self.broker_port = broker_port
+        self.broker_scheme = broker_scheme
+        self.broker_token = broker_token
         self._started = False
         # Wrap so both ``agent.on_request = x`` (via BoardAgent constructor)
         # and ``agent.on_request(x)`` (brokered call-setter) work.
@@ -210,7 +218,17 @@ class BrokeredAgent:
             broker_token=broker_token or "",
         )
         self.agent_id = agent_id
-        self._agent = Agent(agent_id, registry, transport=transport, pull=True, timeout=timeout)
+        self._agent = Agent(
+            agent_id,
+            registry,
+            transport=transport,
+            pull=True,
+            timeout=timeout,
+            broker_host=broker_host,
+            broker_port=broker_port,
+            broker_scheme=broker_scheme,
+            broker_token=broker_token or "",
+        )
         if on_request is not None:
             self._agent.on_request(on_request)
 
