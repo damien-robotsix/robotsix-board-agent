@@ -149,6 +149,19 @@ _MANAGER_SYSTEM = (
     "coherent — rewrite/trim rather than letting it grow."
 )
 
+_CLASSIFY_SYSTEM = (
+    "You classify incoming user requests for a board-management assistant. "
+    "Reply with a single token — SIMPLE or COMPLEX — and nothing else.\n\n"
+    "SIMPLE: the request is a straightforward read-only board status query or "
+    "summary. It asks for current board state, ticket listings, ticket details, "
+    "or a concise summary of what is on the board. It needs NO board modification "
+    "and NO multi-step reasoning.\n\n"
+    "COMPLEX: the request involves any board modification (create, transition, "
+    "comment, approve, mark done, migrate, merge, set priority, resume), requires "
+    "multi-step reasoning, or is ambiguous about intent.\n\n"
+    "When in doubt, reply COMPLEX."
+)
+
 
 class BoardManager(_ThreadedLoopMixin):
     """Conversational, tool-using manager for a single board over the broker."""
@@ -165,6 +178,8 @@ class BoardManager(_ThreadedLoopMixin):
         agent_id: str | None = None,
         manager_model: str | None = None,
         recall_model: str | None = None,
+        simple_read_model: str = "sonnet",
+        classify_model: str | None = None,
         max_conversations: int = MAX_CONVERSATIONS,
         timeout: float = 120.0,
     ) -> None:
@@ -178,15 +193,21 @@ class BoardManager(_ThreadedLoopMixin):
         conversation traces and the maintained memory note.  *agent_id* — custom
         broker agent id (defaults to ``board-manager-{repo_id}``).
         *manager_model*/*recall_model* — optional model overrides for the primary
-        manager LLM and the lower-tier recall scanner.  *max_conversations* — cap
-        on stored conversation pairs.  *timeout* — broker operation timeout in
-        seconds.
+        manager LLM and the lower-tier recall scanner.
+        *simple_read_model* — bare Claude alias (``"sonnet"``, ``"haiku"``) used
+        for requests the complexity classifier deems SIMPLE; default ``"sonnet"``.
+        *classify_model* — optional bare model override for the level-1
+        classifier (defaults to level-1's DeepSeek-flash).  *max_conversations* —
+        cap on stored conversation pairs.  *timeout* — broker operation timeout
+        in seconds.
         """
         self.settings = settings
         self.client = BoardClient(settings)
         self.agent_id = agent_id or f"board-manager-{settings.board_repo_id}"
         self._manager_model = manager_model
         self._recall_model = recall_model
+        self._simple_read_model = simple_read_model
+        self._classify_model = classify_model
         self._memory = BoardManagerMemory(memory_path, max_conversations=max_conversations)
         self._agent = _build_brokered_agent(
             self.agent_id,
@@ -234,7 +255,51 @@ class BoardManager(_ThreadedLoopMixin):
         self._memory.append(question, answer)
         return Response.to(request, body={"reply": answer})
 
-    # -- the LLM pipeline (level-1 recall -> level-3 act) ------------------
+    # -- complexity classification ------------------------------------------
+
+    def _select_manager_model(self, question: str) -> str | None:
+        """Classify *question* and return the model override for the manager pass.
+
+        If the operator explicitly set ``_manager_model``, return it verbatim
+        (operator override wins — no down-tier).  Otherwise, run a cheap
+        **level-1** classifier agent (DeepSeek provider) that replies with a
+        single token: ``SIMPLE`` → return ``_simple_read_model`` (default
+        ``"sonnet"``); anything else → return ``None`` (level-3 default =
+        Opus).
+
+        Any failure inside the classifier is logged and swallowed —
+        ``None`` is returned so the request falls back to Opus.
+        """
+        if self._manager_model is not None:
+            return self._manager_model
+
+        try:
+            from robotsix_llmio import build_agent_for_level
+            from robotsix_llmio.core.run import run_agent
+
+            h1 = build_agent_for_level(
+                1,
+                model=self._classify_model or None,
+                system_prompt=_CLASSIFY_SYSTEM,
+                output_type=str,
+                name="board-manager-classify",
+            )
+            verdict = str(
+                run_agent(
+                    h1,
+                    lambda: h1.run_sync(question).output,
+                    label="board-manager-classify",
+                )
+            )
+        except Exception:
+            logger.warning("board-manager: classifier failed, falling back to Opus", exc_info=True)
+            return None
+
+        if verdict.strip().upper() == "SIMPLE":
+            return self._simple_read_model
+        return None
+
+    # -- the LLM pipeline (level-1 recall -> classify -> level-3 act) -------
 
     def _converse(self, question: str, requester: str = DEFAULT_TICKET_SOURCE) -> str:
         from robotsix_llmio import build_agent_for_level
@@ -280,9 +345,11 @@ class BoardManager(_ThreadedLoopMixin):
             )
         # Level-3's own default provider/model (Claude opus over the Claude-SDK)
         # is used; a model override changes only the bare model name.
+        # The override is chosen by _select_manager_model — a classifier may
+        # down-tier simple read-only requests to a cheaper Claude alias.
         h3 = build_agent_for_level(
             3,
-            model=self._manager_model or None,
+            model=self._select_manager_model(question),
             system_prompt=system,
             tools=self._build_tools(requester),
             output_type=str,

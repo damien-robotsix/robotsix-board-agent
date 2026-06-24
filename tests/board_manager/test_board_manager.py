@@ -125,7 +125,18 @@ class TestConverse:
     llmio's per-level defaults (``build_agent_for_level``): recall is level-1
     (DeepSeek), manager is level-3 (Claude).  Patching the single entry point
     keeps the test hermetic — no concrete provider/transport is constructed.
+
+    An autouse fixture patches ``_select_manager_model`` to return ``None`` so
+    the existing tests' call-count and ordering assertions remain valid without
+    the new classifier step interfering.  Classification behaviour is tested
+    separately in ``TestSelectManagerModel``.
     """
+
+    @pytest.fixture(autouse=True)
+    def _patch_select_model(self, manager: BoardManager) -> None:
+        """Patch _select_manager_model to return None — keep existing assertions valid."""
+        with patch.object(manager, "_select_manager_model", return_value=None):
+            yield
 
     @pytest.fixture
     def mock_build_agent(self) -> MagicMock:
@@ -352,11 +363,15 @@ class TestConverse:
         mock_build_agent: MagicMock,
         mock_run_agent: MagicMock,
     ) -> None:
-        """When _manager_model is set, it is used for the level-3 agent."""
+        """When _manager_model is set, _select_manager_model returns it and the
+        manager build receives that model (operator override)."""
         manager._manager_model = "custom-manager-model"
         mock_run_agent.return_value = "ok"
 
-        manager._converse("q")
+        # Override the autouse patch: simulate the real _select_manager_model
+        # returning the configured manager_model.
+        with patch.object(manager, "_select_manager_model", return_value="custom-manager-model"):
+            manager._converse("q")
 
         mgr_call = mock_build_agent.call_args
         assert mgr_call.args[0] == 3
@@ -524,6 +539,299 @@ class TestConverse:
 
         system = mock_build_agent.call_args.kwargs["system_prompt"]
         assert "Write operations are disabled" not in system
+
+
+# -- _select_manager_model (complexity classifier) ---------------------------
+
+
+class TestSelectManagerModel:
+    """Test BoardManager._select_manager_model and its integration in _converse.
+
+    These tests do NOT patch ``_select_manager_model`` — they exercise the
+    real method and verify that the classifier routes requests to the correct
+    model (or falls back to Opus on failure/override).
+    """
+
+    @pytest.fixture
+    def mock_build_agent(self) -> MagicMock:
+        """Patch build_agent_for_level to return fresh agent mocks per call."""
+        with patch(
+            "robotsix_llmio.build_agent_for_level",
+            side_effect=lambda *a, **k: MagicMock(),
+        ) as ba:
+            yield ba
+
+    @pytest.fixture
+    def mock_run_agent(self) -> MagicMock:
+        """Patch run_agent to return canned output for each call."""
+        with patch("robotsix_llmio.core.run.run_agent") as ra:
+            yield ra
+
+    # -- SIMPLE -> sonnet --------------------------------------------------
+
+    def test_simple_classification_routes_to_sonnet(
+        self,
+        manager: BoardManager,
+        mock_build_agent: MagicMock,
+        mock_run_agent: MagicMock,
+    ) -> None:
+        """When the classifier returns SIMPLE, the manager build gets model='sonnet'."""
+        mock_run_agent.side_effect = ["SIMPLE", "manager answer"]
+
+        result = manager._converse("what is on the board?")
+
+        assert result == "manager answer"
+        # Two build_agent_for_level calls: classifier (level-1) + manager (level-3).
+        assert mock_build_agent.call_count == 2
+
+        # Classifier call.
+        classify_call = mock_build_agent.call_args_list[0]
+        assert classify_call.args[0] == 1
+        assert classify_call.kwargs["name"] == "board-manager-classify"
+        assert classify_call.kwargs["output_type"] is str
+
+        # Manager call — must receive model="sonnet", not None/Opus.
+        mgr_call = mock_build_agent.call_args_list[1]
+        assert mgr_call.args[0] == 3
+        assert mgr_call.kwargs["name"] == "board-manager"
+        assert mgr_call.kwargs["model"] == "sonnet"
+
+    # -- COMPLEX -> None (Opus) --------------------------------------------
+
+    def test_complex_classification_routes_to_opus(
+        self,
+        manager: BoardManager,
+        mock_build_agent: MagicMock,
+        mock_run_agent: MagicMock,
+    ) -> None:
+        """When the classifier returns COMPLEX, the manager build gets model=None (Opus)."""
+        mock_run_agent.side_effect = ["COMPLEX", "manager answer"]
+
+        result = manager._converse("create a ticket for the login bug")
+
+        assert result == "manager answer"
+        assert mock_build_agent.call_count == 2
+
+        mgr_call = mock_build_agent.call_args_list[1]
+        assert mgr_call.args[0] == 3
+        assert mgr_call.kwargs["model"] is None
+
+    # -- unrecognized / empty -> None (Opus) -------------------------------
+
+    def test_unrecognized_classifier_output_routes_to_opus(
+        self,
+        manager: BoardManager,
+        mock_build_agent: MagicMock,
+        mock_run_agent: MagicMock,
+    ) -> None:
+        """When the classifier returns something unrecognized, fall back to Opus."""
+        mock_run_agent.side_effect = ["something weird", "manager answer"]
+
+        result = manager._converse("vague request")
+
+        assert result == "manager answer"
+        mgr_call = mock_build_agent.call_args_list[1]
+        assert mgr_call.kwargs["model"] is None
+
+    def test_empty_classifier_output_routes_to_opus(
+        self,
+        manager: BoardManager,
+        mock_build_agent: MagicMock,
+        mock_run_agent: MagicMock,
+    ) -> None:
+        """When the classifier returns an empty string, fall back to Opus."""
+        mock_run_agent.side_effect = ["", "manager answer"]
+
+        result = manager._converse("what's up")
+
+        assert result == "manager answer"
+        mgr_call = mock_build_agent.call_args_list[1]
+        assert mgr_call.kwargs["model"] is None
+
+    # -- operator override wins (no classifier call) -----------------------
+
+    def test_operator_override_skips_classifier(
+        self,
+        manager: BoardManager,
+        mock_build_agent: MagicMock,
+        mock_run_agent: MagicMock,
+    ) -> None:
+        """When _manager_model is explicitly set, the classifier is NOT called
+        and the override is passed verbatim to the manager build."""
+        manager._manager_model = "custom-manager-model"
+        mock_run_agent.return_value = "manager answer"
+
+        result = manager._converse("do something complex")
+
+        assert result == "manager answer"
+        # Only one build_agent_for_level call: the manager (no classifier).
+        assert mock_build_agent.call_count == 1
+        mgr_call = mock_build_agent.call_args_list[0]
+        assert mgr_call.args[0] == 3
+        assert mgr_call.kwargs["model"] == "custom-manager-model"
+
+    # -- classifier built at level-1 with correct name ---------------------
+
+    def test_classifier_built_at_level1_with_correct_name(
+        self,
+        manager: BoardManager,
+        mock_build_agent: MagicMock,
+        mock_run_agent: MagicMock,
+    ) -> None:
+        """The classifier agent is built at level-1 with name='board-manager-classify'."""
+        mock_run_agent.side_effect = ["SIMPLE", "ok"]
+
+        manager._converse("board status")
+
+        classify_call = mock_build_agent.call_args_list[0]
+        assert classify_call.args[0] == 1
+        assert classify_call.kwargs["name"] == "board-manager-classify"
+        assert classify_call.kwargs["output_type"] is str
+        # Level-1 means the cheap (non-Claude) provider is used.
+        # model is None → level-1 default (DeepSeek-flash).
+        assert classify_call.kwargs["model"] is None
+
+    # -- classifier exception falls back to Opus ---------------------------
+
+    def test_classifier_exception_falls_back_to_opus(
+        self,
+        manager: BoardManager,
+        mock_build_agent: MagicMock,
+        mock_run_agent: MagicMock,
+    ) -> None:
+        """When the classifier raises, _converse still completes and the manager
+        gets model=None (Opus)."""
+        # Side effect: first run_agent call (classifier) raises; second
+        # (manager) succeeds.
+        mock_run_agent.side_effect = [
+            RuntimeError("classification failed"),
+            "manager answer",
+        ]
+
+        result = manager._converse("some request")
+
+        assert result == "manager answer"
+        # Classifier built but its run_agent raised → manager still built.
+        assert mock_build_agent.call_count == 2
+        mgr_call = mock_build_agent.call_args_list[1]
+        assert mgr_call.args[0] == 3
+        assert mgr_call.kwargs["model"] is None
+
+    # -- classify_model override -------------------------------------------
+
+    def test_classify_model_passed_to_classifier(
+        self,
+        manager: BoardManager,
+        mock_build_agent: MagicMock,
+        mock_run_agent: MagicMock,
+    ) -> None:
+        """When _classify_model is set, it is passed to the classifier build."""
+        manager._classify_model = "custom-classify-model"
+        mock_run_agent.side_effect = ["SIMPLE", "ok"]
+
+        manager._converse("board status")
+
+        classify_call = mock_build_agent.call_args_list[0]
+        assert classify_call.kwargs["model"] == "custom-classify-model"
+
+    def test_classify_model_unset_passes_none(
+        self,
+        manager: BoardManager,
+        mock_build_agent: MagicMock,
+        mock_run_agent: MagicMock,
+    ) -> None:
+        """When _classify_model is None, model=None is passed (level-1 default)."""
+        manager._classify_model = None
+        mock_run_agent.side_effect = ["SIMPLE", "ok"]
+
+        manager._converse("board status")
+
+        classify_call = mock_build_agent.call_args_list[0]
+        assert classify_call.kwargs["model"] is None
+
+    # -- simple_read_model override ----------------------------------------
+
+    def test_simple_read_model_default_is_sonnet(
+        self,
+        manager: BoardManager,
+        mock_build_agent: MagicMock,
+        mock_run_agent: MagicMock,
+    ) -> None:
+        """Default _simple_read_model is 'sonnet'."""
+        assert manager._simple_read_model == "sonnet"
+
+    def test_simple_read_model_override_haiku(
+        self,
+        tmp_path: Path,
+        settings: BoardAgentSettings,
+        mock_build_agent: MagicMock,
+        mock_run_agent: MagicMock,
+    ) -> None:
+        """When simple_read_model='haiku' is passed, SIMPLE requests use it."""
+        mgr = BoardManager(
+            settings,
+            broker_host="test-broker.robotsix.net",
+            broker_token="test-broker-token",
+            memory_path=tmp_path / "memory",
+            simple_read_model="haiku",
+        )
+        mock_run_agent.side_effect = ["SIMPLE", "ok"]
+
+        mgr._converse("board status")
+
+        mgr_call = mock_build_agent.call_args_list[1]
+        assert mgr_call.kwargs["model"] == "haiku"
+
+    # -- SIMPLE with whitespace is still recognized ------------------------
+
+    def test_simple_with_whitespace_still_recognized(
+        self,
+        manager: BoardManager,
+        mock_build_agent: MagicMock,
+        mock_run_agent: MagicMock,
+    ) -> None:
+        """Classifier output '  SIMPLE  ' (with surrounding whitespace) routes to sonnet."""
+        mock_run_agent.side_effect = ["  SIMPLE  ", "ok"]
+
+        manager._converse("what tickets are open?")
+
+        mgr_call = mock_build_agent.call_args_list[1]
+        assert mgr_call.kwargs["model"] == "sonnet"
+
+    # -- SIMPLE with history present (recall, classify, manager all run) ---
+
+    def test_simple_with_history_all_three_passes(
+        self,
+        manager: BoardManager,
+        mock_build_agent: MagicMock,
+        mock_run_agent: MagicMock,
+    ) -> None:
+        """When history is present and classifier says SIMPLE, all three passes
+        run: recall (level-1), classifier (level-1), manager (level-3) with sonnet."""
+        manager._memory.append("prior Q", "prior A")
+        # Side effect order: recall, classifier, manager.
+        mock_run_agent.side_effect = ["relevant ctx", "SIMPLE", "manager answer"]
+
+        result = manager._converse("what is on the board?")
+
+        assert result == "manager answer"
+        assert mock_build_agent.call_count == 3
+
+        # Recall.
+        recall_call = mock_build_agent.call_args_list[0]
+        assert recall_call.args[0] == 1
+        assert recall_call.kwargs["name"] == "board-manager-recall"
+
+        # Classifier.
+        classify_call = mock_build_agent.call_args_list[1]
+        assert classify_call.args[0] == 1
+        assert classify_call.kwargs["name"] == "board-manager-classify"
+
+        # Manager (with sonnet).
+        mgr_call = mock_build_agent.call_args_list[2]
+        assert mgr_call.args[0] == 3
+        assert mgr_call.kwargs["name"] == "board-manager"
+        assert mgr_call.kwargs["model"] == "sonnet"
 
 
 # -- start / stop lifecycle --------------------------------------------------

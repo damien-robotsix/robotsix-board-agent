@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Added complexity classifier (`_select_manager_model`) that routes simple
+  read-only board-status queries to a cheaper Claude tier (Sonnet/Haiku),
+  reducing Opus token spend. Requests classified as COMPLEX or any that fail
+  classification fall back to the default Opus level-3 agent.
+
 - Removed unused destructured bindings (`_Registry`, `_Request`) from
   `agent.py:_resolve_agent_comm()` call.
 
