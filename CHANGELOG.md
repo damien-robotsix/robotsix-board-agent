@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Pinned `dangoslen/changelog-enforcer` GitHub Action to a specific commit SHA
+  in `.github/workflows/ci.yml` for supply-chain security.
+
 - Updated system prompt with a repository-structure policy: the board-manager now
   trusts the architecture documentation for high-level design and module layout,
   and only drills into individual source files when the doc is missing detail or
