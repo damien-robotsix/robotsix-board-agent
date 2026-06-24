@@ -30,6 +30,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   references unless explicitly requested, reducing output tokens by ~30-40% on analysis
   replies.
 
+- Updated `Agent` and `BrokeredAgent` test stubs to accept broker connection parameters
+  (`broker_host`, `broker_port`, `broker_scheme`, `broker_token`) and added lifecycle
+  test assertions for those parameters.
+
 ### Added
 
 - Added `ruff-check` CI job to `.github/workflows/ci.yml` for authoritative ruff enforcement
