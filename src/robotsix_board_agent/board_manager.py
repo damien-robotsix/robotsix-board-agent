@@ -146,13 +146,7 @@ _MANAGER_SYSTEM = (
     "ongoing/standing tasks, and user preferences (NOT a transcript). It is shown "
     "to you below each turn. When something worth remembering changes, call "
     "update_memory with the full revised note; keep it concise and "
-    "coherent — rewrite/trim rather than letting it grow.\n\n"
-    "REPOSITORY STRUCTURE: when you need to understand the repository's codebase, "
-    "trust the architecture documentation for high-level design and module layout. "
-    "Only examine individual source files when the architecture doc is missing "
-    "detail you genuinely need or when its description appears out of date. Do not "
-    "re-read files whose structure or purpose is already covered by the doc — "
-    "this wastes context tokens."
+    "coherent — rewrite/trim rather than letting it grow."
 )
 
 

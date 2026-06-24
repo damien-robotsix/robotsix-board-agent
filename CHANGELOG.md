@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Removed the "REPOSITORY STRUCTURE" section from `_MANAGER_SYSTEM` prompt in
+  `board_manager.py` — the BoardManager agent has no file-reading tools, so the
+  guidance was inapplicable and wasted context tokens.
+
 - Pinned `dangoslen/changelog-enforcer` GitHub Action to a specific commit SHA
   in `.github/workflows/ci.yml` for supply-chain security.
 
