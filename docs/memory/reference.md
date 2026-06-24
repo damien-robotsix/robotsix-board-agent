@@ -23,7 +23,7 @@ from robotsix_board_agent.memory import BoardManagerMemory
 memory = BoardManagerMemory(
     Path("memory.json"),
     max_conversations=200,
-    max_notes_chars=8000,
+    max_notes_chars=2000,
 )
 ```
 
@@ -33,7 +33,7 @@ memory = BoardManagerMemory(
 |---------------------|--------|---------|----------------------------------------------|
 | `path`              | `Path` | (required) | JSON file for the conversation trace       |
 | `max_conversations` | `int`  | `200`   | Hard cap on retained Q→A pairs               |
-| `max_notes_chars`   | `int`  | `8000`  | Hard cap on the maintained memory note (chars) |
+| `max_notes_chars`   | `int`  | `2000`  | Hard cap on the maintained memory note (chars) |
 
 The maintained-memory note is stored alongside the trace file with a `_notes.md`
 suffix. For `path=Path("memory.json")`, the notes file is `memory_notes.md`.

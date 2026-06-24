@@ -99,7 +99,7 @@ modules:
     description: >
       BoardManagerMemory — two-track persistence (conversation trace
       JSON + maintained memory Markdown).  Capped at 200 Q→A pairs and
-      8000-char notes; oldest-first pruning on overflow.
+      2000-char notes; oldest-first pruning on overflow.
 
   - name: tests
     path:

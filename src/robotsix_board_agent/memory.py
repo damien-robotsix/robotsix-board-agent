@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 MAX_CONVERSATIONS = 200
 
 #: Cap on the agent-maintained memory note, so it stays coherent (not too long).
-MAX_NOTES_CHARS = 8000
+MAX_NOTES_CHARS = 2000
 
 
 class BoardManagerMemory:
