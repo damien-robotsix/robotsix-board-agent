@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Removed unused destructured bindings (`_Registry`, `_Request`) from
+  `agent.py:_resolve_agent_comm()` call.
+
 ### Changed
 
 - Removed the "REPOSITORY STRUCTURE" section from `_MANAGER_SYSTEM` prompt in
