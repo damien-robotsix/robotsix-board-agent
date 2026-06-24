@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 # Import robotsix-agent-comm, with a fallback for sandbox environments where
 # pip cannot resolve the uv-specific git source.
 # ---------------------------------------------------------------------------
-_agent_comm_available, _Agent, _Error, _Registry, _Request, _Response = _resolve_agent_comm()
+_agent_comm_available, _Agent, _Error, *_, _Response = _resolve_agent_comm()
 
 # ---------------------------------------------------------------------------
 # Setup structured logging via robotsix-llmio's shared helper (idempotent).
