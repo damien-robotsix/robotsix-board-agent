@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   read-only board-status queries to a cheaper Claude tier (Sonnet/Haiku),
   reducing Opus token spend. Requests classified as COMPLEX or any that fail
   classification fall back to the default Opus level-3 agent.
+- Shrunk board-manager input tokens: reduced `MAX_NOTES_CHARS` from 8000 to
+  2000 and updated the recall system prompt to produce 2-3 factual outcome
+  summaries instead of verbatim transcripts. The maintained-memory system
+  prompt now emphasises keeping only bare current state. (mill: board-manager: shrink system prompt — trim maintained-memory block and summarise verbatim history (20260624T212717Z-board-manager-shrink-system-prompt-trim-fd7c))
 
 - Removed unused destructured bindings (`_Registry`, `_Request`) from
   `agent.py:_resolve_agent_comm()` call.

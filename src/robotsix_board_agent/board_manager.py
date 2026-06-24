@@ -94,11 +94,11 @@ def _truncate_result(result: Any) -> str:
 
 _RECALL_SYSTEM = (
     "You retrieve relevant context for a board-management assistant. Given a NEW "
-    "user question and a log of PRIOR question→answer exchanges, return only the "
-    "prior exchanges that are genuinely relevant to the new question (decisions, "
-    "tickets, or tasks it references or follows up on). Be terse — quote just the "
-    "relevant bits. If nothing is relevant, reply with the single word NONE "
-    "and nothing else."
+    "user question and a log of PRIOR question→answer exchanges, produce 2-3 "
+    "terse factual outcome summaries of the prior exchanges that are genuinely "
+    "relevant to the new question (decisions made, tickets created/modified, "
+    "results delivered). Summarise — do NOT quote verbatim transcripts. "
+    "If nothing is relevant, reply with the single word NONE and nothing else."
 )
 
 _MANAGER_SYSTEM = (
@@ -142,11 +142,11 @@ _MANAGER_SYSTEM = (
     "references (e.g. 'core/states.py lines 54/89/258/276') unless the user "
     "explicitly asked for them. Omit line numbers by default; describe what "
     "changed and where at the file/function level.\n\n"
-    "You keep a MAINTAINED MEMORY — a short, curated note of durable board state, "
-    "ongoing/standing tasks, and user preferences (NOT a transcript). It is shown "
-    "to you below each turn. When something worth remembering changes, call "
-    "update_memory with the full revised note; keep it concise and "
-    "coherent — rewrite/trim rather than letting it grow."
+    "You keep a MAINTAINED MEMORY — a bare-bones, current-state note of active "
+    "board status, open decisions, and user preferences (NOT a transcript or "
+    "log). It is shown to you below each turn. Strip stale or resolved items "
+    "aggressively; when calling update_memory, pass only what is still relevant "
+    "right now — rewrite/trim rather than letting it grow."
 )
 
 _CLASSIFY_SYSTEM = (
