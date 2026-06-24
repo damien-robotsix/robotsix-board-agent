@@ -27,6 +27,7 @@ from typing import Any
 
 from robotsix_agent_comm.protocol import Error, Message, Request, Response
 
+from ._imports import _setup_langfuse_tracing
 from ._lifecycle import _build_brokered_agent, _ThreadedLoopMixin
 from .client import BoardAPIError, BoardClient
 from .config import BoardAgentSettings
@@ -34,15 +35,7 @@ from .constants import DEFAULT_TICKET_SOURCE, BoardErrorCode
 from .memory import MAX_CONVERSATIONS, BoardManagerMemory
 from .ops import WRITE_OPS
 
-# ---------------------------------------------------------------------------
-# Setup Langfuse tracing (idempotent; reads LANGFUSE_* env vars).
-# ---------------------------------------------------------------------------
-try:
-    from robotsix_llmio.core import setup_langfuse_tracing as _llmio_setup_langfuse_tracing
-
-    _llmio_setup_langfuse_tracing()
-except ImportError:
-    pass
+_setup_langfuse_tracing()
 
 logger = logging.getLogger(__name__)
 
