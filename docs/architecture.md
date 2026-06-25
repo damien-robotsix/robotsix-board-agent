@@ -213,7 +213,7 @@ The canonical op registry. Defines:
 
 Two-track persistence for `BoardManager`:
 - **Conversation trace** — timestamped Q→A pairs stored as JSON, capped at 200 entries, oldest-first pruning on overflow.
-- **Maintained memory note** — a Markdown document the LLM can read and update via the `update_memory` tool, capped at 8,000 characters.
+- **Maintained memory note** — a Markdown document the LLM can read and update via the `update_memory` tool, capped at 2,000 characters.
 
 ### `BoardAgentSettings` (`config.py`)
 
