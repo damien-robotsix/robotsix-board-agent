@@ -27,6 +27,10 @@ MAX_CONVERSATIONS = 200
 #: Cap on the agent-maintained memory note, so it stays coherent (not too long).
 MAX_NOTES_CHARS = 2000
 
+#: Cap on the reference-material file — larger because it is only fetched
+#: on-demand via the ``lookup_reference`` tool, not injected on every call.
+MAX_REFERENCE_CHARS = 20_000
+
 # -- transcript hygiene ------------------------------------------------------
 
 #: Matches an ISO timestamp line (``[2026-06-25T21:42:39Z]`` or similar).
@@ -142,6 +146,8 @@ class BoardManagerMemory:
         self._max = max(1, max_conversations)
         self._notes_path = self._path.with_name(f"{self._path.stem}_notes.md")
         self._max_notes = max(0, max_notes_chars)
+        self._reference_path = self._path.with_name(f"{self._path.stem}_reference.md")
+        self._max_reference = MAX_REFERENCE_CHARS
 
     def load(self) -> list[dict[str, str]]:
         """Return the stored conversations (oldest first); empty on any error."""
@@ -193,18 +199,32 @@ class BoardManagerMemory:
             logger.warning("could not read board-manager notes at %s", self._notes_path)
             return ""
 
-    def save_notes(self, text: str) -> None:
+    def save_notes(self, text: str) -> str:
         """Replace the maintained memory note (truncated to ``max_notes_chars``).
 
         Verbose Q&A transcript blocks are stripped before saving so the note
         cannot grow into a full transcript — the agent's system prompt already
         instructs it to summarise, and this is a safety net.
+
+        Returns a status string indicating whether truncation occurred.
         """
         cleaned = _prune_transcripts(text or "")
         if cleaned != (text or ""):
             logger.info("board-manager memory: stripped transcript blocks from note")
+        truncated = cleaned[: self._max_notes]
         self._notes_path.parent.mkdir(parents=True, exist_ok=True)
-        self._notes_path.write_text(cleaned[: self._max_notes])
+        self._notes_path.write_text(truncated)
+        if len(cleaned) > self._max_notes:
+            logger.warning(
+                "board-manager memory: note truncated from %d to %d chars",
+                len(cleaned),
+                self._max_notes,
+            )
+            return (
+                f"maintained memory updated "
+                f"(truncated to {self._max_notes} chars — trim stale entries)"
+            )
+        return "maintained memory updated"
 
     def prune_closed_ticket(self, ticket_id: str) -> None:
         """Collapse maintained-memory entries for *ticket_id* to one summary line.
@@ -220,3 +240,58 @@ class BoardManagerMemory:
             logger.info("board-manager memory: pruned closed ticket %s from notes", ticket_id)
             self._notes_path.parent.mkdir(parents=True, exist_ok=True)
             self._notes_path.write_text(pruned[: self._max_notes])
+
+    # -- reference material (on-demand lookup, not injected every call) ----
+
+    def load_reference(self) -> str:
+        """Return the reference-material file content ('' when none/unreadable)."""
+        if not self._reference_path.exists():
+            return ""
+        try:
+            return self._reference_path.read_text()
+        except OSError:
+            logger.warning(
+                "board-manager memory: could not read reference at %s",
+                self._reference_path,
+            )
+            return ""
+
+    def save_reference(self, text: str) -> None:
+        """Replace the reference-material file (truncated to ``MAX_REFERENCE_CHARS``).
+
+        Callers (integration code, tests) pre-populate this with canonical
+        reference material (state-machine catalog, repo registry, etc.).
+        It is **not** exposed as an LLM tool — the agent can only *read* it
+        via ``lookup_reference``.
+        """
+        self._reference_path.parent.mkdir(parents=True, exist_ok=True)
+        self._reference_path.write_text((text or "")[: self._max_reference])
+
+    def search_reference(self, query: str) -> str:
+        """Return paragraphs from the reference material that match *query*.
+
+        The reference text is split on blank lines into paragraphs; any
+        paragraph whose text contains one of the query words (case-insensitive)
+        is included.  The result is capped at ~2000 chars to keep the tool
+        response lean.
+
+        Returns a plain-text summary or a notice when nothing matches.
+        """
+        text = self.load_reference()
+        if not text or not query.strip():
+            return "(no reference material available)"
+        terms = [t.lower() for t in query.strip().split() if len(t) > 1]
+        if not terms:
+            return "(no search terms in query)"
+        paragraphs = [p.strip() for p in text.split("\n\n") if p.strip()]
+        matches: list[str] = []
+        for para in paragraphs:
+            para_lower = para.lower()
+            if any(term in para_lower for term in terms):
+                matches.append(para)
+        if not matches:
+            return f"(no reference material matches query: {query.strip()!r})"
+        result = "\n\n".join(matches)
+        if len(result) > 2000:
+            result = result[:1997] + "…"
+        return result

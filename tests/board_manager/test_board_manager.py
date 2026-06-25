@@ -892,9 +892,9 @@ class TestBuildTools:
 
     # -- tool count & names --------------------------------------------------
 
-    def test_returns_exactly_16_callables(self, manager: BoardManager) -> None:
+    def test_returns_exactly_17_callables(self, manager: BoardManager) -> None:
         tools = manager._build_tools("test-requester")
-        assert len(tools) == 16
+        assert len(tools) == 17
         assert all(callable(t) for t in tools)
 
     def test_tool_names_match_expected(self, manager: BoardManager) -> None:
@@ -916,6 +916,7 @@ class TestBuildTools:
             "resume_blocked",
             "set_priority",
             "update_memory",
+            "lookup_reference",
         ]
         assert [t.__name__ for t in tools] == expected
 
@@ -956,7 +957,7 @@ class TestBuildTools:
     # -- update_memory -------------------------------------------------------
 
     def test_update_memory_delegates_to_save_notes(self, manager: BoardManager) -> None:
-        manager._memory.save_notes = MagicMock()
+        manager._memory.save_notes = MagicMock(return_value="maintained memory updated")
 
         tools = manager._build_tools("test-requester")
         update_memory = next(t for t in tools if t.__name__ == "update_memory")
@@ -965,6 +966,48 @@ class TestBuildTools:
 
         manager._memory.save_notes.assert_called_once_with("new notes")
         assert result == "maintained memory updated"
+
+    def test_update_memory_reports_truncation(self, manager: BoardManager) -> None:
+        """When save_notes truncates, update_memory returns the truncation notice."""
+        manager._memory.save_notes = MagicMock(
+            return_value="maintained memory updated (truncated to 2000 chars — trim stale entries)"
+        )
+
+        tools = manager._build_tools("test-requester")
+        update_memory = next(t for t in tools if t.__name__ == "update_memory")
+
+        result = update_memory("x" * 5000)
+
+        assert "truncated" in result
+        assert "2000" in result
+
+    # -- lookup_reference ---------------------------------------------------
+
+    def test_lookup_reference_delegates_to_search_reference(
+        self, manager: BoardManager
+    ) -> None:
+        manager._memory.search_reference = MagicMock(
+            return_value="## State Machine\n- open → in_progress → review → done"
+        )
+
+        tools = manager._build_tools("test-requester")
+        lookup_ref = next(t for t in tools if t.__name__ == "lookup_reference")
+
+        result = lookup_ref("state machine transitions")
+
+        manager._memory.search_reference.assert_called_once_with("state machine transitions")
+        assert "## State Machine" in result
+
+    def test_lookup_reference_no_match_returns_notice(self, manager: BoardManager) -> None:
+        manager._memory.search_reference = MagicMock(
+            return_value="(no reference material matches query: 'nonexistent')"
+        )
+
+        tools = manager._build_tools("test-requester")
+        lookup_ref = next(t for t in tools if t.__name__ == "lookup_reference")
+
+        result = lookup_ref("nonexistent")
+        assert "no reference material" in result.lower()
 
     # -- mark_done triggers prune -------------------------------------------
 
@@ -1145,9 +1188,9 @@ class TestBuildTools:
             memory_path=tmp_path / "memory",
         )
 
-    def test_read_only_returns_7_tools(self, read_only_manager: BoardManager) -> None:
+    def test_read_only_returns_8_tools(self, read_only_manager: BoardManager) -> None:
         tools = read_only_manager._build_tools("test-requester")
-        assert len(tools) == 7
+        assert len(tools) == 8
         assert all(callable(t) for t in tools)
 
     def test_read_only_tool_names_are_read_only(self, read_only_manager: BoardManager) -> None:
@@ -1161,6 +1204,7 @@ class TestBuildTools:
             "merge_status",
             "ticket_description",
             "update_memory",
+            "lookup_reference",
         }
         assert names == expected
 
@@ -1171,10 +1215,10 @@ class TestBuildTools:
         names = {t.__name__ for t in tools}
         assert names.isdisjoint(WRITE_OPS)
 
-    def test_read_write_returns_full_16(self, manager: BoardManager) -> None:
-        """When enable_write_ops=True (default fixture), still 16 tools."""
+    def test_read_write_returns_full_17(self, manager: BoardManager) -> None:
+        """When enable_write_ops=True (default fixture), still 17 tools."""
         tools = manager._build_tools("test-requester")
-        assert len(tools) == 16
+        assert len(tools) == 17
 
     # -- _truncate_result fallback pop ------------------------------------
 

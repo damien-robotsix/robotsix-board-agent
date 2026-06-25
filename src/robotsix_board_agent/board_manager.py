@@ -142,11 +142,19 @@ _MANAGER_SYSTEM = (
     "references (e.g. 'core/states.py lines 54/89/258/276') unless the user "
     "explicitly asked for them. Omit line numbers by default; describe what "
     "changed and where at the file/function level.\n\n"
+    "REFERENCE LOOKUP: you have a lookup_reference tool for rarely-needed "
+    "canonical reference material (board state-machine catalog, repo registry, "
+    "epic genealogy, approval inventories). Call it ONLY when a request "
+    "genuinely needs that information — it is NOT injected every turn so you "
+    "must fetch it yourself. Pass a short keyword query (e.g. 'state machine "
+    "transitions' or 'repo registry frontend').\n\n"
     "You keep a MAINTAINED MEMORY — a bare-bones, current-state note of active "
     "board status, open decisions, and user preferences (NOT a transcript or "
     "log). It is shown to you below each turn. Strip stale or resolved items "
     "aggressively; when calling update_memory, pass only what is still relevant "
-    "right now — rewrite/trim rather than letting it grow."
+    "right now — rewrite/trim rather than letting it grow. The memory is "
+    "capped at a few hundred words; keep reference material out of it (use "
+    "lookup_reference instead)."
 )
 
 _CLASSIFY_SYSTEM = (
@@ -443,9 +451,18 @@ class BoardManager(_ThreadedLoopMixin):
         def update_memory(memory: str) -> str:
             """Replace your maintained memory with `memory` — a concise, coherent
             note of durable board state, ongoing tasks, and user preferences to
-            remember across conversations. Pass the full revised note."""
-            self._memory.save_notes(memory)
-            return "maintained memory updated"
+            remember across conversations. Pass the full revised note. The note
+            is capped — if truncated you will be told so you can trim further."""
+            return self._memory.save_notes(memory)
+
+        def lookup_reference(query: str) -> str:
+            """Search the canonical reference material for paragraphs matching
+            `query`. Use for rarely-needed board reference data: state-machine
+            catalog, repo registry, epic genealogy, approval inventories.
+            Pass a short keyword query (e.g. 'state transitions' or
+            'repo registry'). Only call when a request genuinely needs it —
+            this material is NOT injected every turn."""
+            return self._memory.search_reference(query)
 
         tools = [
             list_tickets,
@@ -464,6 +481,7 @@ class BoardManager(_ThreadedLoopMixin):
             resume_blocked,
             set_priority,
             update_memory,
+            lookup_reference,
         ]
         if not self.settings.enable_write_ops:
             tools = [t for t in tools if t.__name__ not in WRITE_OPS]

@@ -211,3 +211,112 @@ def test_scrub_and_prune_combined() -> None:
     assert "closed" in result
     assert "## Active" in result
     assert "needs review" not in result  # ticket line pruned
+
+
+# -- reference material -----------------------------------------------------
+
+
+def test_reference_roundtrip(tmp_path: Path) -> None:
+    mem = BoardManagerMemory(tmp_path / "mem.json")
+    assert mem.load_reference() == ""
+    mem.save_reference("## State Machine\nopen → in_progress → review → done")
+    assert "## State Machine" in mem.load_reference()
+    assert (tmp_path / "mem_reference.md").exists()
+
+
+def test_reference_capped(tmp_path: Path) -> None:
+    """save_reference truncates to MAX_REFERENCE_CHARS."""
+    from robotsix_board_agent.memory import MAX_REFERENCE_CHARS
+
+    mem = BoardManagerMemory(tmp_path / "mem.json")
+    long_text = "x" * (MAX_REFERENCE_CHARS + 500)
+    mem.save_reference(long_text)
+    assert len(mem.load_reference()) == MAX_REFERENCE_CHARS
+
+
+def test_search_reference_finds_matches(tmp_path: Path) -> None:
+    mem = BoardManagerMemory(tmp_path / "mem.json")
+    mem.save_reference(
+        "## State Machine\n"
+        "open → in_progress → review → done\n\n"
+        "## Repo Registry\n"
+        "frontend: react-app\n"
+        "backend: api-server\n\n"
+        "## Approval Inventory\n"
+        "Ticket T-1: pending approval\n"
+        "Ticket T-2: approved"
+    )
+    result = mem.search_reference("state machine")
+    assert "open → in_progress" in result
+    assert "Repo Registry" not in result  # no keyword match
+    assert "Approval Inventory" not in result
+
+
+def test_search_reference_matches_multiple_sections(tmp_path: Path) -> None:
+    mem = BoardManagerMemory(tmp_path / "mem.json")
+    mem.save_reference(
+        "## Section A\n"
+        "contains keyword alpha\n\n"
+        "## Section B\n"
+        "no match here\n\n"
+        "## Section C\n"
+        "also contains keyword alpha"
+    )
+    result = mem.search_reference("keyword alpha")
+    assert "Section A" in result
+    assert "Section B" not in result
+    assert "Section C" in result
+
+
+def test_search_reference_no_match(tmp_path: Path) -> None:
+    mem = BoardManagerMemory(tmp_path / "mem.json")
+    mem.save_reference("## Data\nsome content here")
+    result = mem.search_reference("nonexistent")
+    assert "no reference material matches" in result
+
+
+def test_search_reference_empty_store(tmp_path: Path) -> None:
+    mem = BoardManagerMemory(tmp_path / "mem.json")
+    result = mem.search_reference("anything")
+    assert "no reference material available" in result
+
+
+def test_search_reference_empty_query(tmp_path: Path) -> None:
+    mem = BoardManagerMemory(tmp_path / "mem.json")
+    mem.save_reference("## Data\nsome content")
+    result = mem.search_reference("")
+    assert "no reference material available" in result
+
+
+def test_search_reference_case_insensitive(tmp_path: Path) -> None:
+    mem = BoardManagerMemory(tmp_path / "mem.json")
+    mem.save_reference("## STATE MACHINE\nOpen → In_Progress → Review")
+    result = mem.search_reference("state machine")
+    assert "STATE MACHINE" in result
+
+
+def test_search_reference_result_capped(tmp_path: Path) -> None:
+    """search_reference caps output at ~2000 chars."""
+    mem = BoardManagerMemory(tmp_path / "mem.json")
+    # Build many paragraphs that all match to exceed the cap.
+    paragraphs = [f"## Section {i}\nkeyword present here " + "x" * 200 for i in range(30)]
+    mem.save_reference("\n\n".join(paragraphs))
+    result = mem.search_reference("keyword")
+    assert len(result) <= 2010  # ~2000 chars + ellipsis
+
+
+# -- save_notes truncation status -------------------------------------------
+
+
+def test_save_notes_returns_truncation_status(tmp_path: Path) -> None:
+    mem = BoardManagerMemory(tmp_path / "mem.json", max_notes_chars=10)
+    status = mem.save_notes("x" * 50)
+    assert "truncated" in status
+    assert "10" in status
+
+
+def test_save_notes_returns_ok_when_within_cap(tmp_path: Path) -> None:
+    mem = BoardManagerMemory(tmp_path / "mem.json")
+    status = mem.save_notes("short note")
+    assert status == "maintained memory updated"
+    assert "truncated" not in status
