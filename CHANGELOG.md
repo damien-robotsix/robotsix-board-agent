@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   read-only board-status queries to a cheaper Claude tier (Sonnet/Haiku),
   reducing Opus token spend. Requests classified as COMPLEX or any that fail
   classification fall back to the default Opus level-3 agent.
+- Added transcript guard (`_prune_transcripts`) to `save_notes` so Q&A blocks
+  cannot accumulate in the maintained-memory note
+- Closing a ticket via `mark_done` now prunes its detailed memory entries to a
+  single summary line (`prune_closed_ticket`)
 - Shrunk board-manager input tokens: reduced `MAX_NOTES_CHARS` from 8000 to
   2000 and updated the recall system prompt to produce 2-3 factual outcome
   summaries instead of verbatim transcripts. The maintained-memory system

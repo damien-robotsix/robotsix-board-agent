@@ -966,6 +966,41 @@ class TestBuildTools:
         manager._memory.save_notes.assert_called_once_with("new notes")
         assert result == "maintained memory updated"
 
+    # -- mark_done triggers prune -------------------------------------------
+
+    def test_mark_done_prunes_closed_ticket_from_notes(self, manager: BoardManager) -> None:
+        """When mark_done succeeds, the closed ticket's memory entries are pruned."""
+        manager._run = MagicMock(return_value={"ok": True})
+        manager._memory.prune_closed_ticket = MagicMock()
+        manager.client.mark_done = MagicMock(return_value=MagicMock())
+
+        tools = manager._build_tools("test-requester")
+        mark_done = next(t for t in tools if t.__name__ == "mark_done")
+
+        result = mark_done("20260625T214218Z-prune-memory-a505")
+
+        manager._memory.prune_closed_ticket.assert_called_once_with(
+            "20260625T214218Z-prune-memory-a505"
+        )
+        # The tool still returns the API result.
+        assert "ok" in result
+
+    def test_mark_done_prunes_even_on_api_error(self, manager: BoardManager) -> None:
+        """mark_done prunes the ticket from notes even if the API call fails."""
+        error = BoardAPIError(404, "ticket not found")
+        manager._run = MagicMock(side_effect=error)
+        manager._memory.prune_closed_ticket = MagicMock()
+        manager.client.mark_done = MagicMock(return_value=MagicMock())
+
+        tools = manager._build_tools("test-requester")
+        mark_done = next(t for t in tools if t.__name__ == "mark_done")
+
+        result = mark_done("non-existent-id")
+
+        # prune happens regardless of API outcome
+        manager._memory.prune_closed_ticket.assert_called_once_with("non-existent-id")
+        assert "board API error 404" in result
+
     # -- _safe error wrapping ------------------------------------------------
 
     def test_safe_propagates_board_api_error_as_string(self, manager: BoardManager) -> None:
