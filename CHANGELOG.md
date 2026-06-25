@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 - Added dedicated test file `tests/constants/test_constants.py` for the constants module
+- Fixed stale documentation: `docs/architecture.md` corrected maintained memory note cap from 8,000 to 2,000 characters to match `MAX_NOTES_CHARS`
 - Added complexity classifier (`_select_manager_model`) that routes simple
   read-only board-status queries to a cheaper Claude tier (Sonnet/Haiku),
   reducing Opus token spend. Requests classified as COMPLEX or any that fail
