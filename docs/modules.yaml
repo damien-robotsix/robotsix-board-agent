@@ -12,6 +12,7 @@ modules:
       - tests/test__lifecycle.py
       - src/robotsix_board_agent/_request_handler.py
       - src/robotsix_board_agent/constants.py
+      - tests/constants/test_constants.py
       - docs/architecture.md
       - docs/modules.yaml
       - docs/reference.md
