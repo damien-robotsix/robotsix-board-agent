@@ -66,4 +66,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+- Removed three redundant entries (`_handle_request`, `BrokeredBoardResponder`, `BoardManager`) from `vulture_whitelist.py` — these symbols are referenced by name in tests and scripts, so Vulture no longer flags them.
 - **Breaking:** Removed the unused `openrouter_key` parameter from `BoardManager.__init__`. This parameter was never read and auth is handled via `claude login`.

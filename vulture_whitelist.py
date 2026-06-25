@@ -34,12 +34,3 @@ MergeNowArgs
 ResumeBlockedArgs
 MigrateArgs
 SetPriorityArgs
-
-# -- agent.py indirect references ------------------------------------------
-_handle_request
-
-# -- brokered.py: public API consumed by mill, not within board-agent ------
-BrokeredBoardResponder
-
-# -- board_manager.py: public API consumed by mill + the CLI ---------------
-BoardManager
