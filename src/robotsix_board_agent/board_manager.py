@@ -420,7 +420,9 @@ class BoardManager(_ThreadedLoopMixin):
 
         def mark_done(ticket_id: str, note: str = "") -> str:
             """Mark a ticket as done (optionally with a closing note)."""
-            return _safe(client.mark_done(ticket_id=ticket_id, note=note))
+            result = _safe(client.mark_done(ticket_id=ticket_id, note=note))
+            self._memory.prune_closed_ticket(ticket_id)
+            return result
 
         def merge_now(ticket_id: str) -> str:
             """Trigger an immediate merge for a ticket."""
