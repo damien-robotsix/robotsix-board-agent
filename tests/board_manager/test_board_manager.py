@@ -983,9 +983,7 @@ class TestBuildTools:
 
     # -- lookup_reference ---------------------------------------------------
 
-    def test_lookup_reference_delegates_to_search_reference(
-        self, manager: BoardManager
-    ) -> None:
+    def test_lookup_reference_delegates_to_search_reference(self, manager: BoardManager) -> None:
         manager._memory.search_reference = MagicMock(
             return_value="## State Machine\n- open → in_progress → review → done"
         )

@@ -40,3 +40,7 @@ _ = BrokeredBoardResponder
 
 # -- board_manager.py: public API consumed by mill + the CLI ---------------
 _ = BoardManager
+
+# -- memory.py: public API used by integration code / tests -----------------
+_ = BoardManagerMemory
+_ = BoardManagerMemory.save_reference  # used in tests/memory/test_memory.py
