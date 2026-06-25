@@ -1,14 +1,18 @@
 # Board Manager Memory
 
-`BoardManagerMemory` provides bounded, two-track persistence for the board
+`BoardManagerMemory` provides bounded, three-track persistence for the board
 manager's conversational context.
 
-## Two-track storage
+## Three-track storage
 
 | Track               | Format   | Purpose                                                    |
 |---------------------|----------|------------------------------------------------------------|
 | Conversation trace  | JSON     | Timestamped Q→A pairs; used by the level-1 recall scanner  |
 | Maintained memory   | Markdown | Free-form note curated by the level-3 agent itself         |
+| Reference material  | Markdown | Canonical reference data (state-machine catalog, repo      |
+|                     |          | registry, epic genealogy, approval inventories); fetched    |
+|                     |          | on-demand via the ``lookup_reference`` tool, not injected   |
+|                     |          | on every call.                                             |
 
 The conversation trace holds only the user's question and the manager's final
 answer — internal tool steps and reasoning are **not** stored, keeping the file
@@ -36,7 +40,9 @@ memory = BoardManagerMemory(
 | `max_notes_chars`   | `int`  | `2000`  | Hard cap on the maintained memory note (chars) |
 
 The maintained-memory note is stored alongside the trace file with a `_notes.md`
-suffix. For `path=Path("memory.json")`, the notes file is `memory_notes.md`.
+suffix, and the reference-material file with a `_reference.md` suffix. For
+`path=Path("memory.json")`, the files are `memory_notes.md` and
+`memory_reference.md`.
 
 ## Conversation trace
 
@@ -70,9 +76,39 @@ Returns an empty string when there are no stored entries.
 Returns the agent-curated memory note. Returns `""` when the file does not exist
 or is unreadable.
 
-### `save_notes(text)`
+### `save_notes(text) -> str`
 
-Replaces the maintained memory note. The text is truncated to `max_notes_chars`.
+Replaces the maintained memory note. Verbose Q&A transcript blocks are stripped
+before saving (safety net — the agent is already prompted to summarise). The
+text is truncated to `max_notes_chars`.
+
+Returns `"maintained memory updated"` on success, or a truncation notice when
+the input exceeded the cap — the agent can use this signal to trim stale entries
+and retry.
+
+## Reference material
+
+### `load_reference() -> str`
+
+Returns the reference-material file content (`""` when the file does not exist
+or is unreadable). Called internally by `search_reference`; not exposed as an
+LLM tool.
+
+### `save_reference(text)`
+
+Replaces the reference-material file, truncated to `MAX_REFERENCE_CHARS` (20,000).
+Intended for integration code/tests to pre-populate the store, not for the LLM
+agent to call directly.
+
+### `search_reference(query: str) -> str`
+
+Searches the reference material for paragraphs matching *query*. The text is
+split on blank lines into paragraphs; any paragraph containing one of the query
+words (case-insensitive, single-char words ignored) is included. The result is
+capped at ~2,000 characters to keep the tool response lean.
+
+Returns a plain-text summary or a notice when nothing matches. This is the
+method backing the LLM tool `lookup_reference`.
 
 ## Pruning behavior
 
@@ -91,3 +127,5 @@ auto-created on write).
 |-------------------|----------------------|------------------------|
 | Trace file        | `./memory.json`      | `[{timestamp, question, answer}, ...]` |
 | Notes file        | `./memory_notes.md`  | Free-form agent note   |
+| Reference file    | `./memory_reference.md`| Canonical reference material (state-
+|                   |                      | machine catalog, repo registry, etc.) |

@@ -48,6 +48,8 @@ manager = BoardManager(
 | `manager_model`    | `str \| None`        | (provider default)                | Model for the level-3 acting agent               |
 | `recall_model`     | `str \| None`        | (provider default)                | Model for the level-1 recall agent               |
 | `max_conversations`| `int`                | `200`                             | Max Q→A pairs retained in memory                 |
+| `simple_read_model`| `str`                | `"sonnet"`                        | Claude model alias for SIMPLE-classified requests|
+| `classify_model`   | `str \| None`        | (provider default)                | Model override for the level-1 complexity classifier|
 | `timeout`          | `float`              | `120.0`                           | Broker pull timeout in seconds                   |
 
 ## Natural-language interface
@@ -76,13 +78,19 @@ context window. If nothing is relevant, the recall agent replies `"none"`.
 
 ### Level 3 — acting manager
 
-A level-3 agent with 15 board-operation tools processes the instruction.
-Its system prompt includes:
+A level-3 agent with 16 board-operation tools + the `update_memory` and
+`lookup_reference` tools processes the instruction. Its system prompt includes:
 
 - The board repository identity
 - The agent's **maintained memory** — a curated note of durable board state,
-  ongoing tasks, and user preferences (not a transcript)
+  ongoing tasks, and user preferences (not a transcript), capped at a few
+  hundred words
 - Any relevant prior exchanges from the level-1 recall scan
+
+Reference material (state-machine catalog, repo registry, epic genealogy,
+approval inventories) is **not** injected into every call — it is stored in
+a separate on-disk file and fetched on-demand via the `lookup_reference` tool
+only when a request genuinely needs it.
 
 The level-3 agent runs the user's question through `h3.run_sync` and returns
 its final output as the reply.
@@ -111,10 +119,17 @@ strings.
 | `resume_blocked`     | `ticket_id: str`                            | `POST /tickets/{id}/resume-blocked`    |
 | `set_priority`       | `ticket_id: str, priority: bool`            | `POST /tickets/{id}/priority`          |
 | `update_memory`      | `memory: str`                               | (internal — writes maintained memory)  |
+| `lookup_reference`   | `query: str`                                | (internal — searches reference material)|
 
 The `update_memory` tool allows the level-3 agent to curate its own maintained
 memory note. The agent is prompted to rewrite the note (not append) to keep it
-concise and coherent.
+concise and coherent. If the note exceeds the character cap, `update_memory`
+returns a truncation notice so the agent can trim stale entries.
+
+The `lookup_reference` tool searches a separate reference-material file
+(state-machine catalog, repo registry, epic genealogy, approval inventories)
+that is **not** injected on every call — the agent fetches it on-demand via
+a keyword query when a request genuinely needs that information.
 
 ## Lifecycle
 

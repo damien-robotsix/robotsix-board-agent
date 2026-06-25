@@ -79,8 +79,9 @@ modules:
       - tests/board_manager/
     description: >
       BoardManager — natural-language LLM-powered board manager.
-      Two-stage pipeline (level-1 recall + level-3 acting), 15 board
-      operation tools, maintained memory, persistent conversation trace.
+      Two-stage pipeline (level-1 recall + level-3 acting), 16 board
+      operation tools + update_memory + lookup_reference, maintained
+      memory, reference-material store, persistent conversation trace.
 
   - name: manager_cli
     path:
@@ -98,9 +99,11 @@ modules:
       - docs/memory/reference.md
       - tests/memory/
     description: >
-      BoardManagerMemory — two-track persistence (conversation trace
-      JSON + maintained memory Markdown).  Capped at 200 Q→A pairs and
-      2000-char notes; oldest-first pruning on overflow.
+      BoardManagerMemory — three-track persistence (conversation trace
+      JSON + maintained memory Markdown + reference material Markdown).
+      Capped at 200 Q→A pairs, 2000-char notes, and 20k-char reference
+      file; oldest-first pruning on overflow; on-demand keyword search
+      of reference material via search_reference.
 
   - name: tests
     path:

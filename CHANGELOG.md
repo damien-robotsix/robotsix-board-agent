@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Added reference-material store (`_reference.md` sibling file) separate from
+  the maintained-memory note, with ``lookup_reference`` tool for on-demand
+  keyword search — reference material (state-machine catalog, repo registry,
+  etc.) is no longer injected into every LLM call, only fetched when needed
+- ``update_memory`` now returns an explicit truncation notice when the
+  maintained-memory note exceeds the character cap, so the agent can trim
+  stale entries
 - Added dedicated test file `tests/constants/test_constants.py` for the constants module
 - Fixed stale documentation: `docs/architecture.md` corrected maintained memory note cap from 8,000 to 2,000 characters to match `MAX_NOTES_CHARS`
 - Added complexity classifier (`_select_manager_model`) that routes simple
