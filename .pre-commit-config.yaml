@@ -44,3 +44,11 @@ repos:
         entry: uv run --with detect-secrets detect-secrets-hook --baseline .secrets.baseline
         language: system
         types: [text]
+
+      - id: zizmor
+        name: zizmor
+        entry: zizmor
+        language: system
+        types: [yaml]
+        files: ^\.github/workflows/
+        pass_filenames: false
