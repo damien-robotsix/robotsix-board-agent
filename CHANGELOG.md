@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Fixed `_MANAGER_SYSTEM` prompt parenthetical to use actual tool names
+  (`merge_now`, `resume_blocked`) instead of the mismatched shorthands
+  (`merge`, `resume`)
 - Added direct unit tests for the `_truncate_list` helper in `test_board_manager.py`
 - Added `zizmor` CI job to `.github/workflows/ci.yml` for GitHub Actions workflow
   security auditing (SARIF output for Code Scanning), and a local pre-commit hook
