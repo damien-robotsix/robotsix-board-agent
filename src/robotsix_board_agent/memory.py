@@ -43,6 +43,36 @@ _QA_LINE_RE = re.compile(r"^[QA]:\s")
 _BLANK_RE = re.compile(r"^\s*$")
 
 
+def _find_and_collapse_block(lines: list[str], start: int) -> tuple[list[str] | None, int]:
+    """If *lines[start:]* begins a transcript block, collapse it and return
+    ``([summary], next_index)``; otherwise return ``(None, start)``.
+
+    *start* must point to a line that matched :data:`_ISO_TS_RE`.
+    """
+    j = start + 1
+    # Skip blank lines after the timestamp.
+    while j < len(lines) and _BLANK_RE.match(lines[j]):
+        j += 1
+    if not (j < len(lines) and _QA_LINE_RE.match(lines[j])):
+        return None, start
+    # Collect Q/A lines until a non-Q/A, non-blank line or end.
+    q_text = lines[j][2:].strip()[:80] if lines[j].startswith("Q:") else ""
+    k = j + 1
+    while k < len(lines):
+        if _BLANK_RE.match(lines[k]):
+            k += 1
+            continue
+        if _QA_LINE_RE.match(lines[k]):
+            k += 1
+            continue
+        break
+    snippet = q_text[:60] + ("…" if len(q_text) > 60 else "")
+    label = (
+        f"(transcript block collapsed: {snippet})" if snippet else "(transcript block collapsed)"
+    )
+    return [label], k
+
+
 def _prune_transcripts(text: str) -> str:
     """Return *text* with verbatim Q&A transcript blocks collapsed.
 
@@ -58,34 +88,11 @@ def _prune_transcripts(text: str) -> str:
     i = 0
     while i < len(lines):
         line = lines[i]
-        # Detect start of a transcript block: an ISO timestamp followed by a Q:
-        # or A: on the next non-blank line.
         if _ISO_TS_RE.match(line):
-            j = i + 1
-            # Skip blank lines.
-            while j < len(lines) and _BLANK_RE.match(lines[j]):
-                j += 1
-            if j < len(lines) and _QA_LINE_RE.match(lines[j]):
-                # We have a transcript block — collect Q/A lines until a
-                # non-Q/A, non-blank line or end.
-                q_text = lines[j][2:].strip()[:80] if lines[j].startswith("Q:") else ""
-                k = j + 1
-                while k < len(lines):
-                    if _BLANK_RE.match(lines[k]):
-                        k += 1
-                        continue
-                    if _QA_LINE_RE.match(lines[k]):
-                        k += 1
-                        continue
-                    break
-                snippet = q_text[:60] + ("…" if len(q_text) > 60 else "")
-                label = (
-                    f"(transcript block collapsed: {snippet})"
-                    if snippet
-                    else "(transcript block collapsed)"
-                )
-                out.append(label)
-                i = k
+            labels, next_i = _find_and_collapse_block(lines, i)
+            if labels is not None:
+                out.extend(labels)
+                i = next_i
                 continue
         out.append(line)
         i += 1

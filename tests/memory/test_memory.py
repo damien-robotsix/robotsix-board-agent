@@ -6,6 +6,7 @@ from pathlib import Path
 
 from robotsix_board_agent.memory import (
     BoardManagerMemory,
+    _find_and_collapse_block,
     _prune_ticket_lines,
     _prune_transcripts,
 )
@@ -72,6 +73,89 @@ def test_corrupt_file_is_ignored(tmp_path: Path) -> None:
     # A subsequent append recovers cleanly.
     mem.append("q", "a", timestamp="t")
     assert len(mem.load()) == 1
+
+
+# -- transcript block detection ----------------------------------------------
+
+
+def test_find_and_collapse_block_finds_qa_block() -> None:
+    """A timestamp followed by Q:/A: lines returns a collapsed label."""
+    lines = [
+        "[2026-06-25T21:42:39Z]",
+        "Q: what is the status?",
+        "A: it is done",
+        "some other text",
+    ]
+    labels, next_i = _find_and_collapse_block(lines, 0)
+    assert labels is not None
+    assert len(labels) == 1
+    assert "transcript block collapsed" in labels[0]
+    assert "what is the status" in labels[0]
+    assert next_i == 3  # points to "some other text"
+
+
+def test_find_and_collapse_block_skips_blank_lines() -> None:
+    """Blank lines between the timestamp and the first Q/A are skipped."""
+    lines = [
+        "[2026-06-25T21:42:39Z]",
+        "",
+        "   ",
+        "Q: hello",
+        "A: world",
+        "after",
+    ]
+    labels, next_i = _find_and_collapse_block(lines, 0)
+    assert labels is not None
+    assert next_i == 5  # points to "after"
+
+
+def test_find_and_collapse_block_no_qa_after_timestamp() -> None:
+    """A timestamp not followed by Q/A returns None."""
+    lines = [
+        "[2026-06-25T21:42:39Z]",
+        "## Some heading",
+    ]
+    labels, next_i = _find_and_collapse_block(lines, 0)
+    assert labels is None
+    assert next_i == 0
+
+
+def test_find_and_collapse_block_only_timestamp() -> None:
+    """A lone timestamp line with nothing after it returns None."""
+    lines = ["[2026-06-25T21:42:39Z]"]
+    labels, next_i = _find_and_collapse_block(lines, 0)
+    assert labels is None
+    assert next_i == 0
+
+
+def test_find_and_collapse_block_answer_first() -> None:
+    """A block starting with A: (no Q:) still collapses."""
+    lines = [
+        "[2026-06-25T21:42:39Z]",
+        "A: the answer without a question",
+        "trailing text",
+    ]
+    labels, _next_i = _find_and_collapse_block(lines, 0)
+    assert labels is not None
+    assert "transcript block collapsed" in labels[0]
+    # No Q: text to extract — just the bare label
+    assert labels[0] == "(transcript block collapsed)"
+
+
+def test_find_and_collapse_block_truncates_long_question() -> None:
+    """The question snippet in the label is truncated at 60 chars."""
+    long_q = "Q: " + ("x" * 100)
+    lines = [
+        "[2026-06-25T21:42:39Z]",
+        long_q,
+        "A: answer",
+        "end",
+    ]
+    labels, _ = _find_and_collapse_block(lines, 0)
+    assert labels is not None
+    assert "…" in labels[0]
+    # The snippet should be at most 60 chars + "…"
+    assert labels[0] == "(transcript block collapsed: " + ("x" * 60) + "…)"
 
 
 # -- transcript pruning -----------------------------------------------------

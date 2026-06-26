@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Refactored `_prune_transcripts`: extracted `_find_and_collapse_block` helper to
+  reduce nesting from depth-5 to depth-2 and simplify index tracking
 - Fixed `_MANAGER_SYSTEM` prompt parenthetical to use actual tool names
   (`merge_now`, `resume_blocked`) instead of the mismatched shorthands
   (`merge`, `resume`)
