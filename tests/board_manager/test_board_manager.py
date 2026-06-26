@@ -1247,3 +1247,76 @@ class TestBuildTools:
         assert len(parsed) == 1
         assert "_truncated" in parsed[0]
         assert "2 item(s) omitted" in parsed[0]["_truncated"]
+
+
+# -- _truncate_list -----------------------------------------------------------
+
+
+class TestTruncateList:
+    """Direct unit tests for _truncate_list()."""
+
+    def test_empty_list_returns_empty_and_zero(self) -> None:
+        from robotsix_board_agent.board_manager import _truncate_list
+
+        result, omitted = _truncate_list([], 1000)
+        assert result == []
+        assert omitted == 0
+
+    def test_list_under_cap_returned_whole(self) -> None:
+        from robotsix_board_agent.board_manager import _truncate_list
+
+        items = [{"id": "a"}, {"id": "b"}]
+        result, omitted = _truncate_list(items, 10000)
+        assert result == items
+        assert omitted == 0
+
+    def test_list_over_cap_drops_trailing_and_counts_omitted(self) -> None:
+        from robotsix_board_agent.board_manager import _truncate_list
+
+        items = [{"data": "x" * 100} for _ in range(50)]
+        cap = 500
+        assert len(json.dumps(items)) > cap, "precondition: list must exceed cap"
+
+        result, omitted = _truncate_list(items, cap)
+        assert len(result) < len(items)
+        assert omitted == len(items) - len(result)
+        assert len(json.dumps(result)) <= cap
+
+    def test_fallback_pop_when_marker_overflows_cap(self) -> None:
+        from robotsix_board_agent.board_manager import _truncate_list
+
+        # After the while loop one element remains, but element + omission
+        # marker still exceeds cap → fallback pop drops the last element.
+        cap = 100
+        big = {"data": "x" * 80}  # ~92 bytes, fits alone
+        small = {"y": "z"}  # ~10 bytes
+        items = [big, small]
+        assert len(json.dumps(items)) > cap, "precondition: full list exceeds cap"
+
+        result, omitted = _truncate_list(items, cap)
+        # Both elements dropped: small popped in while loop,
+        # big popped in fallback.
+        assert result == []
+        assert omitted == 2
+
+    def test_exactly_at_cap_no_truncation(self) -> None:
+        from robotsix_board_agent.board_manager import _truncate_list
+
+        items = [{"id": "a"}, {"id": "b"}]
+        cap = len(json.dumps(items))
+        result, omitted = _truncate_list(items, cap)
+        assert result == items
+        assert omitted == 0
+
+    def test_marker_accounts_for_all_omitted(self) -> None:
+        from robotsix_board_agent.board_manager import _truncate_list
+
+        items = [{"data": "x" * 100} for _ in range(20)]
+        cap = 400
+        assert len(json.dumps(items)) > cap, "precondition: list must exceed cap"
+
+        result, omitted = _truncate_list(items, cap)
+        # Omitted count matches the actual number of dropped elements.
+        assert omitted == len(items) - len(result)
+        assert omitted > 0
+        assert len(json.dumps(result)) <= cap

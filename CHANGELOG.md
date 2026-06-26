@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Added direct unit tests for the `_truncate_list` helper in `test_board_manager.py`
 - Added reference-material store (`_reference.md` sibling file) separate from
   the maintained-memory note, with ``lookup_reference`` tool for on-demand
   keyword search — reference material (state-machine catalog, repo registry,
