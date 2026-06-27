@@ -933,7 +933,7 @@ requires-dist = [
     { name = "ruff", marker = "extra == 'dev'", specifier = "==0.15.15" },
     { name = "vulture", marker = "extra == 'dev'", specifier = ">=2.14" },
 ]
-provides-extras = ["dev", "prod", "tracing"]
+provides-extras = ["dev", "prod"]
 
 [package.metadata.requires-dev]
 dev = [
