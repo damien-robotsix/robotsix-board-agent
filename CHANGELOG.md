@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Migrated zizmor pre-commit hook from local `language: system` to official
+  `zizmorcore/zizmor-pre-commit` managed repo (v1.23.1) with `--offline` arg,
+  ensuring the hook works without manual global zizmor installation
 - Refactored `_prune_transcripts`: extracted `_find_and_collapse_block` helper to
   reduce nesting from depth-5 to depth-2 and simplify index tracking
 - Fixed `_MANAGER_SYSTEM` prompt parenthetical to use actual tool names
