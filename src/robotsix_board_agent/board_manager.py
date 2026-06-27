@@ -166,7 +166,7 @@ _CLASSIFY_SYSTEM = (
     "or a concise summary of what is on the board. It needs NO board modification "
     "and NO multi-step reasoning.\n\n"
     "COMPLEX: the request involves any board modification (create, transition, "
-    "comment, approve, mark done, migrate, merge, set priority, resume), requires "
+    "comment, approve, mark done, migrate, merge_now, set priority, resume_blocked), requires "
     "multi-step reasoning, or is ambiguous about intent.\n\n"
     "When in doubt, reply COMPLEX."
 )
