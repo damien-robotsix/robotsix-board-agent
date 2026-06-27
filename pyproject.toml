@@ -25,7 +25,7 @@ dev = [
 prod = [
     "robotsix-agent-comm",
 ]
-tracing = []
+
 
 [project.scripts]
 # CLI to talk to the board manager over the broker (needs the `prod` extra for

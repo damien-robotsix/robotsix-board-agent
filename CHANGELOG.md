@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Removed the empty `tracing` optional-dependency group from `pyproject.toml`
 - Migrated zizmor pre-commit hook from local `language: system` to official
   `zizmorcore/zizmor-pre-commit` managed repo (v1.23.1) with `--offline` arg,
   ensuring the hook works without manual global zizmor installation
