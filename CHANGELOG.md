@@ -11,7 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   (`_list_tickets`, `_get_ticket`, `_board_cards`, `_history`, `_merge_status`,
   `_description`, `_create_ticket`, `_add_comment`, `_transition`, `_approve`,
   `_mark_done`, `_merge_now`, `_resume_blocked`, `_migrate`, `_set_priority`)
-
+- Pinned `astral-sh/setup-uv` to correct v5 commit SHA and added
+  `persist-credentials: false` to all `actions/checkout` steps in CI workflow
+- Removed the `dependency-review` CI job — the repository does not have
+  Dependency graph enabled, so the action cannot run
 - Removed the empty `tracing` optional-dependency group from `pyproject.toml`
 - Migrated zizmor pre-commit hook from local `language: system` to official
   `zizmorcore/zizmor-pre-commit` managed repo (v1.23.1) with `--offline` arg,
