@@ -1332,3 +1332,190 @@ class TestTruncateList:
         assert omitted == len(items) - len(result)
         assert omitted > 0
         assert len(json.dumps(result)) <= cap
+
+
+# -- fast read path tests ----------------------------------------------------
+
+
+class TestFastReadTicket:
+    """Tests for BoardManager._fast_read_ticket — serving ticket status
+    directly from the board API without an LLM hop."""
+
+    TICKET_ID = "20260621T182023Z-my-ticket-a1b2"
+
+    @staticmethod
+    def _ticket_data(**overrides: object) -> dict[str, object]:
+        data: dict[str, object] = {
+            "state": "in_progress",
+            "branch": "feat/cool",
+            "pr_url": "https://github.com/org/repo/pull/42",
+            "pending_question": None,
+            "errors": None,
+        }
+        data.update(overrides)  # type: ignore[arg-type]
+        return data
+
+    # -- fast path accepted --------------------------------------------------
+
+    def test_simple_read_returns_structured_status(self, manager: BoardManager) -> None:
+        """A simple "read ticket X" query returns structured status without LLM."""
+        data = self._ticket_data()
+        manager._run = MagicMock(return_value=data)
+
+        result = manager._fast_read_ticket(f"Read the live state of ticket {self.TICKET_ID}")
+
+        assert result is not None
+        assert self.TICKET_ID in result
+        assert "state: in_progress" in result
+        assert "branch: feat/cool" in result
+        assert "pr_url: https://github.com/org/repo/pull/42" in result
+        # Not from cache on first call.
+        assert "(served from cache)" not in result
+        # _run was called exactly once with the get_ticket coroutine.
+        manager._run.assert_called_once()
+
+    def test_simple_read_omits_none_fields(self, manager: BoardManager) -> None:
+        """Optional None fields are omitted from the status summary."""
+        data = {"state": "open", "branch": None, "pr_url": None}
+        manager._run = MagicMock(return_value=data)
+
+        result = manager._fast_read_ticket(f"status of {self.TICKET_ID}")
+
+        assert result is not None
+        assert "branch:" not in result
+        assert "pr_url:" not in result
+
+    def test_read_with_pending_question_and_errors(self, manager: BoardManager) -> None:
+        """pending_question and errors are included when present."""
+        data = self._ticket_data(
+            pending_question="approve this?",
+            errors=[{"code": "lint-fail", "message": "flake8"}],
+        )
+        manager._run = MagicMock(return_value=data)
+
+        result = manager._fast_read_ticket(f"what's up with {self.TICKET_ID}")
+
+        assert result is not None
+        assert "pending_question: approve this?" in result
+        assert "errors:" in result
+
+    # -- cache ---------------------------------------------------------------
+
+    def test_cache_hit_avoids_api_call(self, manager: BoardManager) -> None:
+        """Second identical read is served from cache, no API call."""
+        data = self._ticket_data()
+        manager._run = MagicMock(return_value=data)
+
+        # First call — hits the API.
+        r1 = manager._fast_read_ticket(f"status of {self.TICKET_ID}")
+        assert r1 is not None
+        assert "(served from cache)" not in r1
+        assert manager._run.call_count == 1
+
+        # Second call — cache hit, no additional API call.
+        r2 = manager._fast_read_ticket(f"status of {self.TICKET_ID}")
+        assert r2 is not None
+        assert "(served from cache)" in r2
+        assert manager._run.call_count == 1  # still only one
+
+    def test_cache_hit_different_wording(self, manager: BoardManager) -> None:
+        """Cache key is the ticket id, not the question phrasing."""
+        data = self._ticket_data()
+        manager._run = MagicMock(return_value=data)
+
+        manager._fast_read_ticket(f"read {self.TICKET_ID}")
+        assert manager._run.call_count == 1
+
+        # Different wording, same ticket id → cache hit.
+        r2 = manager._fast_read_ticket(f"get status for {self.TICKET_ID} please")
+        assert r2 is not None
+        assert "(served from cache)" in r2
+        assert manager._run.call_count == 1
+
+    def test_cache_expiry_re_fetches(self, manager: BoardManager) -> None:
+        """After TTL, cache misses and the API is called again."""
+        from robotsix_board_agent.board_manager import _TicketCache
+
+        # Replace cache with a zero-TTL instance.
+        manager._ticket_cache = _TicketCache(ttl=0.0)
+
+        data1 = self._ticket_data(state="open")
+        data2 = self._ticket_data(state="done")
+        manager._run = MagicMock(side_effect=[data1, data2])
+
+        r1 = manager._fast_read_ticket(f"read {self.TICKET_ID}")
+        assert "state: open" in (r1 or "")
+        assert manager._run.call_count == 1
+
+        # TTL is 0, so this re-fetches.
+        r2 = manager._fast_read_ticket(f"read {self.TICKET_ID}")
+        assert "state: done" in (r2 or "")
+        assert manager._run.call_count == 2
+
+    # -- fast path skipped ---------------------------------------------------
+
+    def test_write_intent_skips_fast_path(self, manager: BoardManager) -> None:
+        """A question with write-intent keywords returns None (fall through to LLM)."""
+        manager._run = MagicMock()
+
+        result = manager._fast_read_ticket(f"please transition {self.TICKET_ID} to done")
+        assert result is None
+        manager._run.assert_not_called()
+
+    def test_no_ticket_id_skips_fast_path(self, manager: BoardManager) -> None:
+        """A question without a ticket id returns None."""
+        manager._run = MagicMock()
+
+        result = manager._fast_read_ticket("what tickets are open?")
+        assert result is None
+        manager._run.assert_not_called()
+
+    def test_multiple_ticket_ids_skips_fast_path(self, manager: BoardManager) -> None:
+        """A question mentioning multiple ticket ids returns None."""
+        manager._run = MagicMock()
+
+        result = manager._fast_read_ticket(
+            f"compare {self.TICKET_ID} and 20260621T182023Z-other-one-b3c4"
+        )
+        assert result is None
+        manager._run.assert_not_called()
+
+    # -- API error fallback --------------------------------------------------
+
+    def test_api_error_falls_back_to_llm(self, manager: BoardManager) -> None:
+        """When the board API returns an error, the fast path returns None."""
+        manager._run = MagicMock(side_effect=BoardAPIError(404, "not found"))
+
+        result = manager._fast_read_ticket(f"read {self.TICKET_ID}")
+        assert result is None
+        manager._run.assert_called_once()
+
+    # -- integration with _handle_request ------------------------------------
+
+    def test_handle_request_uses_fast_path(self, manager: BoardManager) -> None:
+        """_handle_request returns the fast-path result without calling _converse."""
+        from tests.conftest import Request
+
+        data = self._ticket_data()
+        manager._run = MagicMock(return_value=data)
+
+        with patch.object(manager, "_converse") as mock_conv:
+            reply = manager._handle_request(Request(body={"message": f"read {self.TICKET_ID}"}))
+
+        mock_conv.assert_not_called()
+        assert reply.error is None
+        assert reply.result is not None
+        assert self.TICKET_ID in reply.result["reply"]
+        assert "state: in_progress" in reply.result["reply"]
+
+    def test_handle_request_falls_back_to_converse(self, manager: BoardManager) -> None:
+        """When fast path returns None, _handle_request calls _converse."""
+        from tests.conftest import Request
+
+        with patch.object(manager, "_converse", return_value="LLM response") as mock_conv:
+            reply = manager._handle_request(
+                Request(body={"message": "create a ticket for the login bug"})
+            )
+
+        mock_conv.assert_called_once()
+        assert reply.result == {"reply": "LLM response"}
