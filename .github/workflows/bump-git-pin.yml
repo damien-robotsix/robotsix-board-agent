@@ -96,15 +96,15 @@ jobs:
             FULL_SHA=$(git ls-remote "$GIT_URL" refs/heads/main | cut -f1)
             echo "Resolved latest-main → $FULL_SHA"
             echo "sha=$FULL_SHA" >> "$GITHUB_OUTPUT"
-          elif echo "${{ inputs.new-rev }}" | grep -qE '^[0-9a-f]{40}$'; then
-            FULL_SHA="${{ inputs.new-rev }}"
+          elif echo "$NEW_REV" | grep -qE '^[0-9a-f]{40}$'; then
+            FULL_SHA="$NEW_REV"
             echo "Full SHA provided directly: $FULL_SHA"
             echo "sha=$FULL_SHA" >> "$GITHUB_OUTPUT"
-          elif echo "${{ inputs.new-rev }}" | grep -qE '^[0-9a-f]{12,39}$'; then
+          elif echo "$NEW_REV" | grep -qE '^[0-9a-f]{12,39}$'; then
             echo "::error::Short SHAs cannot be resolved. Pass a full 40-char SHA or 'latest-main' instead."
             exit 1
           else
-            FULL_SHA=$(git ls-remote "${{ inputs.git-url }}" "${{ inputs.new-rev }}" | cut -f1)
+            FULL_SHA=$(git ls-remote "$GIT_URL" "$NEW_REV" | cut -f1)
             if [ -z "$FULL_SHA" ]; then
               echo "::error::Could not resolve '$NEW_REV' — is it a reachable ref?"
               exit 1
