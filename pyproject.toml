@@ -48,7 +48,7 @@ default-groups = ["dev"]
 # fresh `uv export --frozen` in mill's Docker build and conflicts with mill's
 # locked commits, freezing mill's deploys. Bump in lockstep with mill's pins.
 robotsix-agent-comm = { git = "https://github.com/damien-robotsix/robotsix-agent-comm.git", rev = "fcf9adab4c0aa70de8221ce6c402cf0d4c1ddc4d" }
-robotsix-llmio = { git = "https://github.com/damien-robotsix/robotsix-llmio.git", rev = "28b23a848003" }
+robotsix-llmio = { git = "https://github.com/damien-robotsix/robotsix-llmio.git", rev = "3da3c4317f4a" }
 
 [build-system]
 requires = ["hatchling"]

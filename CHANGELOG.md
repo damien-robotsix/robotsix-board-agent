@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Added reusable `bump-git-pin.yml` workflow and `scripts/bump_git_pin.py` for
+  automated single-package git-pin bumps — resolves target commits, updates
+  `pyproject.toml` `[tool.uv.sources]`, refreshes the lockfile, and opens a PR
+- Updated `deps-bump.yml` to support both periodic batch `uv lock --upgrade`
+  refreshes (via robotsix-mill) and single-package pin bumps (via the new
+  reusable workflow), gated by `workflow_dispatch` inputs
+- Bumped `robotsix-llmio` pin from `28b23a848003` to `3da3c4317f4a` to unblock
+  fleet-wide `sqlite_utils` adoption (includes `core/sqlite_utils.py`)
 - Added test coverage for `_truncate_result`: a new unit test verifies that
   non-list results (e.g. plain strings) are returned unchanged, bypassing
   truncation even when they exceed `_RESULT_CAP`

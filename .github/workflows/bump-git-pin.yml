@@ -1,0 +1,138 @@
+name: Bump Git Pin
+
+# Reusable workflow: bump a git-sourced dependency's pin in pyproject.toml
+# (`[tool.uv.sources].<package>.rev`), refresh the lockfile, and open a PR.
+#
+# Callers in other repos:
+#   uses: damien-robotsix/robotsix-board-agent/.github/workflows/bump-git-pin.yml@<sha>
+#   with:
+#     package-name: robotsix-llmio
+#     git-url: https://github.com/damien-robotsix/robotsix-llmio.git
+#     new-rev: 3da3c4317f4a       # or "latest-main" to resolve HEAD of main
+#   secrets:
+#     DEPS_BUMP_TOKEN: ${{ secrets.DEPS_BUMP_TOKEN }}
+#
+# Single-package bump:
+#   *new-rev* can be an explicit commit SHA, or the string "latest-main" to
+#   auto-resolve the HEAD of the remote's default branch.  The workflow
+#   runs `git ls-remote` to resolve short SHAs and symbolic refs into full
+#   40-character commit hashes (which uv requires).
+#
+# Periodic batch refresh (all git deps to latest @main) is handled by the
+# separate `deps-bump.yml` workflow (which delegates to robotsix-mill).
+
+on:
+  workflow_call:
+    inputs:
+      package-name:
+        required: true
+        type: string
+        description: "Name of the package whose [tool.uv.sources] pin to bump (e.g. robotsix-llmio)"
+      git-url:
+        required: true
+        type: string
+        description: "Git URL of the package's upstream repo"
+      new-rev:
+        required: true
+        type: string
+        description: "Target revision — a full/short commit SHA, or 'latest-main' to auto-resolve"
+      commit-message:
+        required: false
+        type: string
+        default: ""
+        description: "Custom commit message (defaults to auto-generated)"
+      pr-title:
+        required: false
+        type: string
+        default: ""
+        description: "Custom PR title (defaults to auto-generated)"
+      pr-body:
+        required: false
+        type: string
+        default: ""
+        description: "Custom PR body"
+      pr-labels:
+        required: false
+        type: string
+        default: "dependencies,automated"
+      branch-name:
+        required: false
+        type: string
+        default: ""
+        description: "Custom branch name (defaults to auto-generated)"
+      uv-version:
+        required: false
+        type: string
+        default: "0.8.15"
+    secrets:
+      DEPS_BUMP_TOKEN:
+        required: true
+        description: "PAT with contents:write and pull-requests:write to open the bump PR"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ inputs.package-name }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
+
+      - name: Resolve target commit
+        id: resolve
+        run: |
+          if [ "${{ inputs.new-rev }}" = "latest-main" ]; then
+            FULL_SHA=$(git ls-remote "${{ inputs.git-url }}" refs/heads/main | cut -f1)
+            echo "Resolved latest-main → $FULL_SHA"
+            echo "sha=$FULL_SHA" >> "$GITHUB_OUTPUT"
+          elif echo "${{ inputs.new-rev }}" | grep -qE '^[0-9a-f]{12,}$'; then
+            # Looks like a commit SHA (≥12 hex chars) — resolve to full.
+            FULL_SHA=$(git ls-remote "${{ inputs.git-url }}" "${{ inputs.new-rev }}" | cut -f1)
+            if [ -z "$FULL_SHA" ]; then
+              echo "::error::Could not resolve '${{ inputs.new-rev }}' — is it a reachable ref?"
+              exit 1
+            fi
+            echo "Resolved short SHA ${{ inputs.new-rev }} → $FULL_SHA"
+            echo "sha=$FULL_SHA" >> "$GITHUB_OUTPUT"
+          else
+            # Assume it's a full SHA or a ref like a tag.
+            FULL_SHA=$(git ls-remote "${{ inputs.git-url }}" "${{ inputs.new-rev }}" | cut -f1)
+            if [ -z "$FULL_SHA" ]; then
+              echo "::error::Could not resolve '${{ inputs.new-rev }}' — is it a reachable ref?"
+              exit 1
+            fi
+            echo "Resolved ${{ inputs.new-rev }} → $FULL_SHA"
+            echo "sha=$FULL_SHA" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39  # v8.2.0
+        with:
+          version: ${{ inputs.uv-version }}
+
+      - name: Bump pin in pyproject.toml
+        run: python3 scripts/bump_git_pin.py "${{ inputs.package-name }}" "${{ steps.resolve.outputs.sha }}"
+
+      - name: Refresh lockfile
+        run: uv lock
+
+      - name: Open bump PR
+        id: pr
+        uses: peter-evans/create-pull-request@22a9089034f40e5a961c8808d113e2c98fb63676  # v7.0.11
+        with:
+          token: ${{ secrets.DEPS_BUMP_TOKEN }}
+          add-paths: |
+            pyproject.toml
+            uv.lock
+          branch: ${{ inputs.branch-name || format('deps/bump-{0}', inputs.package-name) }}
+          delete-branch: true
+          commit-message: ${{ inputs.commit-message || format('chore(deps): bump {0} git pin to {1}', inputs.package-name, steps.resolve.outputs.sha) }}
+          title: ${{ inputs.pr-title || format('chore(deps): bump {0} git pin to {1}', inputs.package-name, steps.resolve.outputs.sha) }}
+          labels: ${{ inputs.pr-labels }}
+          body: ${{ inputs.pr-body || format('Automated pin bump for `{0}` → `{1}`.', inputs.package-name, steps.resolve.outputs.sha) }}

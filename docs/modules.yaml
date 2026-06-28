@@ -105,6 +105,17 @@ modules:
       file; oldest-first pruning on overflow; on-demand keyword search
       of reference material via search_reference.
 
+  - name: scripts
+    path:
+      - scripts/check_kind_literals.py
+      - scripts/completeness_check.py
+      - scripts/bump_git_pin.py
+      - tests/scripts/test_bump_git_pin.py
+    description: >
+      Utility scripts — check_kind_literals.py (codegen literal
+      verification), completeness_check.py (agent-comm completeness
+      check), bump_git_pin.py (automated git dependency pin bumps).
+
   - name: tests
     path:
       - tests/
