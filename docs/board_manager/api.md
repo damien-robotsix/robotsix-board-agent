@@ -48,7 +48,8 @@ manager = BoardManager(
 | `manager_model`    | `str \| None`        | (provider default)                | Model for the level-3 acting agent               |
 | `recall_model`     | `str \| None`        | (provider default)                | Model for the level-1 recall agent               |
 | `max_conversations`| `int`                | `200`                             | Max Q→A pairs retained in memory                 |
-| `simple_read_model`| `str`                | `"sonnet"`                        | Claude model alias for SIMPLE-classified requests|
+| `simple_read_model`| `str`                | `"haiku"`                         | Claude model alias for SIMPLE_READ-classified requests|
+| `moderate_model`   | `str`                | `"sonnet"`                        | Claude model alias for MODERATE-classified requests (CRUD/dedup)|
 | `classify_model`   | `str \| None`        | (provider default)                | Model override for the level-1 complexity classifier|
 | `timeout`          | `float`              | `120.0`                           | Broker pull timeout in seconds                   |
 

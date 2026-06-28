@@ -9,11 +9,14 @@ broker (pull/mailbox) so it can be reached from anywhere, NAT-safe.
 
 The two passes run on their OWN provider via llmio's per-level defaults
 (``build_agent_for_level``): the **recall** pass is level-1 (DeepSeek-flash over
-OpenRouter — cheap), and the **manager** pass is level-3 (Claude opus over the
-Claude-SDK — strongest reasoning). Each level resolves its own transport, so the
-recall model is never forced through the Claude transport (which would 400 with
-"model may not exist"). An optional ``model=`` override changes only the bare
-model name; the level's provider stays fixed.
+OpenRouter — cheap), and the **manager** pass is level-3 (Claude-SDK — strongest
+reasoning). The manager pass uses a three-tier complexity classifier: trivial
+reads route to Haiku (default), straightforward CRUD/dedup routes to Sonnet
+(default), and only genuinely ambiguous multi-step planning routes to Opus. Each
+level resolves its own transport, so the recall model is never forced through
+the Claude transport (which would 400 with "model may not exist"). An optional
+``model=`` override changes only the bare model name; the level's provider stays
+fixed.
 
 Memory keeps only question→answer pairs (see :mod:`.memory`).
 """
@@ -160,15 +163,24 @@ _MANAGER_SYSTEM = (
 
 _CLASSIFY_SYSTEM = (
     "You classify incoming user requests for a board-management assistant. "
-    "Reply with a single token — SIMPLE or COMPLEX — and nothing else.\n\n"
-    "SIMPLE: the request is a straightforward read-only board status query or "
-    "summary. It asks for current board state, ticket listings, ticket details, "
-    "or a concise summary of what is on the board. It needs NO board modification "
-    "and NO multi-step reasoning.\n\n"
-    "COMPLEX: the request involves any board modification (create, transition, "
-    "comment, approve, mark done, migrate, merge_now, set priority, resume_blocked), requires "
-    "multi-step reasoning, or is ambiguous about intent.\n\n"
-    "When in doubt, reply COMPLEX."
+    "Reply with a single token — SIMPLE_READ, MODERATE, or COMPLEX — and "
+    "nothing else.\n\n"
+    "SIMPLE_READ: the request is a trivial, pure read-only board status query "
+    "or listing with zero ambiguity. It asks only for current board state, "
+    "ticket listings, ticket details, or a simple summary of what is on the "
+    "board. No board modification, no multi-step reasoning, no deduplication "
+    "check, no organisation/classification work.\n\n"
+    "MODERATE: the request needs board tools but is straightforward CRUD, "
+    "deduplication, ticket organisation/classification, or a simple single-step "
+    "mutation (create, transition, comment, migrate, approve, mark done, "
+    "merge_now, set priority, resume_blocked) with no complex multi-step "
+    "planning or ambiguity.\n\n"
+    "COMPLEX: the request is genuinely ambiguous, requires deep multi-step "
+    "reasoning or planning across several coordinated board operations, or "
+    "involves nuanced judgement where the cheapest models would likely make "
+    "mistakes.\n\n"
+    "When in doubt between SIMPLE_READ and MODERATE, reply MODERATE. "
+    "When in doubt between MODERATE and COMPLEX, reply COMPLEX."
 )
 
 
@@ -187,7 +199,8 @@ class BoardManager(_ThreadedLoopMixin):
         agent_id: str | None = None,
         manager_model: str | None = None,
         recall_model: str | None = None,
-        simple_read_model: str = "sonnet",
+        simple_read_model: str = "haiku",
+        moderate_model: str = "sonnet",
         classify_model: str | None = None,
         max_conversations: int = MAX_CONVERSATIONS,
         timeout: float = 120.0,
@@ -203,8 +216,11 @@ class BoardManager(_ThreadedLoopMixin):
         broker agent id (defaults to ``board-manager-{repo_id}``).
         *manager_model*/*recall_model* — optional model overrides for the primary
         manager LLM and the lower-tier recall scanner.
-        *simple_read_model* — bare Claude alias (``"sonnet"``, ``"haiku"``) used
-        for requests the complexity classifier deems SIMPLE; default ``"sonnet"``.
+        *simple_read_model* — bare Claude alias (``"haiku"``, ``"sonnet"``) used
+        for requests the complexity classifier deems SIMPLE_READ; default ``"haiku"``.
+        *moderate_model* — bare Claude alias (``"sonnet"``) used for requests
+        the complexity classifier deems MODERATE (straightforward CRUD/dedup/
+        organisation); default ``"sonnet"``.
         *classify_model* — optional bare model override for the level-1
         classifier (defaults to level-1's DeepSeek-flash).  *max_conversations* —
         cap on stored conversation pairs.  *timeout* — broker operation timeout
@@ -216,6 +232,7 @@ class BoardManager(_ThreadedLoopMixin):
         self._manager_model = manager_model
         self._recall_model = recall_model
         self._simple_read_model = simple_read_model
+        self._moderate_model = moderate_model
         self._classify_model = classify_model
         self._memory = BoardManagerMemory(memory_path, max_conversations=max_conversations)
         self._agent = _build_brokered_agent(
@@ -272,9 +289,10 @@ class BoardManager(_ThreadedLoopMixin):
         If the operator explicitly set ``_manager_model``, return it verbatim
         (operator override wins — no down-tier).  Otherwise, run a cheap
         **level-1** classifier agent (DeepSeek provider) that replies with a
-        single token: ``SIMPLE`` → return ``_simple_read_model`` (default
-        ``"sonnet"``); anything else → return ``None`` (level-3 default =
-        Opus).
+        single token: ``SIMPLE_READ`` → return ``_simple_read_model`` (default
+        ``"haiku"``); ``MODERATE`` → return ``_moderate_model`` (default
+        ``"sonnet"``); anything else (including ``COMPLEX``) → return ``None``
+        (level-3 default = Opus).
 
         Any failure inside the classifier is logged and swallowed —
         ``None`` is returned so the request falls back to Opus.
@@ -304,8 +322,11 @@ class BoardManager(_ThreadedLoopMixin):
             logger.warning("board-manager: classifier failed, falling back to Opus", exc_info=True)
             return None
 
-        if verdict.strip().upper() == "SIMPLE":
+        v = verdict.strip().upper()
+        if v == "SIMPLE_READ":
             return self._simple_read_model
+        if v == "MODERATE":
+            return self._moderate_model
         return None
 
     # -- the LLM pipeline (level-1 recall -> classify -> level-3 act) -------
