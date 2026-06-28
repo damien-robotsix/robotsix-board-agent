@@ -16,74 +16,47 @@ from __future__ import annotations
 
 import ast
 import sys
-import types
 from pathlib import Path
 
 # ---------------------------------------------------------------------------
-# Inject stubs for optional dependencies before importing the package.
-# robotsix-agent-comm is a 'prod' extra — not installed by the CI reusable
-# workflow (which runs ``uv sync --frozen`` without extras).  Without this
-# injection, importing *anything* from robotsix_board_agent fails.
+# Locate the repo root and parse DEFAULT_TICKET_KIND from constants.py.
+# We use AST parsing to avoid importing the package, because the CI
+# reusable workflow runs this script with bare ``python`` (not
+# ``uv run python``), so the package and its dependencies may not be
+# importable.
 # ---------------------------------------------------------------------------
+_REPO_ROOT = Path(__file__).resolve().parent.parent
+_CONSTANTS_PATH = _REPO_ROOT / "src" / "robotsix_board_agent" / "constants.py"
 
 
-def _inject_agent_comm_stubs() -> None:
-    """Inject minimal stdlib stubs for ``robotsix_agent_comm`` modules."""
-    # Parent package (must exist before any subpackage import).
-    _comm_mod = sys.modules.get("robotsix_agent_comm")
-    if _comm_mod is None:
-        _comm_mod = types.ModuleType("robotsix_agent_comm")
-        _comm_mod.__path__ = []
-        sys.modules["robotsix_agent_comm"] = _comm_mod
+def _read_default_ticket_kind(path: Path) -> str:
+    """Parse *path* and return the value of ``DEFAULT_TICKET_KIND``."""
+    try:
+        source = path.read_text()
+    except OSError:
+        sys.exit(f"ERROR: cannot read {path}")
 
-    # robotsix_agent_comm.sdk — BrokeredAgent.
-    _sdk_mod = sys.modules.get("robotsix_agent_comm.sdk")
-    if _sdk_mod is None:
-        _sdk_mod = types.ModuleType("robotsix_agent_comm.sdk")
-        _sdk_mod.__path__ = []
-        sys.modules["robotsix_agent_comm.sdk"] = _sdk_mod
-    if not hasattr(_sdk_mod, "BrokeredAgent"):
-
-        class _BrokeredAgentStub:
-            pass
-
-        _sdk_mod.BrokeredAgent = _BrokeredAgentStub  # type: ignore[attr-defined]
-
-    # robotsix_agent_comm.protocol — Error, Message, Request, Response.
-    _proto_mod = sys.modules.get("robotsix_agent_comm.protocol")
-    if _proto_mod is None:
-        _proto_mod = types.ModuleType("robotsix_agent_comm.protocol")
-        sys.modules["robotsix_agent_comm.protocol"] = _proto_mod
-    for _proto_name in ("Error", "Message", "Request", "Response"):
-        if not hasattr(_proto_mod, _proto_name):
-            setattr(_proto_mod, _proto_name, type(_proto_name, (), {}))
+    tree = ast.parse(source)
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Assign):
+            continue
+        for target in node.targets:
+            if (
+                isinstance(target, ast.Name)
+                and target.id == "DEFAULT_TICKET_KIND"
+                and isinstance(node.value, ast.Constant)
+                and isinstance(node.value.value, str)
+            ):
+                return node.value.value
+    sys.exit(f"ERROR: DEFAULT_TICKET_KIND not found in {path}")
 
 
-_inject_agent_comm_stubs()
-
-# ---------------------------------------------------------------------------
-# Ensure the local package is importable even when running with bare
-# ``python`` (not ``uv run python``).  The CI reusable workflow calls
-# ``python scripts/check_kind_literals.py`` without ``uv run``, so the
-# package may not be on sys.path unless we add ``src/`` explicitly.
-# This is safe even when the package IS installed — importing it via
-# ``src/`` on sys.path takes precedence, which gives us the exact
-# version under test.
-# ---------------------------------------------------------------------------
-_script_dir = Path(__file__).resolve().parent
-_src_dir = str(_script_dir.parent / "src")
-if _src_dir not in sys.path:
-    sys.path.insert(0, _src_dir)
-
-# ---------------------------------------------------------------------------
-# Import the constants module (the single source of truth for kind values)
-# ---------------------------------------------------------------------------
-from robotsix_board_agent.constants import DEFAULT_TICKET_KIND  # noqa: E402
+_DEFAULT_KIND = _read_default_ticket_kind(_CONSTANTS_PATH)
 
 # ---------------------------------------------------------------------------
 # Valid kinds — add new recognised kinds here as the board API evolves
 # ---------------------------------------------------------------------------
-_VALID_KINDS: frozenset[str] = frozenset({DEFAULT_TICKET_KIND})
+_VALID_KINDS: frozenset[str] = frozenset({_DEFAULT_KIND})
 
 # ---------------------------------------------------------------------------
 # Helper
@@ -153,8 +126,7 @@ def _find_kind_literals(source_path: Path) -> list[tuple[int, str]]:
 
 def main() -> int:
     """Run the kind-literals consistency check."""
-    repo_root = Path(__file__).resolve().parent.parent
-    src_dir = repo_root / "src"
+    src_dir = _REPO_ROOT / "src"
     errors: list[str] = []
 
     for py_file in sorted(src_dir.rglob("*.py")):
@@ -162,7 +134,7 @@ def main() -> int:
         for lineno, literal in literals:
             if literal not in _VALID_KINDS:
                 errors.append(
-                    f"{py_file.relative_to(repo_root)}:{lineno}: "
+                    f"{py_file.relative_to(_REPO_ROOT)}:{lineno}: "
                     f"kind literal {literal!r} is not in the known valid set "
                     f"{sorted(_VALID_KINDS)!r}. If this is a new valid kind, "
                     f"add it to _VALID_KINDS in {Path(__file__).name}."
