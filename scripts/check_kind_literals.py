@@ -62,6 +62,20 @@ def _inject_agent_comm_stubs() -> None:
 _inject_agent_comm_stubs()
 
 # ---------------------------------------------------------------------------
+# Ensure the local package is importable even when running with bare
+# ``python`` (not ``uv run python``).  The CI reusable workflow calls
+# ``python scripts/check_kind_literals.py`` without ``uv run``, so the
+# package may not be on sys.path unless we add ``src/`` explicitly.
+# This is safe even when the package IS installed — importing it via
+# ``src/`` on sys.path takes precedence, which gives us the exact
+# version under test.
+# ---------------------------------------------------------------------------
+_script_dir = Path(__file__).resolve().parent
+_src_dir = str(_script_dir.parent / "src")
+if _src_dir not in sys.path:
+    sys.path.insert(0, _src_dir)
+
+# ---------------------------------------------------------------------------
 # Import the constants module (the single source of truth for kind values)
 # ---------------------------------------------------------------------------
 from robotsix_board_agent.constants import DEFAULT_TICKET_KIND  # noqa: E402
