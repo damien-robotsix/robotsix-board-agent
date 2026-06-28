@@ -142,39 +142,46 @@ class SetPriorityArgs(BaseModel):
 
 
 async def _list_tickets(client: BoardClient, args: dict[str, Any]) -> dict[str, Any]:
+    """List board tickets, optionally filtered by state and/or repo."""
     a = ListTicketsArgs.model_validate(args)
     result = await client.list_tickets(state=a.state, repo_id=a.repo_id)
     return {"tickets": result}
 
 
 async def _get_ticket(client: BoardClient, args: dict[str, Any]) -> dict[str, Any]:
+    """Retrieve a single ticket by its id."""
     a = GetTicketArgs.model_validate(args)
     return await client.get_ticket(ticket_id=a.ticket_id)
 
 
 async def _board_cards(client: BoardClient, args: dict[str, Any]) -> dict[str, Any]:
+    """Retrieve board cards for a repo."""
     a = BoardCardsArgs.model_validate(args)
     result = await client.board_cards(repo_id=a.repo_id)
     return {"cards": result}
 
 
 async def _history(client: BoardClient, args: dict[str, Any]) -> dict[str, Any]:
+    """Retrieve the event history for a ticket."""
     a = HistoryArgs.model_validate(args)
     result = await client.history(ticket_id=a.ticket_id)
     return {"history": result}
 
 
 async def _merge_status(client: BoardClient, args: dict[str, Any]) -> dict[str, Any]:
+    """Retrieve the merge status of a ticket."""
     a = MergeStatusArgs.model_validate(args)
     return await client.merge_status(ticket_id=a.ticket_id)
 
 
 async def _description(client: BoardClient, args: dict[str, Any]) -> dict[str, Any]:
+    """Retrieve the description of a ticket."""
     a = DescriptionArgs.model_validate(args)
     return await client.description(ticket_id=a.ticket_id)
 
 
 async def _create_ticket(client: BoardClient, args: dict[str, Any]) -> dict[str, Any]:
+    """Create a new ticket with title, description, and optional metadata."""
     a = CreateTicketArgs.model_validate(args)
     return await client.create_ticket(
         title=a.title,
@@ -186,6 +193,7 @@ async def _create_ticket(client: BoardClient, args: dict[str, Any]) -> dict[str,
 
 
 async def _add_comment(client: BoardClient, args: dict[str, Any]) -> dict[str, Any]:
+    """Add a comment to a ticket."""
     a = AddCommentArgs.model_validate(args)
     return await client.add_comment(
         ticket_id=a.ticket_id,
@@ -195,6 +203,7 @@ async def _add_comment(client: BoardClient, args: dict[str, Any]) -> dict[str, A
 
 
 async def _transition(client: BoardClient, args: dict[str, Any]) -> dict[str, Any]:
+    """Transition a ticket to a new state."""
     a = TransitionArgs.model_validate(args)
     return await client.transition(
         ticket_id=a.ticket_id,
@@ -204,26 +213,31 @@ async def _transition(client: BoardClient, args: dict[str, Any]) -> dict[str, An
 
 
 async def _approve(client: BoardClient, args: dict[str, Any]) -> dict[str, Any]:
+    """Approve a ticket."""
     a = ApproveArgs.model_validate(args)
     return await client.approve(ticket_id=a.ticket_id)
 
 
 async def _mark_done(client: BoardClient, args: dict[str, Any]) -> dict[str, Any]:
+    """Mark a ticket as done with an optional closing note."""
     a = MarkDoneArgs.model_validate(args)
     return await client.mark_done(ticket_id=a.ticket_id, note=a.note)
 
 
 async def _merge_now(client: BoardClient, args: dict[str, Any]) -> dict[str, Any]:
+    """Merge a ticket's associated PR or change."""
     a = MergeNowArgs.model_validate(args)
     return await client.merge_now(ticket_id=a.ticket_id)
 
 
 async def _resume_blocked(client: BoardClient, args: dict[str, Any]) -> dict[str, Any]:
+    """Resume a blocked ticket."""
     a = ResumeBlockedArgs.model_validate(args)
     return await client.resume_blocked(ticket_id=a.ticket_id)
 
 
 async def _migrate(client: BoardClient, args: dict[str, Any]) -> dict[str, Any]:
+    """Migrate a ticket to a different repo."""
     a = MigrateArgs.model_validate(args)
     return await client.migrate(
         ticket_id=a.ticket_id,
@@ -233,6 +247,7 @@ async def _migrate(client: BoardClient, args: dict[str, Any]) -> dict[str, Any]:
 
 
 async def _set_priority(client: BoardClient, args: dict[str, Any]) -> dict[str, Any]:
+    """Set the priority flag on a ticket."""
     a = SetPriorityArgs.model_validate(args)
     return await client.set_priority(ticket_id=a.ticket_id, priority=a.priority)
 
