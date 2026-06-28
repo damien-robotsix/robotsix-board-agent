@@ -145,6 +145,26 @@ class BoardClient:
         """Get the description of a ticket."""
         return await self._request("GET", f"/tickets/{ticket_id}/description")  # type: ignore[no-any-return]
 
+    async def get_multiple_ticket_descriptions(self, ticket_ids: list[str]) -> list[dict[str, Any]]:
+        """Get descriptions for multiple tickets concurrently.
+
+        Each ticket's description is fetched via ``GET /tickets/{id}/description``.
+        Individual failures are captured as ``{"ticket_id": …, "error": …}``
+        entries so the caller always receives one result per requested id.
+        """
+        import asyncio
+
+        async def _one(tid: str) -> dict[str, Any]:
+            try:
+                return await self.description(ticket_id=tid)
+            except BoardAPIError as exc:
+                return {
+                    "ticket_id": tid,
+                    "error": f"Board API error {exc.status_code}: {exc.detail}",
+                }
+
+        return list(await asyncio.gather(*(_one(tid) for tid in ticket_ids)))
+
     # -- write operations --------------------------------------------------
 
     async def create_ticket(

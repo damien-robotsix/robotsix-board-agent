@@ -155,6 +155,58 @@ async def test_description(client: BoardClient, mock_transport: httpx.MockTransp
 
 
 # ---------------------------------------------------------------------------
+# get_multiple_ticket_descriptions
+# ---------------------------------------------------------------------------
+
+
+async def test_get_multiple_ticket_descriptions(
+    client: BoardClient, mock_transport: httpx.MockTransport
+):
+    call_count = 0
+
+    def handler(req: httpx.Request) -> httpx.Response:
+        nonlocal call_count
+        call_count += 1
+        assert req.method == "GET"
+        assert "/tickets/" in str(req.url) and "/description" in str(req.url)
+        # Return a description keyed by the ticket id from the URL.
+        tid = str(req.url).split("/tickets/")[1].split("/description")[0]
+        return json_response({"ticket_id": tid, "body": f"desc of {tid}"})
+
+    mock_transport.handler = handler  # type: ignore[attr-defined]
+    result = await client.get_multiple_ticket_descriptions(["T-1", "T-2", "T-3"])
+    assert call_count == 3
+    assert len(result) == 3
+    assert result[0]["ticket_id"] == "T-1"
+    assert result[1]["ticket_id"] == "T-2"
+    assert result[2]["ticket_id"] == "T-3"
+
+
+async def test_get_multiple_ticket_descriptions_partial_error(
+    client: BoardClient, mock_transport: httpx.MockTransport
+):
+    call_count = 0
+
+    def handler(req: httpx.Request) -> httpx.Response:
+        nonlocal call_count
+        call_count += 1
+        if "T-2" in str(req.url):
+            return json_response({"detail": "not found"}, status=404)
+        return json_response({"body": "ok"})
+
+    mock_transport.handler = handler  # type: ignore[attr-defined]
+    result = await client.get_multiple_ticket_descriptions(["T-1", "T-2", "T-3"])
+    assert call_count == 3
+    assert len(result) == 3
+    # T-1 and T-3 succeeded.
+    assert result[0] == {"body": "ok"}
+    assert result[2] == {"body": "ok"}
+    # T-2 captured an error.
+    assert result[1]["ticket_id"] == "T-2"
+    assert "Board API error 404" in result[1]["error"]
+
+
+# ---------------------------------------------------------------------------
 # create_ticket (write)
 # ---------------------------------------------------------------------------
 

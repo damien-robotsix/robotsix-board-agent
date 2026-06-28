@@ -72,6 +72,12 @@ class DescriptionArgs(BaseModel):
     ticket_id: str
 
 
+class GetMultipleTicketDescriptionsArgs(BaseModel):
+    """Arguments for the ``get_multiple_ticket_descriptions`` operation — list of ticket ids."""
+
+    ticket_ids: list[str]
+
+
 class CreateTicketArgs(BaseModel):
     """Arguments for the ``create_ticket`` operation — title, description, and optional metadata."""
 
@@ -180,6 +186,15 @@ async def _description(client: BoardClient, args: dict[str, Any]) -> dict[str, A
     return await client.description(ticket_id=a.ticket_id)
 
 
+async def _get_multiple_ticket_descriptions(
+    client: BoardClient, args: dict[str, Any]
+) -> dict[str, Any]:
+    """Retrieve descriptions for multiple tickets in one batch call."""
+    a = GetMultipleTicketDescriptionsArgs.model_validate(args)
+    result = await client.get_multiple_ticket_descriptions(ticket_ids=a.ticket_ids)
+    return {"descriptions": result}
+
+
 async def _create_ticket(client: BoardClient, args: dict[str, Any]) -> dict[str, Any]:
     """Create a new ticket with title, description, and optional metadata."""
     a = CreateTicketArgs.model_validate(args)
@@ -260,6 +275,7 @@ OP_TABLE: dict[str, Callable[[BoardClient, dict[str, Any]], Any]] = {
     "history": _history,
     "merge_status": _merge_status,
     "description": _description,
+    "get_multiple_ticket_descriptions": _get_multiple_ticket_descriptions,
     # write ops
     "create_ticket": _create_ticket,
     "comment": _add_comment,

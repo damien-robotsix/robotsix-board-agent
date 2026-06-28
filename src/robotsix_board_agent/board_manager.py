@@ -118,6 +118,12 @@ _MANAGER_SYSTEM = (
     "same issue. If a near-duplicate exists, do NOT create another — add a comment "
     "to (or update) the existing ticket instead, and tell the user which one. Only "
     "create a new ticket when none matches.\n\n"
+    "BATCH FETCH: when you need details (titles, descriptions, status) for several "
+    "tickets at once — e.g. after list_tickets or board_cards returns many ids — "
+    "use get_multiple_ticket_descriptions with all the ticket ids in one call "
+    "instead of calling get_ticket or ticket_description for each one individually. "
+    "One batch call replaces many round-trips, saving substantial tokens and time. "
+    "Fetch all the descriptions you need in a single pass before acting on them.\n\n"
     "TICKET ID HANDLING: Ticket ids are opaque strings of the form "
     "<timestamp>-<slug>-<suffix> (e.g. "
     "'20260621T182023Z-add-automatic-conversation-restart-after-4cb7'). ALWAYS "
@@ -424,6 +430,13 @@ class BoardManager(_ThreadedLoopMixin):
             """Get a ticket's full description."""
             return _safe(client.description(ticket_id=ticket_id))
 
+        def get_multiple_ticket_descriptions(ticket_ids: list[str]) -> str:
+            """Get descriptions for multiple tickets in one batch call. Use this
+            instead of calling get_ticket or ticket_description one-by-one when
+            you need details on several tickets — it replaces N round-trips with
+            one, saving substantial tokens and time."""
+            return _safe(client.get_multiple_ticket_descriptions(ticket_ids=ticket_ids))
+
         def create_ticket(title: str, description: str, source: str = "") -> str:
             """Create a new ticket. `source` records the origin; leave blank to
             default to the requester so we always know where it came from."""
@@ -493,6 +506,7 @@ class BoardManager(_ThreadedLoopMixin):
             ticket_history,
             merge_status,
             ticket_description,
+            get_multiple_ticket_descriptions,
             create_ticket,
             comment,
             transition,
