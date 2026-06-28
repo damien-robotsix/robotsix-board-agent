@@ -40,7 +40,6 @@ import robotsix_board_agent
 import robotsix_board_agent.config as _config_mod
 import robotsix_board_agent.ops as _ops_mod
 from robotsix_board_agent.client import BoardClient
-from robotsix_board_agent.ops import OP_TABLE, WRITE_OPS
 
 # ===========================================================================
 # Helper utilities
@@ -535,11 +534,11 @@ def main() -> int:
 
     # Ordered checks — label, function, args.
     checks: list[tuple[str, Callable[..., list[str]], tuple[Any, ...]]] = [
-        ("A", check_a, (OP_TABLE, _ops_mod)),
-        ("B", check_b, (OP_TABLE, _ops_mod, BoardClient)),
-        ("C", check_c, (OP_TABLE, BoardClient)),
-        ("D", check_d, (OP_TABLE, BoardClient)),
-        ("E", check_e, (OP_TABLE, WRITE_OPS, BoardClient)),
+        ("A", check_a, (_ops_mod.OP_TABLE, _ops_mod)),
+        ("B", check_b, (_ops_mod.OP_TABLE, _ops_mod, BoardClient)),
+        ("C", check_c, (_ops_mod.OP_TABLE, BoardClient)),
+        ("D", check_d, (_ops_mod.OP_TABLE, BoardClient)),
+        ("E", check_e, (_ops_mod.OP_TABLE, _ops_mod.WRITE_OPS, BoardClient)),
         ("F", check_f, (robotsix_board_agent, init_source)),
         ("G", check_g, (_config_mod, pkg_dir)),
         ("H", check_h, (_ThreadedLoopMixin, BoardManager, BrokeredBoardResponder)),

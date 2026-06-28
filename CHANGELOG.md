@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 - Added docstrings to all 15 private `_*` handler functions in `ops.py`
+- Fixed zizmor alerts (artipacked, ref-version-mismatch, dependabot-cooldown) in CI workflows
+- Fixed CodeQL alerts (py/empty-except, py/import-and-import-from) in `_imports.py`, `test__imports.py`, and `completeness_check.py`
   (`_list_tickets`, `_get_ticket`, `_board_cards`, `_history`, `_merge_status`,
   `_description`, `_create_ticket`, `_add_comment`, `_transition`, `_approve`,
   `_mark_done`, `_merge_now`, `_resume_blocked`, `_migrate`, `_set_priority`)

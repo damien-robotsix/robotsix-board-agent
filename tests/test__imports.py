@@ -88,7 +88,7 @@ class TestResolveAgentCommFallback:
         try:
             # Ensure the constructed path is not already in sys.path.
             # We compute the same path _resolve_agent_comm would compute.
-            import robotsix_board_agent._imports as _mod
+            _mod = sys.modules[_resolve_agent_comm.__module__]
 
             _ref_path = str(
                 Path(_mod.__file__).resolve().parent.parent.parent / "_agent_comm_ref" / "src"
