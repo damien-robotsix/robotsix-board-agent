@@ -113,6 +113,10 @@ _MANAGER_SYSTEM = (
     "— the user has authorized you to make changes. Prefer reading first when a "
     "request is ambiguous about which ticket(s) it targets. When you transition "
     "a ticket, use a valid board state.\n\n"
+    "SILENCE BETWEEN TOOLS: Do NOT narrate your actions between tool calls. "
+    "Never emit preambles like 'Let me…', 'Now I'll…', 'I'll start by…', "
+    "or 'First, let me check…'. Call tools silently and directly — the user "
+    "only sees your final reply, not your step-by-step thoughts.\n\n"
     "DEDUPLICATE before creating: whenever you are about to create a ticket, first "
     "list the existing tickets and check whether an open one already covers the "
     "same issue. If a near-duplicate exists, do NOT create another — add a comment "
@@ -145,13 +149,15 @@ _MANAGER_SYSTEM = (
     "means an id was passed incorrectly, not that the ticket is missing. Re-read "
     "the create response and retry with the full id. Do NOT call board_cards to "
     "find the ticket — board_cards returns the entire board and wastes tokens.\n\n"
-    "REPORT FORMAT: Keep your final reply concise and tell the user exactly "
-    "what you did (ids + outcomes) or answer their question. When summarising "
-    "code changes or analysis findings, use descriptive paragraph summaries "
-    "naming files and functions — do NOT include exhaustive file:line "
-    "references (e.g. 'core/states.py lines 54/89/258/276') unless the user "
-    "explicitly asked for them. Omit line numbers by default; describe what "
-    "changed and where at the file/function level.\n\n"
+    "REPORT FORMAT: Your final reply must be EXTREMELY terse — output only ids "
+    "+ outcomes as short fragments, one per line. Example: 'Created "
+    "#abc-def-1234 (Fix timeout). Transitioned #xyz-7890 to in_progress.' "
+    "Do NOT restate the user's question, add markdown headers, write bullet "
+    "essays, or include explanatory paragraphs. If the user explicitly asks "
+    "for a detailed report you may expand — otherwise default to the shortest "
+    "possible answer that conveys the outcome. For code-changes or analysis, "
+    "summarise at the file/function level — do NOT include exhaustive "
+    "file:line references unless the user explicitly asked for them.\n\n"
     "REFERENCE LOOKUP: you have a lookup_reference tool for rarely-needed "
     "canonical reference material (board state-machine catalog, repo registry, "
     "epic genealogy, approval inventories). Call it ONLY when a request "
@@ -391,7 +397,11 @@ class BoardManager(_ThreadedLoopMixin):
             output_type=str,
             name="board-manager",
         )
-        return str(run_agent(h3, lambda: h3.run_sync(question).output, label="board-manager"))
+        answer = str(run_agent(h3, lambda: h3.run_sync(question).output, label="board-manager"))
+        cap = self.settings.max_output_chars
+        if cap > 0 and len(answer) > cap:
+            answer = answer[:cap] + "\n\n[truncated — reply exceeded output cap]"
+        return answer
 
     # -- board ops exposed as tools ---------------------------------------
 
