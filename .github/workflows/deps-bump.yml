@@ -2,15 +2,48 @@ name: Deps Bump
 
 on:
   schedule:
-    - cron: "0 0 * * 0" # weekly on Sunday
+    - cron: "0 0 * * 0" # weekly on Sunday — periodic batch refresh
   workflow_dispatch:
+    inputs:
+      package-name:
+        required: false
+        type: string
+        description: "Name of the package to bump (e.g. robotsix-llmio). Leave empty for periodic batch refresh."
+      git-url:
+        required: false
+        type: string
+        description: "Git URL of the package's upstream repo (required when package-name is set)"
+      new-rev:
+        required: false
+        type: string
+        description: "Target revision — commit SHA or 'latest-main' (required when package-name is set)"
 
 permissions:
   contents: read
 
 jobs:
-  deps-bump:
+  # Periodic batch refresh: runs `uv lock --upgrade` to pull latest @main for
+  # all git-sourced dependencies.  Delegates to robotsix-mill's reusable workflow.
+  periodic-bump:
+    if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && !inputs.package-name)
     permissions:
       contents: write
       pull-requests: write
     uses: damien-robotsix/robotsix-mill/.github/workflows/deps-bump.yml@06f8807049ed8c16f584d2bf1e87f023e8a7e89a
+    secrets:
+      DEPS_BUMP_TOKEN: ${{ secrets.DEPS_BUMP_TOKEN }}
+
+  # Single-package pin bump: resolves the target commit, updates
+  # [tool.uv.sources].<package>.rev, runs `uv lock`, and opens a PR.
+  single-bump:
+    if: github.event_name == 'workflow_dispatch' && inputs.package-name
+    permissions:
+      contents: write
+      pull-requests: write
+    uses: ./.github/workflows/bump-git-pin.yml
+    with:
+      package-name: ${{ inputs.package-name }}
+      git-url: ${{ inputs.git-url }}
+      new-rev: ${{ inputs.new-rev }}
+    secrets:
+      DEPS_BUMP_TOKEN: ${{ secrets.DEPS_BUMP_TOKEN }}
