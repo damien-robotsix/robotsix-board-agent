@@ -63,6 +63,7 @@ A plain `pydantic.BaseModel` (NOT `pydantic_settings.BaseSettings`):
 | `board_api_token` | `str` | Bearer token for API auth |
 | `board_repo_id` | `str` | Repo identifier for ticket scoping |
 | `enable_write_ops` | `bool` | Default `True`; set `False` for read-only agents |
+| `max_output_chars` | `int` | Default `2000`; max chars in final reply before truncation (0 disables) |
 
 All fields are passed explicitly by the caller — there is no automatic
 env-var loading.  The caller (e.g. `robotsix-mill` or `robotsix-auto-mail`)
@@ -72,6 +73,10 @@ itself and constructs the model.
 **Do not** convert this model to `BaseSettings` or add `Field(env=...)`
 annotations — the env-var loading is owned by the consuming repos, not
 by this library.
+
+**When adding a new field** to `BoardAgentSettings` in `config.py`, add
+a corresponding row to the field table above so the documentation stays
+in sync with the code.
 
 ### Environment variables (consumed by callers, not this library)
 
