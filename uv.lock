@@ -929,7 +929,7 @@ requires-dist = [
     { name = "pytest-cov", marker = "extra == 'dev'", specifier = ">=7" },
     { name = "pytest-xdist", marker = "extra == 'dev'", specifier = ">=3" },
     { name = "robotsix-agent-comm", marker = "extra == 'prod'", git = "https://github.com/damien-robotsix/robotsix-agent-comm.git?rev=fcf9adab4c0aa70de8221ce6c402cf0d4c1ddc4d" },
-    { name = "robotsix-llmio", git = "https://github.com/damien-robotsix/robotsix-llmio.git?rev=3da3c4317f4a" },
+    { name = "robotsix-llmio", git = "https://github.com/damien-robotsix/robotsix-llmio.git?rev=3da3c4317f4a37c634f6b6a4d549001f6e52be9d" },
     { name = "ruff", marker = "extra == 'dev'", specifier = "==0.15.15" },
     { name = "vulture", marker = "extra == 'dev'", specifier = ">=2.14" },
 ]
@@ -954,7 +954,7 @@ docs = [
 [[package]]
 name = "robotsix-llmio"
 version = "0.1.0"
-source = { git = "https://github.com/damien-robotsix/robotsix-llmio.git?rev=3da3c4317f4a#3da3c4317f4a37c634f6b6a4d549001f6e52be9d" }
+source = { git = "https://github.com/damien-robotsix/robotsix-llmio.git?rev=3da3c4317f4a37c634f6b6a4d549001f6e52be9d#3da3c4317f4a37c634f6b6a4d549001f6e52be9d" }
 dependencies = [
     { name = "httpx" },
     { name = "pydantic-ai-slim" },
