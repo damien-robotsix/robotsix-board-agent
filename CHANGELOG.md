@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Added ``max_output_chars`` row to the ``BoardAgentSettings`` field table in
+  ``AGENT.md`` (was missing after the field was added in a prior ticket), and
+  added a rule requiring table updates when new config fields are added
 - Suppressed verbose LLM output in board-manager: added "SILENCE BETWEEN TOOLS"
   prompt rule to eliminate step-by-step narration between tool calls, tightened
   the REPORT FORMAT section to demand extremely terse ids+outcomes-only replies,
