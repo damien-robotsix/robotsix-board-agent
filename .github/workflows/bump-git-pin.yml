@@ -84,31 +84,36 @@ jobs:
       pull-requests: write
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
+        with:
+          persist-credentials: false
 
       - name: Resolve target commit
         id: resolve
+        env:
+          NEW_REV: ${{ inputs.new-rev }}
+          GIT_URL: ${{ inputs.git-url }}
         run: |
-          if [ "${{ inputs.new-rev }}" = "latest-main" ]; then
-            FULL_SHA=$(git ls-remote "${{ inputs.git-url }}" refs/heads/main | cut -f1)
+          if [ "$NEW_REV" = "latest-main" ]; then
+            FULL_SHA=$(git ls-remote "$GIT_URL" refs/heads/main | cut -f1)
             echo "Resolved latest-main → $FULL_SHA"
             echo "sha=$FULL_SHA" >> "$GITHUB_OUTPUT"
-          elif echo "${{ inputs.new-rev }}" | grep -qE '^[0-9a-f]{12,}$'; then
+          elif echo "$NEW_REV" | grep -qE '^[0-9a-f]{12,}$'; then
             # Looks like a commit SHA (≥12 hex chars) — resolve to full.
-            FULL_SHA=$(git ls-remote "${{ inputs.git-url }}" "${{ inputs.new-rev }}" | cut -f1)
+            FULL_SHA=$(git ls-remote "$GIT_URL" "$NEW_REV" | cut -f1)
             if [ -z "$FULL_SHA" ]; then
-              echo "::error::Could not resolve '${{ inputs.new-rev }}' — is it a reachable ref?"
+              echo "::error::Could not resolve '$NEW_REV' — is it a reachable ref?"
               exit 1
             fi
-            echo "Resolved short SHA ${{ inputs.new-rev }} → $FULL_SHA"
+            echo "Resolved short SHA $NEW_REV → $FULL_SHA"
             echo "sha=$FULL_SHA" >> "$GITHUB_OUTPUT"
           else
             # Assume it's a full SHA or a ref like a tag.
-            FULL_SHA=$(git ls-remote "${{ inputs.git-url }}" "${{ inputs.new-rev }}" | cut -f1)
+            FULL_SHA=$(git ls-remote "$GIT_URL" "$NEW_REV" | cut -f1)
             if [ -z "$FULL_SHA" ]; then
-              echo "::error::Could not resolve '${{ inputs.new-rev }}' — is it a reachable ref?"
+              echo "::error::Could not resolve '$NEW_REV' — is it a reachable ref?"
               exit 1
             fi
-            echo "Resolved ${{ inputs.new-rev }} → $FULL_SHA"
+            echo "Resolved $NEW_REV → $FULL_SHA"
             echo "sha=$FULL_SHA" >> "$GITHUB_OUTPUT"
           fi
 
@@ -117,7 +122,10 @@ jobs:
           version: ${{ inputs.uv-version }}
 
       - name: Bump pin in pyproject.toml
-        run: python3 scripts/bump_git_pin.py "${{ inputs.package-name }}" "${{ steps.resolve.outputs.sha }}"
+        env:
+          PACKAGE_NAME: ${{ inputs.package-name }}
+          NEW_SHA: ${{ steps.resolve.outputs.sha }}
+        run: python3 scripts/bump_git_pin.py "$PACKAGE_NAME" "$NEW_SHA"
 
       - name: Refresh lockfile
         run: uv lock
@@ -130,9 +138,9 @@ jobs:
           add-paths: |
             pyproject.toml
             uv.lock
-          branch: ${{ inputs.branch-name || format('deps/bump-{0}', inputs.package-name) }}
+          branch: "${{ inputs.branch-name || format('deps/bump-{0}', inputs.package-name) }}"
           delete-branch: true
-          commit-message: ${{ inputs.commit-message || format('chore(deps): bump {0} git pin to {1}', inputs.package-name, steps.resolve.outputs.sha) }}
-          title: ${{ inputs.pr-title || format('chore(deps): bump {0} git pin to {1}', inputs.package-name, steps.resolve.outputs.sha) }}
+          commit-message: "${{ inputs.commit-message || format('chore(deps): bump {0} git pin to {1}', inputs.package-name, steps.resolve.outputs.sha) }}"
+          title: "${{ inputs.pr-title || format('chore(deps): bump {0} git pin to {1}', inputs.package-name, steps.resolve.outputs.sha) }}"
           labels: ${{ inputs.pr-labels }}
-          body: ${{ inputs.pr-body || format('Automated pin bump for `{0}` → `{1}`.', inputs.package-name, steps.resolve.outputs.sha) }}
+          body: "${{ inputs.pr-body || format('Automated pin bump for `{0}` → `{1}`.', inputs.package-name, steps.resolve.outputs.sha) }}"
