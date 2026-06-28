@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Suppressed verbose LLM output in board-manager: added "SILENCE BETWEEN TOOLS"
+  prompt rule to eliminate step-by-step narration between tool calls, tightened
+  the REPORT FORMAT section to demand extremely terse ids+outcomes-only replies,
+  and added a configurable ``max_output_chars`` guard (default 2,000) to truncate
+  overlong answers — targets the ~99% output-token cost dominance observed in
+  fleet cost analysis
 - Right-sized board-manager model routing: trivial read-only/status/listing turns
   now default to Haiku (was Sonnet), straightforward CRUD/dedup/organisation
   turns route to Sonnet via a new `moderate_model` parameter, and only genuinely

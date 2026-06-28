@@ -540,6 +540,88 @@ class TestConverse:
         system = mock_build_agent.call_args.kwargs["system_prompt"]
         assert "Write operations are disabled" not in system
 
+    # -- output-style prompt guidance -----------------------------------
+
+    def test_system_prompt_includes_silence_between_tools(
+        self,
+        manager: BoardManager,
+        mock_build_agent: MagicMock,
+        mock_run_agent: MagicMock,
+    ) -> None:
+        """The system prompt instructs the agent not to narrate between tool calls."""
+        mock_run_agent.return_value = "ok"
+
+        manager._converse("q")
+
+        system = mock_build_agent.call_args.kwargs["system_prompt"]
+        assert "SILENCE BETWEEN TOOLS" in system
+        assert "Do NOT narrate" in system
+        assert "Call tools silently" in system
+
+    def test_system_prompt_demands_terse_final_reply(
+        self,
+        manager: BoardManager,
+        mock_build_agent: MagicMock,
+        mock_run_agent: MagicMock,
+    ) -> None:
+        """The system prompt demands an extremely terse ids+outcomes final reply."""
+        mock_run_agent.return_value = "ok"
+
+        manager._converse("q")
+
+        system = mock_build_agent.call_args.kwargs["system_prompt"]
+        assert "EXTREMELY terse" in system
+        assert "Do NOT restate the user's question" in system
+
+    # -- max_output_chars truncation ------------------------------------
+
+    def test_output_truncated_when_exceeds_max_output_chars(
+        self,
+        manager: BoardManager,
+        mock_build_agent: MagicMock,
+        mock_run_agent: MagicMock,
+    ) -> None:
+        """The final reply is truncated when it exceeds max_output_chars."""
+        long_answer = "x" * 3_000
+        mock_run_agent.return_value = long_answer
+        manager.settings.max_output_chars = 200
+
+        result = manager._converse("q")
+
+        assert len(result) < len(long_answer)
+        assert result.startswith("x" * 200)
+        assert result.endswith("[truncated — reply exceeded output cap]")
+
+    def test_output_not_truncated_when_under_max_output_chars(
+        self,
+        manager: BoardManager,
+        mock_build_agent: MagicMock,
+        mock_run_agent: MagicMock,
+    ) -> None:
+        """The final reply is returned unchanged when under max_output_chars."""
+        short_answer = "Created #abc-1234."
+        mock_run_agent.return_value = short_answer
+        manager.settings.max_output_chars = 200
+
+        result = manager._converse("q")
+
+        assert result == short_answer
+
+    def test_max_output_chars_zero_disables_truncation(
+        self,
+        manager: BoardManager,
+        mock_build_agent: MagicMock,
+        mock_run_agent: MagicMock,
+    ) -> None:
+        """When max_output_chars=0, no truncation is applied."""
+        long_answer = "x" * 3_000
+        mock_run_agent.return_value = long_answer
+        manager.settings.max_output_chars = 0
+
+        result = manager._converse("q")
+
+        assert result == long_answer
+
 
 # -- _select_manager_model (complexity classifier) ---------------------------
 
