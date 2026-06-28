@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Right-sized board-manager model routing: trivial read-only/status/listing turns
+  now default to Haiku (was Sonnet), straightforward CRUD/dedup/organisation
+  turns route to Sonnet via a new `moderate_model` parameter, and only genuinely
+  ambiguous multi-step planning runs on Opus. The three-tier classifier
+  (`SIMPLE_READ`/`MODERATE`/`COMPLEX`) stays within the Claude subscription SKU
+  — no pay-per-token path introduced.
 - Tightened `bump-git-pin.yml` workflow: `new-rev` input now requires a full
   40-character commit SHA (used directly without `git ls-remote` resolution);
   short SHAs (< 40 chars) are rejected, and only `latest-main` is resolved

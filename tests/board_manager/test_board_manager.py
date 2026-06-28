@@ -567,16 +567,16 @@ class TestSelectManagerModel:
         with patch("robotsix_llmio.core.run.run_agent") as ra:
             yield ra
 
-    # -- SIMPLE -> sonnet --------------------------------------------------
+    # -- SIMPLE_READ -> haiku ----------------------------------------------
 
-    def test_simple_classification_routes_to_sonnet(
+    def test_simple_read_classification_routes_to_haiku(
         self,
         manager: BoardManager,
         mock_build_agent: MagicMock,
         mock_run_agent: MagicMock,
     ) -> None:
-        """When the classifier returns SIMPLE, the manager build gets model='sonnet'."""
-        mock_run_agent.side_effect = ["SIMPLE", "manager answer"]
+        """When the classifier returns SIMPLE_READ, the manager build gets model='haiku'."""
+        mock_run_agent.side_effect = ["SIMPLE_READ", "manager answer"]
 
         result = manager._converse("what is on the board?")
 
@@ -590,11 +590,11 @@ class TestSelectManagerModel:
         assert classify_call.kwargs["name"] == "board-manager-classify"
         assert classify_call.kwargs["output_type"] is str
 
-        # Manager call — must receive model="sonnet", not None/Opus.
+        # Manager call — must receive model="haiku", not None/Opus.
         mgr_call = mock_build_agent.call_args_list[1]
         assert mgr_call.args[0] == 3
         assert mgr_call.kwargs["name"] == "board-manager"
-        assert mgr_call.kwargs["model"] == "sonnet"
+        assert mgr_call.kwargs["model"] == "haiku"
 
     # -- COMPLEX -> None (Opus) --------------------------------------------
 
@@ -679,7 +679,7 @@ class TestSelectManagerModel:
         mock_run_agent: MagicMock,
     ) -> None:
         """The classifier agent is built at level-1 with name='board-manager-classify'."""
-        mock_run_agent.side_effect = ["SIMPLE", "ok"]
+        mock_run_agent.side_effect = ["SIMPLE_READ", "ok"]
 
         manager._converse("board status")
 
@@ -727,7 +727,7 @@ class TestSelectManagerModel:
     ) -> None:
         """When _classify_model is set, it is passed to the classifier build."""
         manager._classify_model = "custom-classify-model"
-        mock_run_agent.side_effect = ["SIMPLE", "ok"]
+        mock_run_agent.side_effect = ["SIMPLE_READ", "ok"]
 
         manager._converse("board status")
 
@@ -742,7 +742,7 @@ class TestSelectManagerModel:
     ) -> None:
         """When _classify_model is None, model=None is passed (level-1 default)."""
         manager._classify_model = None
-        mock_run_agent.side_effect = ["SIMPLE", "ok"]
+        mock_run_agent.side_effect = ["SIMPLE_READ", "ok"]
 
         manager._converse("board status")
 
@@ -751,66 +751,115 @@ class TestSelectManagerModel:
 
     # -- simple_read_model override ----------------------------------------
 
-    def test_simple_read_model_default_is_sonnet(
+    def test_simple_read_model_default_is_haiku(
         self,
         manager: BoardManager,
         mock_build_agent: MagicMock,
         mock_run_agent: MagicMock,
     ) -> None:
-        """Default _simple_read_model is 'sonnet'."""
-        assert manager._simple_read_model == "sonnet"
+        """Default _simple_read_model is 'haiku'."""
+        assert manager._simple_read_model == "haiku"
 
-    def test_simple_read_model_override_haiku(
+    def test_simple_read_model_override_sonnet(
         self,
         tmp_path: Path,
         settings: BoardAgentSettings,
         mock_build_agent: MagicMock,
         mock_run_agent: MagicMock,
     ) -> None:
-        """When simple_read_model='haiku' is passed, SIMPLE requests use it."""
+        """When simple_read_model='sonnet' is passed, SIMPLE_READ requests use it."""
         mgr = BoardManager(
             settings,
             broker_host="test-broker.robotsix.net",
             broker_token="test-broker-token",
             memory_path=tmp_path / "memory",
-            simple_read_model="haiku",
+            simple_read_model="sonnet",
         )
-        mock_run_agent.side_effect = ["SIMPLE", "ok"]
+        mock_run_agent.side_effect = ["SIMPLE_READ", "ok"]
 
         mgr._converse("board status")
 
         mgr_call = mock_build_agent.call_args_list[1]
-        assert mgr_call.kwargs["model"] == "haiku"
+        assert mgr_call.kwargs["model"] == "sonnet"
 
-    # -- SIMPLE with whitespace is still recognized ------------------------
+    # -- MODERATE -> sonnet ------------------------------------------------
 
-    def test_simple_with_whitespace_still_recognized(
+    def test_moderate_model_default_is_sonnet(
+        self,
+        manager: BoardManager,
+    ) -> None:
+        """Default _moderate_model is 'sonnet'."""
+        assert manager._moderate_model == "sonnet"
+
+    def test_moderate_classification_routes_to_sonnet(
         self,
         manager: BoardManager,
         mock_build_agent: MagicMock,
         mock_run_agent: MagicMock,
     ) -> None:
-        """Classifier output '  SIMPLE  ' (with surrounding whitespace) routes to sonnet."""
-        mock_run_agent.side_effect = ["  SIMPLE  ", "ok"]
+        """When the classifier returns MODERATE, the manager build gets model='sonnet'."""
+        mock_run_agent.side_effect = ["MODERATE", "manager answer"]
+
+        result = manager._converse("create a ticket for the login bug")
+
+        assert result == "manager answer"
+        assert mock_build_agent.call_count == 2
+
+        mgr_call = mock_build_agent.call_args_list[1]
+        assert mgr_call.args[0] == 3
+        assert mgr_call.kwargs["model"] == "sonnet"
+
+    def test_moderate_model_override(
+        self,
+        tmp_path: Path,
+        settings: BoardAgentSettings,
+        mock_build_agent: MagicMock,
+        mock_run_agent: MagicMock,
+    ) -> None:
+        """When moderate_model='haiku' is passed, MODERATE requests use it."""
+        mgr = BoardManager(
+            settings,
+            broker_host="test-broker.robotsix.net",
+            broker_token="test-broker-token",
+            memory_path=tmp_path / "memory",
+            moderate_model="haiku",
+        )
+        mock_run_agent.side_effect = ["MODERATE", "ok"]
+
+        mgr._converse("transition ticket X to in_progress")
+
+        mgr_call = mock_build_agent.call_args_list[1]
+        assert mgr_call.kwargs["model"] == "haiku"
+
+    # -- SIMPLE_READ with whitespace is still recognized --------------------
+
+    def test_simple_read_with_whitespace_still_recognized(
+        self,
+        manager: BoardManager,
+        mock_build_agent: MagicMock,
+        mock_run_agent: MagicMock,
+    ) -> None:
+        """Classifier output '  SIMPLE_READ  ' (with surrounding whitespace) routes to haiku."""
+        mock_run_agent.side_effect = ["  SIMPLE_READ  ", "ok"]
 
         manager._converse("what tickets are open?")
 
         mgr_call = mock_build_agent.call_args_list[1]
-        assert mgr_call.kwargs["model"] == "sonnet"
+        assert mgr_call.kwargs["model"] == "haiku"
 
-    # -- SIMPLE with history present (recall, classify, manager all run) ---
+    # -- SIMPLE_READ with history present (recall, classify, manager all run) ---
 
-    def test_simple_with_history_all_three_passes(
+    def test_simple_read_with_history_all_three_passes(
         self,
         manager: BoardManager,
         mock_build_agent: MagicMock,
         mock_run_agent: MagicMock,
     ) -> None:
-        """When history is present and classifier says SIMPLE, all three passes
-        run: recall (level-1), classifier (level-1), manager (level-3) with sonnet."""
+        """When history is present and classifier says SIMPLE_READ, all three passes
+        run: recall (level-1), classifier (level-1), manager (level-3) with haiku."""
         manager._memory.append("prior Q", "prior A")
         # Side effect order: recall, classifier, manager.
-        mock_run_agent.side_effect = ["relevant ctx", "SIMPLE", "manager answer"]
+        mock_run_agent.side_effect = ["relevant ctx", "SIMPLE_READ", "manager answer"]
 
         result = manager._converse("what is on the board?")
 
@@ -827,11 +876,11 @@ class TestSelectManagerModel:
         assert classify_call.args[0] == 1
         assert classify_call.kwargs["name"] == "board-manager-classify"
 
-        # Manager (with sonnet).
+        # Manager (with haiku).
         mgr_call = mock_build_agent.call_args_list[2]
         assert mgr_call.args[0] == 3
         assert mgr_call.kwargs["name"] == "board-manager"
-        assert mgr_call.kwargs["model"] == "sonnet"
+        assert mgr_call.kwargs["model"] == "haiku"
 
 
 # -- start / stop lifecycle --------------------------------------------------
