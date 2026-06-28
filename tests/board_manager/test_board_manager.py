@@ -1248,6 +1248,18 @@ class TestBuildTools:
         assert "_truncated" in parsed[0]
         assert "2 item(s) omitted" in parsed[0]["_truncated"]
 
+    def test_truncate_result_returns_non_list_unchanged(self) -> None:
+        """A non-list result (e.g. a plain string) is returned as-is with no
+        truncation, even when longer than _RESULT_CAP."""
+        from robotsix_board_agent.board_manager import _RESULT_CAP, _truncate_result
+
+        long_string = "x" * (_RESULT_CAP + 100)
+        result = _truncate_result(long_string)
+
+        # Non-list results bypass truncation — full string returned unchanged.
+        assert result == json.dumps(long_string)
+        assert len(result) > _RESULT_CAP
+
 
 # -- _truncate_list -----------------------------------------------------------
 
