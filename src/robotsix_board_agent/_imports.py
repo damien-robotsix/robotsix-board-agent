@@ -23,7 +23,7 @@ def _resolve_agent_comm() -> tuple[bool, Any, Any, Any, Any, Any]:
     try:
         from robotsix_agent_comm import Agent, Error, Registry, Request, Response
     except ImportError:
-        pass
+        pass  # primary import unavailable; will try fallback
     else:
         return True, Agent, Error, Registry, Request, Response
 
@@ -46,4 +46,4 @@ def _setup_langfuse_tracing() -> None:
 
         _llmio_setup_langfuse_tracing()
     except ImportError:
-        pass
+        pass  # robotsix_llmio is optional; langfuse tracing unavailable

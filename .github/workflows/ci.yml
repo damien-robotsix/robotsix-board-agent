@@ -7,6 +7,7 @@ env:
 
 permissions:
   contents: read
+  actions: read
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref_name }}-${{ github.event.pull_request.number || github.sha }}
@@ -17,7 +18,7 @@ jobs:
     permissions:
       contents: read
       security-events: write
-    uses: damien-robotsix/robotsix-mill/.github/workflows/python-ci.yml@c3a9aa5d58116b96e5a0c36991b0b202986130f9 # main
+    uses: damien-robotsix/robotsix-mill/.github/workflows/python-ci.yml@b65aa6fcec7fc76e5a565c70e630623a91204f86 # main
     with:
       python-version: "3.14"
       cov-package: "robotsix_board_agent"
@@ -100,7 +101,7 @@ jobs:
       - run: uv run ruff format --check .
 
   security:
-    uses: damien-robotsix/robotsix-mill/.github/workflows/python-security.yml@c3a9aa5d58116b96e5a0c36991b0b202986130f9 # main
+    uses: damien-robotsix/robotsix-mill/.github/workflows/python-security.yml@b65aa6fcec7fc76e5a565c70e630623a91204f86 # main
     with:
       install-extras: ""
       trufflehog-pr-diff: true
