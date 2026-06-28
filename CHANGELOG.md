@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Added test coverage for `_truncate_result`: a new unit test verifies that
+  non-list results (e.g. plain strings) are returned unchanged, bypassing
+  truncation even when they exceed `_RESULT_CAP`
 - Added docstrings to all 15 private `_*` handler functions in `ops.py`
   (`_list_tickets`, `_get_ticket`, `_board_cards`, `_history`, `_merge_status`,
   `_description`, `_create_ticket`, `_add_comment`, `_transition`, `_approve`,
