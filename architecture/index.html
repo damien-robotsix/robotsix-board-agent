@@ -1,0 +1,1257 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+      
+        <link rel="next" href="../agent/getting-started/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Architecture Overview - robotsix-board-agent</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#architecture-overview" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="robotsix-board-agent" class="md-header__button md-logo" aria-label="robotsix-board-agent" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            robotsix-board-agent
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Architecture Overview
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="robotsix-board-agent" class="md-nav__button md-logo" aria-label="robotsix-board-agent" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    robotsix-board-agent
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture Overview
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#module-dependency-diagram" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Module dependency diagram
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#two-tier-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Two-tier architecture
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#two-request-paths" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Two request paths
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Two request paths">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-structured-operation-brokeredboardresponder" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Structured operation → BrokeredBoardResponder
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-natural-language-request-boardmanager_converse" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Natural-language request → BoardManager._converse
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-structured-operation-boardagent-legacy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Structured operation → BoardAgent (legacy)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#key-components-in-detail" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key components in detail
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Key components in detail">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#boardclient-clientpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        BoardClient (client.py)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_threadedloopmixin-_lifecyclepy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        _ThreadedLoopMixin (_lifecycle.py)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_parse_and_validate-_request_handlerpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        _parse_and_validate (_request_handler.py)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#opspy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ops.py
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#boardmanagermemory-memorypy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        BoardManagerMemory (memory.py)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#boardagentsettings-configpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        BoardAgentSettings (config.py)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#module-taxonomy-manifest" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Module taxonomy manifest
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#per-module-deep-dives" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Per-module deep dives
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#file-layout" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        File layout
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../agent/getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ops/operations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operations Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../client/api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Client API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../config/reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Config Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../brokered/responder/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Brokered Responder
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../board_manager/api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Board Manager
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../manager_cli/usage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Manager CLI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../memory/reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Memory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#module-dependency-diagram" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Module dependency diagram
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#two-tier-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Two-tier architecture
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#two-request-paths" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Two request paths
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Two request paths">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-structured-operation-brokeredboardresponder" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Structured operation → BrokeredBoardResponder
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-natural-language-request-boardmanager_converse" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Natural-language request → BoardManager._converse
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-structured-operation-boardagent-legacy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Structured operation → BoardAgent (legacy)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#key-components-in-detail" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key components in detail
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Key components in detail">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#boardclient-clientpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        BoardClient (client.py)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_threadedloopmixin-_lifecyclepy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        _ThreadedLoopMixin (_lifecycle.py)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_parse_and_validate-_request_handlerpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        _parse_and_validate (_request_handler.py)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#opspy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ops.py
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#boardmanagermemory-memorypy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        BoardManagerMemory (memory.py)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#boardagentsettings-configpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        BoardAgentSettings (config.py)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#module-taxonomy-manifest" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Module taxonomy manifest
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#per-module-deep-dives" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Per-module deep dives
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#file-layout" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        File layout
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="architecture-overview">Architecture Overview</h1>
+<p>This document is the entry point for understanding the <strong>robotsix-board-agent</strong>
+codebase — how the modules fit together, how requests flow through the system,
+and where to look for deeper detail.</p>
+<hr />
+<h2 id="module-dependency-diagram">Module dependency diagram</h2>
+<pre><code class="language-mermaid">graph TD
+    subgraph Entry Points
+        BA[BoardAgent&lt;br/&gt;agent.py]
+        BR[BrokeredBoardResponder&lt;br/&gt;brokered.py]
+        BM[BoardManager&lt;br/&gt;board_manager.py]
+        CLI[manager_cli.py]
+    end
+
+    subgraph Shared Layer
+        RH[_request_handler.py&lt;br/&gt;_parse_and_validate]
+        LC[_lifecycle.py&lt;br/&gt;_ThreadedLoopMixin]
+        OP[ops.py&lt;br/&gt;OP_TABLE · dispatch · BoardOp]
+    end
+
+    subgraph Core
+        BC[BoardClient&lt;br/&gt;client.py]
+        MEM[BoardManagerMemory&lt;br/&gt;memory.py]
+        CFG[BoardAgentSettings&lt;br/&gt;config.py]
+    end
+
+    subgraph External
+        BROKER[agent-comm Broker&lt;br/&gt;pull/mailbox]
+        BOARD[Mil Board REST API]
+        LLM[robotsix_llmio]
+    end
+
+    BA --&gt; RH
+    BA --&gt; OP
+    BA --&gt; BC
+    BA --&gt; BROKER
+
+    BR --&gt; LC
+    BR --&gt; RH
+    BR --&gt; OP
+    BR --&gt; BC
+    BR --&gt; BROKER
+
+    BM --&gt; LC
+    BM --&gt; BC
+    BM --&gt; MEM
+    BM --&gt; LLM
+    BM --&gt; BROKER
+
+    CLI --&gt; BROKER
+
+    BC --&gt; CFG
+    BC --&gt; BOARD
+    OP --&gt; BC
+    MEM --&gt;|persisted on disk| MEM
+</code></pre>
+<h2 id="two-tier-architecture">Two-tier architecture</h2>
+<p>The system provides <strong>two tiers</strong> of board interaction, sharing the same
+<code>BoardClient</code> HTTP layer and agent-comm broker connectivity but differing
+in how they interpret incoming requests:</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th><strong>BrokeredBoardResponder</strong></th>
+<th><strong>BoardManager</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Interaction style</strong></td>
+<td>Structured RPC</td>
+<td>Natural-language conversation</td>
+</tr>
+<tr>
+<td><strong>Input shape</strong></td>
+<td><code>{"op": "list_tickets", "args": {...}}</code></td>
+<td><code>{"message": "show me open PRs"}</code></td>
+</tr>
+<tr>
+<td><strong>Output</strong></td>
+<td>Raw board API dict</td>
+<td>Conversational reply (LLM-generated)</td>
+</tr>
+<tr>
+<td><strong>LLM</strong></td>
+<td>None</td>
+<td>Two-stage: recall scan + tool-using agent</td>
+</tr>
+<tr>
+<td><strong>Memory / history</strong></td>
+<td>None</td>
+<td><code>BoardManagerMemory</code> — persisted traces + notes</td>
+</tr>
+<tr>
+<td><strong>Write access</strong></td>
+<td>Gated by <code>enable_write_ops</code> config</td>
+<td>Always available (tools include writes)</td>
+</tr>
+<tr>
+<td><strong>Use case</strong></td>
+<td>Programmatic access (CI, agent-to-agent)</td>
+<td>Human chat interface</td>
+</tr>
+<tr>
+<td><strong>Agent id</strong></td>
+<td><code>board-{repo_id}</code></td>
+<td><code>board-manager-{repo_id}</code></td>
+</tr>
+</tbody>
+</table>
+<p>Both tiers are backed by the same <code>BoardClient</code> (the <strong>sole</strong> module that
+speaks to the Mil board REST API) and both register with the agent-comm
+broker in pull/mailbox mode via <code>_ThreadedLoopMixin</code>.</p>
+<p>Additionally, the <strong><code>BoardAgent</code></strong> class (<code>agent.py</code>) is a legacy async
+entry point that uses the same structured-op dispatch but wraps the
+agent-comm <code>Agent</code> directly (no mixin). It is the original integration
+and remains available, though the brokered responder is preferred for new
+structured-op deployments. See <a href="#3-structured-operation--boardagent-legacy">request path 3</a>
+below for its flow.</p>
+<hr />
+<h2 id="two-request-paths">Two request paths</h2>
+<h3 id="1-structured-operation-brokeredboardresponder">1. Structured operation → <code>BrokeredBoardResponder</code></h3>
+<pre><code>Incoming broker message (JSON)
+        │
+        ▼
+_parse_and_validate(request, settings)      ← _request_handler.py
+  ├─ BoardOp.model_validate(body)           ← pydantic model
+  ├─ Check op ∈ OP_TABLE                    ← unknown op → UNKNOWN_OP error
+  └─ Check enable_write_ops gate            ← write op denied → WRITE_OPS_DISABLED error
+        │
+        ▼
+dispatch(client, op)                        ← ops.py
+  ├─ OP_TABLE[op.op] → handler function     (e.g. _list_tickets)
+  ├─ Validate args against typed args model (e.g. ListTicketsArgs)
+  └─ Call client.xxx()                      → BoardClient HTTP call
+        │
+        ▼
+Response.to(request, body=result)
+</code></pre>
+<p>All of this happens on a dedicated <code>asyncio</code> event loop running on a
+daemon thread (<code>_ThreadedLoopMixin</code>). The <code>_handle_request</code> callback
+is synchronous from the broker's perspective; it uses <code>self._run(coro)</code>
+to bridge into the event loop.</p>
+<h3 id="2-natural-language-request-boardmanager_converse">2. Natural-language request → <code>BoardManager._converse</code></h3>
+<pre><code>Incoming broker message (natural language)
+        │
+        ▼
+BoardManager._handle_request
+  └─ Extract &quot;message&quot; from body
+        │
+        ▼
+BoardManager._converse(question, requester)
+  │
+  ├─ Stage 1 — Recall scan (if conversation history exists)
+  │   ├─ Builds lightweight LLM agent (level=1) with _RECALL_SYSTEM
+  │   ├─ Feeds: full conversation history + current question
+  │   └─ Output: list of relevant prior exchange excerpts
+  │
+  ├─ Stage 3 — Acting manager
+  │   ├─ Builds tool-using LLM agent (level=3) with _MANAGER_SYSTEM
+  │   ├─ Context: curated memory notes + relevant prior exchanges
+  │   ├─ Tools: 15 board operations + update_memory
+  │   │         (each tool wraps a self._run(client.xxx()) call)
+  │   └─ Runs h3.run_sync(question) → LLM replies in natural language
+  │
+  ├─ Append Q→A pair to memory (conversation trace + maintained notes)
+  └─ Return Response.to(request, body={&quot;reply&quot;: answer})
+</code></pre>
+<p>The <code>BoardManager</code>'s tools are the structured ops from <code>ops.py</code> but
+called indirectly through <code>BoardClient</code> methods. The LLM decides which
+tool to use and with what arguments — the manager never calls
+<code>_parse_and_validate</code> or <code>dispatch</code> directly.</p>
+<h3 id="3-structured-operation-boardagent-legacy">3. Structured operation → <code>BoardAgent</code> (legacy)</h3>
+<pre><code>Incoming message (from Registry callback)
+        │
+        ▼
+BoardAgent._handle
+  └─ _parse_and_validate(request, settings)   ← _request_handler.py
+        │
+        ▼
+  dispatch(client, op)                        ← ops.py
+        │
+        ▼
+  Return result dict (or error) to caller
+</code></pre>
+<p><code>BoardAgent</code> follows the same <code>_parse_and_validate</code> → <code>dispatch</code> path as
+<code>BrokeredBoardResponder</code> but does <strong>not</strong> use <code>_ThreadedLoopMixin</code> — it
+wraps <code>agent_comm.Agent</code> directly and is fully async. This is the original
+integration and remains available for backward compatibility.</p>
+<hr />
+<h2 id="key-components-in-detail">Key components in detail</h2>
+<h3 id="boardclient-clientpy"><code>BoardClient</code> (<code>client.py</code>)</h3>
+<p>The <strong>only</strong> module that makes HTTP calls to the Mil board REST API.
+Every public method maps 1:1 to a board endpoint (<code>list_tickets</code>,
+<code>get_ticket</code>, <code>create_ticket</code>, <code>comment</code>, <code>transition</code>, …). It accepts a
+<code>BoardAgentSettings</code> instance for configuration and supports transport
+injection for testability. All other modules depend on <code>BoardClient</code>.</p>
+<h3 id="_threadedloopmixin-_lifecyclepy"><code>_ThreadedLoopMixin</code> (<code>_lifecycle.py</code>)</h3>
+<p>A mixin that provides a daemon-thread lifecycle for broker-backed agents.
+On <code>start()</code>, it creates an <code>asyncio</code> event loop on a background thread,
+starts the agent-comm broker, and provides <code>_run(coro)</code> to bridge sync
+callbacks into the event loop. On <code>stop()</code>, it closes the client and
+joins the thread. Used by both <code>BrokeredBoardResponder</code> and <code>BoardManager</code>.</p>
+<h3 id="_parse_and_validate-_request_handlerpy"><code>_parse_and_validate</code> (<code>_request_handler.py</code>)</h3>
+<p>A shared structured-op parser used by <code>BoardAgent</code> and
+<code>BrokeredBoardResponder</code>. It deserializes the JSON body into a <code>BoardOp</code>,
+validates the op name against <code>OP_TABLE</code>, and enforces the write gate
+when <code>enable_write_ops</code> is disabled.</p>
+<h3 id="opspy"><code>ops.py</code></h3>
+<p>The canonical op registry. Defines:
+- <code>BoardOp</code> — pydantic model for incoming structured requests
+- <code>OP_TABLE</code> — mapping of op name → handler function
+- <code>WRITE_OPS</code> — set of op names that modify board state
+- Per-op argument models (pydantic, e.g. <code>ListTicketsArgs</code>)
+- Handler functions that validate args and call <code>BoardClient</code>
+- <code>dispatch(client, op)</code> — top-level entry point</p>
+<h3 id="boardmanagermemory-memorypy"><code>BoardManagerMemory</code> (<code>memory.py</code>)</h3>
+<p>Two-track persistence for <code>BoardManager</code>:
+- <strong>Conversation trace</strong> — timestamped Q→A pairs stored as JSON, capped at 200 entries, oldest-first pruning on overflow.
+- <strong>Maintained memory note</strong> — a Markdown document the LLM can read and update via the <code>update_memory</code> tool, capped at 2,000 characters.</p>
+<h3 id="boardagentsettings-configpy"><code>BoardAgentSettings</code> (<code>config.py</code>)</h3>
+<p>A plain Pydantic <code>BaseModel</code> (not <code>BaseSettings</code>) that holds:
+- <code>board_api_url</code> — base URL of the Mil board REST API
+- <code>board_api_token</code> — authentication token
+- <code>board_repo_id</code> — the target repository
+- <code>enable_write_ops</code> — boolean flag that gates write operations</p>
+<p>All agents and <code>BoardClient</code> accept this model at construction time.</p>
+<hr />
+<h2 id="module-taxonomy-manifest">Module taxonomy manifest</h2>
+<p><code>docs/modules.yaml</code> is a machine-readable taxonomy of every module in the
+project. It maps each module to its source files, documentation page, and
+test directory, with a one-line description. The <code>module_curator</code> periodic
+workflow validates this manifest against the live directory tree to catch
+drift — files that move, get renamed, or are added without a taxonomy entry.</p>
+<p>When adding new source files, tests, or documentation pages, register them
+in <code>docs/modules.yaml</code> under the appropriate module entry and run:</p>
+<pre><code class="language-bash">uv run --frozen robotsix-modules check-registration docs/modules.yaml
+</code></pre>
+<hr />
+<h2 id="per-module-deep-dives">Per-module deep dives</h2>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>Documentation</th>
+<th>What it covers</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>agent</strong></td>
+<td><a href="../agent/getting-started/"><code>docs/agent/getting-started.md</code></a></td>
+<td>Quickstart: install, configure, send structured ops</td>
+</tr>
+<tr>
+<td><strong>brokered</strong></td>
+<td><a href="../brokered/responder/"><code>docs/brokered/responder.md</code></a></td>
+<td><code>BrokeredBoardResponder</code> — producer-side structured-op entry point</td>
+</tr>
+<tr>
+<td><strong>board_manager</strong></td>
+<td><a href="../board_manager/api/"><code>docs/board_manager/api.md</code></a></td>
+<td>LLM-powered conversational manager, tools, two-stage pipeline</td>
+</tr>
+<tr>
+<td><strong>client</strong></td>
+<td><a href="../client/api/"><code>docs/client/api.md</code></a></td>
+<td><code>BoardClient</code> typed HTTP methods and error handling</td>
+</tr>
+<tr>
+<td><strong>config</strong></td>
+<td><a href="../config/reference/"><code>docs/config/reference.md</code></a></td>
+<td><code>BoardAgentSettings</code> model fields</td>
+</tr>
+<tr>
+<td><strong>ops</strong></td>
+<td><a href="../ops/operations/"><code>docs/ops/operations.md</code></a></td>
+<td>Canonical op table (15 ops), <code>{"op": …}</code> protocol, error codes</td>
+</tr>
+<tr>
+<td><strong>memory</strong></td>
+<td><a href="../memory/reference/"><code>docs/memory/reference.md</code></a></td>
+<td><code>BoardManagerMemory</code> persistence model</td>
+</tr>
+<tr>
+<td><strong>manager_cli</strong></td>
+<td><a href="../manager_cli/usage/"><code>docs/manager_cli/usage.md</code></a></td>
+<td>CLI tool for talking to a <code>BoardManager</code></td>
+</tr>
+<tr>
+<td><strong>API reference</strong></td>
+<td><a href="../reference/"><code>docs/reference.md</code></a></td>
+<td>Auto-generated API reference from docstrings</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="file-layout">File layout</h2>
+<pre><code>src/robotsix_board_agent/
+├── __init__.py             # Re-exports public symbols
+├── _lifecycle.py           # _ThreadedLoopMixin (daemon loop)
+├── _request_handler.py     # _parse_and_validate (op parser + write gate)
+├── agent.py                # BoardAgent (async legacy entry point)
+├── board_manager.py        # BoardManager (NL→ops LLM agent)
+├── brokered.py             # BrokeredBoardResponder (structured-op broker entry)
+├── client.py               # BoardClient (typed HTTP client)
+├── config.py               # BoardAgentSettings (pydantic model)
+├── constants.py            # BoardErrorCode enum, defaults
+├── manager_cli.py          # CLI entry point
+├── memory.py               # BoardManagerMemory (conversation + notes)
+└── ops.py                  # OP_TABLE, dispatch, per-op handlers + arg models
+</code></pre>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": [], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

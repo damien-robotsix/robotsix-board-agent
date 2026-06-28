@@ -1,0 +1,2408 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../memory/reference/">
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>API Reference - robotsix-board-agent</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#api-reference" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="robotsix-board-agent" class="md-header__button md-logo" aria-label="robotsix-board-agent" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            robotsix-board-agent
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              API Reference
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="robotsix-board-agent" class="md-nav__button md-logo" aria-label="robotsix-board-agent" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    robotsix-board-agent
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../agent/getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ops/operations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operations Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../client/api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Client API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../config/reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Config Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../brokered/responder/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Brokered Responder
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../board_manager/api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Board Manager
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../manager_cli/usage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Manager CLI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../memory/reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Memory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#per-module-detail-pages" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Per-module detail pages
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#robotsix_board_agent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        robotsix_board_agent
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="robotsix_board_agent">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#robotsix_board_agent.BoardAPIError" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        BoardAPIError
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="BoardAPIError">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#robotsix_board_agent.BoardAPIError.__init__" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        __init__
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#robotsix_board_agent.BoardAgent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        BoardAgent
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="BoardAgent">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#robotsix_board_agent.BoardAgent.__init__" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        __init__
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#robotsix_board_agent.BoardAgent.start" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        start
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#robotsix_board_agent.BoardAgent.stop" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        stop
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#robotsix_board_agent.BoardAgentSettings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        BoardAgentSettings
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="BoardAgentSettings">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#robotsix_board_agent.BoardAgentSettings.board_api_token" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        board_api_token
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#robotsix_board_agent.BoardAgentSettings.board_api_url" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        board_api_url
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#robotsix_board_agent.BoardAgentSettings.board_repo_id" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        board_repo_id
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#robotsix_board_agent.BoardAgentSettings.enable_write_ops" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        enable_write_ops
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#robotsix_board_agent.BoardClient" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        BoardClient
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="BoardClient">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#robotsix_board_agent.BoardClient.__init__" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        __init__
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#robotsix_board_agent.BoardClient.add_comment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        add_comment
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#robotsix_board_agent.BoardClient.approve" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        approve
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#robotsix_board_agent.BoardClient.board_cards" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        board_cards
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#robotsix_board_agent.BoardClient.close" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        close
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#robotsix_board_agent.BoardClient.create_ticket" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        create_ticket
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#robotsix_board_agent.BoardClient.description" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        description
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#robotsix_board_agent.BoardClient.get_ticket" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        get_ticket
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#robotsix_board_agent.BoardClient.history" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        history
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#robotsix_board_agent.BoardClient.list_tickets" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        list_tickets
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#robotsix_board_agent.BoardClient.mark_done" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        mark_done
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#robotsix_board_agent.BoardClient.merge_now" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        merge_now
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#robotsix_board_agent.BoardClient.merge_status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        merge_status
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#robotsix_board_agent.BoardClient.migrate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        migrate
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#robotsix_board_agent.BoardClient.resume_blocked" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        resume_blocked
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#robotsix_board_agent.BoardClient.set_priority" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        set_priority
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#robotsix_board_agent.BoardClient.transition" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        transition
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#robotsix_board_agent.BoardOp" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        BoardOp
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#robotsix_board_agent.UnknownOpError" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        UnknownOpError
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="UnknownOpError">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#robotsix_board_agent.UnknownOpError.__init__" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        __init__
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#robotsix_board_agent.dispatch" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        dispatch
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#per-module-detail-pages" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Per-module detail pages
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#robotsix_board_agent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        robotsix_board_agent
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="robotsix_board_agent">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#robotsix_board_agent.BoardAPIError" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        BoardAPIError
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="BoardAPIError">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#robotsix_board_agent.BoardAPIError.__init__" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        __init__
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#robotsix_board_agent.BoardAgent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        BoardAgent
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="BoardAgent">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#robotsix_board_agent.BoardAgent.__init__" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        __init__
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#robotsix_board_agent.BoardAgent.start" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        start
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#robotsix_board_agent.BoardAgent.stop" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        stop
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#robotsix_board_agent.BoardAgentSettings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        BoardAgentSettings
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="BoardAgentSettings">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#robotsix_board_agent.BoardAgentSettings.board_api_token" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        board_api_token
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#robotsix_board_agent.BoardAgentSettings.board_api_url" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        board_api_url
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#robotsix_board_agent.BoardAgentSettings.board_repo_id" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        board_repo_id
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#robotsix_board_agent.BoardAgentSettings.enable_write_ops" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        enable_write_ops
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#robotsix_board_agent.BoardClient" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        BoardClient
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="BoardClient">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#robotsix_board_agent.BoardClient.__init__" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        __init__
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#robotsix_board_agent.BoardClient.add_comment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        add_comment
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#robotsix_board_agent.BoardClient.approve" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        approve
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#robotsix_board_agent.BoardClient.board_cards" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        board_cards
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#robotsix_board_agent.BoardClient.close" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        close
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#robotsix_board_agent.BoardClient.create_ticket" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        create_ticket
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#robotsix_board_agent.BoardClient.description" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        description
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#robotsix_board_agent.BoardClient.get_ticket" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        get_ticket
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#robotsix_board_agent.BoardClient.history" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        history
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#robotsix_board_agent.BoardClient.list_tickets" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        list_tickets
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#robotsix_board_agent.BoardClient.mark_done" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        mark_done
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#robotsix_board_agent.BoardClient.merge_now" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        merge_now
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#robotsix_board_agent.BoardClient.merge_status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        merge_status
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#robotsix_board_agent.BoardClient.migrate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        migrate
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#robotsix_board_agent.BoardClient.resume_blocked" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        resume_blocked
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#robotsix_board_agent.BoardClient.set_priority" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        set_priority
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#robotsix_board_agent.BoardClient.transition" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        transition
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#robotsix_board_agent.BoardOp" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        BoardOp
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#robotsix_board_agent.UnknownOpError" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        UnknownOpError
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="UnknownOpError">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#robotsix_board_agent.UnknownOpError.__init__" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        __init__
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#robotsix_board_agent.dispatch" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        dispatch
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="api-reference">API Reference</h1>
+<p>Auto-generated from docstrings for the <code>robotsix_board_agent</code> package.</p>
+<p>For a high-level overview of how the modules fit together, start with the
+<a href="../architecture/">Architecture Overview</a>.</p>
+<h2 id="per-module-detail-pages">Per-module detail pages</h2>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>Link</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>agent</strong> — legacy async structured-op entry point</td>
+<td><a href="../agent/getting-started/"><code>docs/agent/getting-started.md</code></a></td>
+</tr>
+<tr>
+<td><strong>brokered</strong> — production structured-op broker responder</td>
+<td><a href="../brokered/responder/"><code>docs/brokered/responder.md</code></a></td>
+</tr>
+<tr>
+<td><strong>board_manager</strong> — LLM-powered conversational manager</td>
+<td><a href="../board_manager/api/"><code>docs/board_manager/api.md</code></a></td>
+</tr>
+<tr>
+<td><strong>client</strong> — typed HTTP client for the board REST API</td>
+<td><a href="../client/api/"><code>docs/client/api.md</code></a></td>
+</tr>
+<tr>
+<td><strong>config</strong> — <code>BoardAgentSettings</code> model</td>
+<td><a href="../config/reference/"><code>docs/config/reference.md</code></a></td>
+</tr>
+<tr>
+<td><strong>ops</strong> — op table, dispatch, per-op handlers</td>
+<td><a href="../ops/operations/"><code>docs/ops/operations.md</code></a></td>
+</tr>
+<tr>
+<td><strong>memory</strong> — <code>BoardManagerMemory</code> persistence</td>
+<td><a href="../memory/reference/"><code>docs/memory/reference.md</code></a></td>
+</tr>
+<tr>
+<td><strong>manager_cli</strong> — CLI entry point</td>
+<td><a href="../manager_cli/usage/"><code>docs/manager_cli/usage.md</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+
+
+<div class="doc doc-object doc-module">
+
+
+
+<h2 id="robotsix_board_agent" class="doc doc-heading">
+            <code>robotsix_board_agent</code>
+
+
+</h2>
+
+    <div class="doc doc-contents first">
+
+        <p>robotsix-board-agent — board lifecycle agent over agent-comm.</p>
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="robotsix_board_agent.BoardAPIError" class="doc doc-heading">
+            <code>BoardAPIError</code>
+
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="Exception">Exception</span></code></p>
+
+
+
+        <p>Raised when the board API returns a non-2xx status code.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="robotsix_board_agent.BoardAPIError.__init__" class="doc doc-heading">
+            <code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="n">status_code</span><span class="p">,</span> <span class="n">detail</span><span class="p">)</span></code>
+
+</h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Initialise the exception with HTTP status and detail message.</p>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="robotsix_board_agent.BoardAgent" class="doc doc-heading">
+            <code>BoardAgent</code>
+
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>An agent-comm Agent that wraps the board REST API.</p>
+<p>Usage::</p>
+<pre><code>from robotsix_board_agent import BoardAgent, BoardAgentSettings
+from robotsix_agent_comm import Registry
+
+settings = BoardAgentSettings(
+    board_api_url="http://localhost:8000",
+    board_api_token="sk-...",
+    board_repo_id="my-repo",
+)
+registry = Registry()
+agent = BoardAgent(settings, registry)
+await agent.start()
+</code></pre>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="robotsix_board_agent.BoardAgent.__init__" class="doc doc-heading">
+            <code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="n">registry</span><span class="p">,</span> <span class="n">agent_id</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+
+</h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Initialise the board agent.</p>
+<p><em>settings</em> — board configuration (URL, token, repo).
+<em>registry</em> — the agent-comm Registry for registration.
+<em>agent_id</em> — optional custom agent id (defaults to <code>board-{repo_id}</code>).</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="robotsix_board_agent.BoardAgent.start" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">start</span><span class="p">()</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+  </span>
+
+</h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Register the agent and start listening.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="robotsix_board_agent.BoardAgent.stop" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">stop</span><span class="p">()</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+  </span>
+
+</h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Deregister the agent and stop listening.</p>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="robotsix_board_agent.BoardAgentSettings" class="doc doc-heading">
+            <code>BoardAgentSettings</code>
+
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="pydantic.BaseModel">BaseModel</span></code></p>
+
+
+
+        <p>Settings for the BoardAgent.</p>
+<p>All values are passed explicitly by the caller — this is NOT a
+pydantic BaseSettings model that reads from environment variables.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="robotsix_board_agent.BoardAgentSettings.board_api_token" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">board_api_token</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+</h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Bearer token sent as <code>Authorization: Bearer &lt;token&gt;</code>.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="robotsix_board_agent.BoardAgentSettings.board_api_url" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">board_api_url</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+</h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Base URL of the board REST API (e.g. <code>http://localhost:8000</code>).</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="robotsix_board_agent.BoardAgentSettings.board_repo_id" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">board_repo_id</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+</h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>The <code>repo_id</code> / board ID to scope operations to.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="robotsix_board_agent.BoardAgentSettings.enable_write_ops" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">enable_write_ops</span> <span class="o">=</span> <span class="kc">True</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+</h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>When <code>False</code>, all write ops return an Error.</p>
+
+    </div>
+
+</div>
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="robotsix_board_agent.BoardClient" class="doc doc-heading">
+            <code>BoardClient</code>
+
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>Typed HTTP client for the mill board REST API.</p>
+<p>Each public method maps 1:1 to an existing board endpoint.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="robotsix_board_agent.BoardClient.__init__" class="doc doc-heading">
+            <code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">transport</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+
+</h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Initialise the board client.</p>
+<p><em>settings</em> — board configuration (URL, token, repo).
+<em>transport</em> — optional <code>httpx.AsyncBaseTransport</code> for network-free testing.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="robotsix_board_agent.BoardClient.add_comment" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">add_comment</span><span class="p">(</span><span class="n">ticket_id</span><span class="p">,</span> <span class="n">body</span><span class="p">,</span> <span class="n">author</span><span class="o">=</span><span class="n">DEFAULT_COMMENT_AUTHOR</span><span class="p">)</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+  </span>
+
+</h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Add a comment to a ticket.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="robotsix_board_agent.BoardClient.approve" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">approve</span><span class="p">(</span><span class="n">ticket_id</span><span class="p">)</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+  </span>
+
+</h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Approve a ticket.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="robotsix_board_agent.BoardClient.board_cards" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">board_cards</span><span class="p">(</span><span class="n">repo_id</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+  </span>
+
+</h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Get board cards, optionally filtered by repo.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="robotsix_board_agent.BoardClient.close" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">close</span><span class="p">()</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+  </span>
+
+</h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Close the underlying HTTP client.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="robotsix_board_agent.BoardClient.create_ticket" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">create_ticket</span><span class="p">(</span><span class="n">title</span><span class="p">,</span> <span class="n">description</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="n">DEFAULT_TICKET_SOURCE</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="n">DEFAULT_TICKET_KIND</span><span class="p">,</span> <span class="n">repo_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+  </span>
+
+</h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Create a new ticket.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="robotsix_board_agent.BoardClient.description" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">description</span><span class="p">(</span><span class="n">ticket_id</span><span class="p">)</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+  </span>
+
+</h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Get the description of a ticket.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="robotsix_board_agent.BoardClient.get_ticket" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">get_ticket</span><span class="p">(</span><span class="n">ticket_id</span><span class="p">)</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+  </span>
+
+</h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Get a single ticket by id.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="robotsix_board_agent.BoardClient.history" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">history</span><span class="p">(</span><span class="n">ticket_id</span><span class="p">)</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+  </span>
+
+</h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Get the history log for a ticket.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="robotsix_board_agent.BoardClient.list_tickets" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">list_tickets</span><span class="p">(</span><span class="n">state</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">repo_id</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+  </span>
+
+</h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>List tickets, optionally filtered by state and/or repo.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="robotsix_board_agent.BoardClient.mark_done" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">mark_done</span><span class="p">(</span><span class="n">ticket_id</span><span class="p">,</span> <span class="n">note</span><span class="o">=</span><span class="n">DEFAULT_NOTE</span><span class="p">)</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+  </span>
+
+</h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Mark a ticket as done.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="robotsix_board_agent.BoardClient.merge_now" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">merge_now</span><span class="p">(</span><span class="n">ticket_id</span><span class="p">)</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+  </span>
+
+</h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Trigger an immediate merge for a ticket.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="robotsix_board_agent.BoardClient.merge_status" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">merge_status</span><span class="p">(</span><span class="n">ticket_id</span><span class="p">)</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+  </span>
+
+</h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Get merge status for a ticket.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="robotsix_board_agent.BoardClient.migrate" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">migrate</span><span class="p">(</span><span class="n">ticket_id</span><span class="p">,</span> <span class="n">target_repo_id</span><span class="p">,</span> <span class="n">note</span><span class="o">=</span><span class="n">DEFAULT_NOTE</span><span class="p">)</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+  </span>
+
+</h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Migrate a ticket to another repo.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="robotsix_board_agent.BoardClient.resume_blocked" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">resume_blocked</span><span class="p">(</span><span class="n">ticket_id</span><span class="p">)</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+  </span>
+
+</h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Resume a blocked ticket.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="robotsix_board_agent.BoardClient.set_priority" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">set_priority</span><span class="p">(</span><span class="n">ticket_id</span><span class="p">,</span> <span class="n">priority</span><span class="p">)</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+  </span>
+
+</h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Set or clear the priority flag on a ticket.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="robotsix_board_agent.BoardClient.transition" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">transition</span><span class="p">(</span><span class="n">ticket_id</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">note</span><span class="o">=</span><span class="n">DEFAULT_NOTE</span><span class="p">)</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+  </span>
+
+</h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Transition a ticket to a new state.</p>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="robotsix_board_agent.BoardOp" class="doc doc-heading">
+            <code>BoardOp</code>
+
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="pydantic.BaseModel">BaseModel</span></code></p>
+
+
+
+        <p>A structured operation request: <code>{"op": "...", "args": {...}}</code>.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="robotsix_board_agent.UnknownOpError" class="doc doc-heading">
+            <code>UnknownOpError</code>
+
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="Exception">Exception</span></code></p>
+
+
+
+        <p>Raised when the requested operation name is not in the op table.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="robotsix_board_agent.UnknownOpError.__init__" class="doc doc-heading">
+            <code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="n">op</span><span class="p">)</span></code>
+
+</h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Initialise with the unknown operation name.</p>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="robotsix_board_agent.dispatch" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">dispatch</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">op</span><span class="p">)</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+  </span>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Look up <em>op</em> in <code>OP_TABLE</code>, validate args, and execute.</p>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="UnknownOpError (robotsix_board_agent.ops.UnknownOpError)" href="#robotsix_board_agent.UnknownOpError">UnknownOpError</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>if <em>op</em> is not in the table.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": [], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

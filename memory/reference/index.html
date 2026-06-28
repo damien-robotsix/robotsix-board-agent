@@ -1,0 +1,1147 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../../manager_cli/usage/">
+      
+      
+        <link rel="next" href="../../reference/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Memory - robotsix-board-agent</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#board-manager-memory" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="robotsix-board-agent" class="md-header__button md-logo" aria-label="robotsix-board-agent" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            robotsix-board-agent
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Memory
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="robotsix-board-agent" class="md-nav__button md-logo" aria-label="robotsix-board-agent" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    robotsix-board-agent
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../agent/getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ops/operations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operations Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../client/api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Client API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../config/reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Config Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../brokered/responder/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Brokered Responder
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../board_manager/api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Board Manager
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manager_cli/usage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Manager CLI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Memory
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Memory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#three-track-storage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Three-track storage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#initialisation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Initialisation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Initialisation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#constructor-parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Constructor parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#conversation-trace" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Conversation trace
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Conversation trace">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#load-listdictstr-str" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        load() -&gt; list[dict[str, str]]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#appendquestion-answer-timestampnone" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        append(question, answer, *, timestamp=None)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#as_prompt-str" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        as_prompt() -&gt; str
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#maintained-memory" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Maintained memory
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Maintained memory">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#load_notes-str" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        load_notes() -&gt; str
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#save_notestext-str" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        save_notes(text) -&gt; str
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reference-material" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reference material
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Reference material">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#load_reference-str" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        load_reference() -&gt; str
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#save_referencetext" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        save_reference(text)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#search_referencequery-str-str" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        search_reference(query: str) -&gt; str
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pruning-behavior" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pruning behavior
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#persistence-path" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Persistence path
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#three-track-storage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Three-track storage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#initialisation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Initialisation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Initialisation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#constructor-parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Constructor parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#conversation-trace" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Conversation trace
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Conversation trace">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#load-listdictstr-str" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        load() -&gt; list[dict[str, str]]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#appendquestion-answer-timestampnone" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        append(question, answer, *, timestamp=None)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#as_prompt-str" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        as_prompt() -&gt; str
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#maintained-memory" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Maintained memory
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Maintained memory">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#load_notes-str" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        load_notes() -&gt; str
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#save_notestext-str" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        save_notes(text) -&gt; str
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reference-material" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reference material
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Reference material">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#load_reference-str" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        load_reference() -&gt; str
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#save_referencetext" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        save_reference(text)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#search_referencequery-str-str" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        search_reference(query: str) -&gt; str
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pruning-behavior" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pruning behavior
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#persistence-path" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Persistence path
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="board-manager-memory">Board Manager Memory</h1>
+<p><code>BoardManagerMemory</code> provides bounded, three-track persistence for the board
+manager's conversational context.</p>
+<h2 id="three-track-storage">Three-track storage</h2>
+<table>
+<thead>
+<tr>
+<th>Track</th>
+<th>Format</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Conversation trace</td>
+<td>JSON</td>
+<td>Timestamped Q→A pairs; used by the level-1 recall scanner</td>
+</tr>
+<tr>
+<td>Maintained memory</td>
+<td>Markdown</td>
+<td>Free-form note curated by the level-3 agent itself</td>
+</tr>
+<tr>
+<td>Reference material</td>
+<td>Markdown</td>
+<td>Canonical reference data (state-machine catalog, repo</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>registry, epic genealogy, approval inventories); fetched</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>on-demand via the <code>lookup_reference</code> tool, not injected</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>on every call.</td>
+</tr>
+</tbody>
+</table>
+<p>The conversation trace holds only the user's question and the manager's final
+answer — internal tool steps and reasoning are <strong>not</strong> stored, keeping the file
+compact and coherent.</p>
+<h2 id="initialisation">Initialisation</h2>
+<pre><code class="language-python">from pathlib import Path
+from robotsix_board_agent.memory import BoardManagerMemory
+
+memory = BoardManagerMemory(
+    Path(&quot;memory.json&quot;),
+    max_conversations=200,
+    max_notes_chars=2000,
+)
+</code></pre>
+<h3 id="constructor-parameters">Constructor parameters</h3>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Default</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>path</code></td>
+<td><code>Path</code></td>
+<td>(required)</td>
+<td>JSON file for the conversation trace</td>
+</tr>
+<tr>
+<td><code>max_conversations</code></td>
+<td><code>int</code></td>
+<td><code>200</code></td>
+<td>Hard cap on retained Q→A pairs</td>
+</tr>
+<tr>
+<td><code>max_notes_chars</code></td>
+<td><code>int</code></td>
+<td><code>2000</code></td>
+<td>Hard cap on the maintained memory note (chars)</td>
+</tr>
+</tbody>
+</table>
+<p>The maintained-memory note is stored alongside the trace file with a <code>_notes.md</code>
+suffix, and the reference-material file with a <code>_reference.md</code> suffix. For
+<code>path=Path("memory.json")</code>, the files are <code>memory_notes.md</code> and
+<code>memory_reference.md</code>.</p>
+<h2 id="conversation-trace">Conversation trace</h2>
+<h3 id="load-listdictstr-str"><code>load() -&gt; list[dict[str, str]]</code></h3>
+<p>Returns stored conversations as a list of <code>{timestamp, question, answer}</code> dicts,
+oldest first. Returns an empty list if the file does not exist or is corrupted.</p>
+<h3 id="appendquestion-answer-timestampnone"><code>append(question, answer, *, timestamp=None)</code></h3>
+<p>Appends a Q→A turn with an ISO-8601 timestamp (UTC <code>now()</code> by default) and
+writes the JSON file. If the number of entries exceeds <code>max_conversations</code>, the
+oldest entries are pruned.</p>
+<h3 id="as_prompt-str"><code>as_prompt() -&gt; str</code></h3>
+<p>Renders all stored entries as a compact text block for an LLM:</p>
+<pre><code>[2025-01-01T00:00:00Z]
+Q: what is the status of the auth epic?
+A: ...
+</code></pre>
+<p>Returns an empty string when there are no stored entries.</p>
+<h2 id="maintained-memory">Maintained memory</h2>
+<h3 id="load_notes-str"><code>load_notes() -&gt; str</code></h3>
+<p>Returns the agent-curated memory note. Returns <code>""</code> when the file does not exist
+or is unreadable.</p>
+<h3 id="save_notestext-str"><code>save_notes(text) -&gt; str</code></h3>
+<p>Replaces the maintained memory note. Verbose Q&amp;A transcript blocks are stripped
+before saving (safety net — the agent is already prompted to summarise). The
+text is truncated to <code>max_notes_chars</code>.</p>
+<p>Returns <code>"maintained memory updated"</code> on success, or a truncation notice when
+the input exceeded the cap — the agent can use this signal to trim stale entries
+and retry.</p>
+<h2 id="reference-material">Reference material</h2>
+<h3 id="load_reference-str"><code>load_reference() -&gt; str</code></h3>
+<p>Returns the reference-material file content (<code>""</code> when the file does not exist
+or is unreadable). Called internally by <code>search_reference</code>; not exposed as an
+LLM tool.</p>
+<h3 id="save_referencetext"><code>save_reference(text)</code></h3>
+<p>Replaces the reference-material file, truncated to <code>MAX_REFERENCE_CHARS</code> (20,000).
+Intended for integration code/tests to pre-populate the store, not for the LLM
+agent to call directly.</p>
+<h3 id="search_referencequery-str-str"><code>search_reference(query: str) -&gt; str</code></h3>
+<p>Searches the reference material for paragraphs matching <em>query</em>. The text is
+split on blank lines into paragraphs; any paragraph containing one of the query
+words (case-insensitive, single-char words ignored) is included. The result is
+capped at ~2,000 characters to keep the tool response lean.</p>
+<p>Returns a plain-text summary or a notice when nothing matches. This is the
+method backing the LLM tool <code>lookup_reference</code>.</p>
+<h2 id="pruning-behavior">Pruning behavior</h2>
+<ul>
+<li>The conversation trace is pruned on every <code>append()</code>: when the list exceeds
+  <code>max_conversations</code>, the oldest entries (at the front of the list) are dropped.</li>
+<li>The maintained memory note is not pruned automatically — the level-3 agent is
+  prompted to rewrite (not append) the note via the <code>update_memory</code> tool, keeping
+  it concise under the <code>MAX_NOTES_CHARS</code> cap.</li>
+</ul>
+<h2 id="persistence-path">Persistence path</h2>
+<p>Both files are created in the parent directory of <code>path</code> (directories are
+auto-created on write).</p>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Example path</th>
+<th>Content</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Trace file</td>
+<td><code>./memory.json</code></td>
+<td><code>[{timestamp, question, answer}, ...]</code></td>
+</tr>
+<tr>
+<td>Notes file</td>
+<td><code>./memory_notes.md</code></td>
+<td>Free-form agent note</td>
+</tr>
+<tr>
+<td>Reference file</td>
+<td><code>./memory_reference.md</code></td>
+<td>Canonical reference material (state-</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>machine catalog, repo registry, etc.)</td>
+</tr>
+</tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": [], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
