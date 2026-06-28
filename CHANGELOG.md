@@ -10,6 +10,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Tightened `bump-git-pin.yml` workflow: `new-rev` input now requires a full
   40-character commit SHA (used directly without `git ls-remote` resolution);
   short SHAs (< 40 chars) are rejected, and only `latest-main` is resolved
+- Added `get_multiple_ticket_descriptions` — a batch read tool that fetches
+  descriptions for an arbitrary list of ticket ids in a single round-trip,
+  replacing N sequential `get_ticket`/`ticket_description` calls.  The
+  `BoardClient` method issues concurrent `GET /tickets/{id}/description`
+  requests; individual failures are captured as per-ticket error entries so
+  partial results are always returned.  The board-manager system prompt now
+  instructs the agent to batch-fetch all needed descriptions in one pass.
 - Added reusable `bump-git-pin.yml` workflow and `scripts/bump_git_pin.py` for
   automated single-package git-pin bumps — resolves target commits, updates
   `pyproject.toml` `[tool.uv.sources]`, refreshes the lockfile, and opens a PR

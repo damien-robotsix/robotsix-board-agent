@@ -892,9 +892,9 @@ class TestBuildTools:
 
     # -- tool count & names --------------------------------------------------
 
-    def test_returns_exactly_17_callables(self, manager: BoardManager) -> None:
+    def test_returns_exactly_18_callables(self, manager: BoardManager) -> None:
         tools = manager._build_tools("test-requester")
-        assert len(tools) == 17
+        assert len(tools) == 18
         assert all(callable(t) for t in tools)
 
     def test_tool_names_match_expected(self, manager: BoardManager) -> None:
@@ -906,6 +906,7 @@ class TestBuildTools:
             "ticket_history",
             "merge_status",
             "ticket_description",
+            "get_multiple_ticket_descriptions",
             "create_ticket",
             "comment",
             "transition",
@@ -1186,9 +1187,9 @@ class TestBuildTools:
             memory_path=tmp_path / "memory",
         )
 
-    def test_read_only_returns_8_tools(self, read_only_manager: BoardManager) -> None:
+    def test_read_only_returns_9_tools(self, read_only_manager: BoardManager) -> None:
         tools = read_only_manager._build_tools("test-requester")
-        assert len(tools) == 8
+        assert len(tools) == 9
         assert all(callable(t) for t in tools)
 
     def test_read_only_tool_names_are_read_only(self, read_only_manager: BoardManager) -> None:
@@ -1201,6 +1202,7 @@ class TestBuildTools:
             "ticket_history",
             "merge_status",
             "ticket_description",
+            "get_multiple_ticket_descriptions",
             "update_memory",
             "lookup_reference",
         }
@@ -1213,10 +1215,10 @@ class TestBuildTools:
         names = {t.__name__ for t in tools}
         assert names.isdisjoint(WRITE_OPS)
 
-    def test_read_write_returns_full_17(self, manager: BoardManager) -> None:
-        """When enable_write_ops=True (default fixture), still 17 tools."""
+    def test_read_write_returns_full_18(self, manager: BoardManager) -> None:
+        """When enable_write_ops=True (default fixture), still 18 tools."""
         tools = manager._build_tools("test-requester")
-        assert len(tools) == 17
+        assert len(tools) == 18
 
     # -- _truncate_result fallback pop ------------------------------------
 

@@ -75,6 +75,13 @@ READ_OP_TESTS = [
         {"body": "desc"},
         {"body": "desc"},
     ),
+    (
+        "get_multiple_ticket_descriptions",
+        "get_multiple_ticket_descriptions",
+        {"ticket_ids": ["T-1", "T-2"]},
+        [{"body": "d1"}, {"body": "d2"}],
+        {"descriptions": [{"body": "d1"}, {"body": "d2"}]},
+    ),
 ]
 
 
@@ -142,8 +149,8 @@ def test_op_table_covers_all_known_ops():
     """Every key in OP_TABLE should be either a known read or a known write."""
     all_ops = set(OP_TABLE.keys())
     assert WRITE_OPS.issubset(all_ops)
-    # All 15 ops are present.
-    assert len(all_ops) == 15
+    # All 16 ops are present.
+    assert len(all_ops) == 16
 
 
 def test_write_ops_set_content():
