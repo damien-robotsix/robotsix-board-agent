@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Tightened `bump-git-pin.yml` workflow: `new-rev` input now requires a full
+  40-character commit SHA (used directly without `git ls-remote` resolution);
+  short SHAs (< 40 chars) are rejected, and only `latest-main` is resolved
 - Added reusable `bump-git-pin.yml` workflow and `scripts/bump_git_pin.py` for
   automated single-package git-pin bumps — resolves target commits, updates
   `pyproject.toml` `[tool.uv.sources]`, refreshes the lockfile, and opens a PR

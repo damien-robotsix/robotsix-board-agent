@@ -13,10 +13,9 @@ name: Bump Git Pin
 #     DEPS_BUMP_TOKEN: ${{ secrets.DEPS_BUMP_TOKEN }}
 #
 # Single-package bump:
-#   *new-rev* can be an explicit commit SHA, or the string "latest-main" to
-#   auto-resolve the HEAD of the remote's default branch.  The workflow
-#   runs `git ls-remote` to resolve short SHAs and symbolic refs into full
-#   40-character commit hashes (which uv requires).
+#   *new-rev* can be an explicit FULL commit SHA (40 hex chars, used directly),
+#   or the string "latest-main" to auto-resolve the HEAD of the remote's default
+#   branch. Short SHAs (< 40 hex chars) are rejected — always pass the full SHA.
 #
 # Periodic batch refresh (all git deps to latest @main) is handled by the
 # separate `deps-bump.yml` workflow (which delegates to robotsix-mill).
@@ -97,17 +96,14 @@ jobs:
             FULL_SHA=$(git ls-remote "$GIT_URL" refs/heads/main | cut -f1)
             echo "Resolved latest-main → $FULL_SHA"
             echo "sha=$FULL_SHA" >> "$GITHUB_OUTPUT"
-          elif echo "$NEW_REV" | grep -qE '^[0-9a-f]{12,}$'; then
-            # Looks like a commit SHA (≥12 hex chars) — resolve to full.
-            FULL_SHA=$(git ls-remote "$GIT_URL" "$NEW_REV" | cut -f1)
-            if [ -z "$FULL_SHA" ]; then
-              echo "::error::Could not resolve '$NEW_REV' — is it a reachable ref?"
-              exit 1
-            fi
-            echo "Resolved short SHA $NEW_REV → $FULL_SHA"
+          elif echo "$NEW_REV" | grep -qE '^[0-9a-f]{40}$'; then
+            FULL_SHA="$NEW_REV"
+            echo "Full SHA provided directly: $FULL_SHA"
             echo "sha=$FULL_SHA" >> "$GITHUB_OUTPUT"
+          elif echo "$NEW_REV" | grep -qE '^[0-9a-f]{12,39}$'; then
+            echo "::error::Short SHAs cannot be resolved. Pass a full 40-char SHA or 'latest-main' instead."
+            exit 1
           else
-            # Assume it's a full SHA or a ref like a tag.
             FULL_SHA=$(git ls-remote "$GIT_URL" "$NEW_REV" | cut -f1)
             if [ -z "$FULL_SHA" ]; then
               echo "::error::Could not resolve '$NEW_REV' — is it a reachable ref?"
