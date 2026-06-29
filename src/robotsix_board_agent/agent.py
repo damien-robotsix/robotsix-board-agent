@@ -7,6 +7,7 @@ other agents can drive a board programmatically.
 from __future__ import annotations
 
 import logging
+import os
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
@@ -30,15 +31,24 @@ _agent_comm_available, _Agent, _Error, *_, _Response = _resolve_agent_comm()
 # ---------------------------------------------------------------------------
 # Setup structured logging via robotsix-llmio's shared helper (idempotent).
 # ---------------------------------------------------------------------------
+_log_level = os.environ.get("LOG_LEVEL", "INFO").upper()
+_valid_levels = {"DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"}
+if _log_level not in _valid_levels:
+    _log_level = "INFO"
+
 try:
     from robotsix_llmio.logging import setup_logging as _llmio_setup_logging
 
-    _llmio_setup_logging(loggers=["robotsix_board_agent"])
+    try:
+        _llmio_setup_logging(loggers=["robotsix_board_agent"], log_level=_log_level)
+    except TypeError:
+        _llmio_setup_logging(loggers=["robotsix_board_agent"])
+        logging.getLogger().setLevel(getattr(logging, _log_level, logging.INFO))
 except ImportError:
     import logging as _logging
 
     _logging.basicConfig(
-        level=_logging.INFO,
+        level=getattr(_logging, _log_level, _logging.INFO),
         format="%(levelname)s:%(name)s:%(message)s",
     )
 

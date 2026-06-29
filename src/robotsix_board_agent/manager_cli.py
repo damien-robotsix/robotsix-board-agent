@@ -12,10 +12,13 @@ Environment:
     BOARD_MANAGER_CLI_TOKEN this CLI's broker bearer token (required)
     BOARD_MANAGER_CLI_ID    this CLI's agent id (default: board-manager-cli)
     BOARD_MANAGER_TARGET    manager agent id (default: board-manager-robotsix-mill)
+    LOG_LEVEL               logging verbosity (DEBUG, INFO, WARNING, ERROR, CRITICAL;
+                            default: WARNING)
 """
 
 from __future__ import annotations
 
+import logging as _logging
 import os
 import sys
 
@@ -32,6 +35,16 @@ def main(argv: list[str] | None = None) -> int:
     errors.
     """
     args = list(sys.argv[1:] if argv is None else argv)
+
+    _log_level = os.environ.get("LOG_LEVEL", "WARNING").upper()
+    _valid_levels = {"DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"}
+    if _log_level not in _valid_levels:
+        _log_level = "WARNING"
+    _logging.basicConfig(
+        level=getattr(_logging, _log_level, _logging.WARNING),
+        format="%(levelname)s:%(name)s:%(message)s",
+    )
+
     if not args:
         print(
             'usage: robotsix-board-manager "<natural-language instruction>"',
