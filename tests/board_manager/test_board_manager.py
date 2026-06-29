@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Generator
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
@@ -150,13 +151,13 @@ class TestConverse:
     """
 
     @pytest.fixture(autouse=True)
-    def _patch_select_model(self, manager: BoardManager) -> None:
+    def _patch_select_model(self, manager: BoardManager) -> Generator[None]:
         """Patch _select_manager_model to return None — keep existing assertions valid."""
         with patch.object(manager, "_select_manager_model", return_value=None):
             yield
 
     @pytest.fixture
-    def mock_build_agent(self) -> MagicMock:
+    def mock_build_agent(self) -> Generator[MagicMock]:
         """Patch build_agent_for_level to return fresh agent mocks per call.
 
         Patched at the source (``robotsix_llmio``) since ``_converse`` does a
@@ -170,7 +171,7 @@ class TestConverse:
             yield ba
 
     @pytest.fixture
-    def mock_run_agent(self) -> MagicMock:
+    def mock_run_agent(self) -> Generator[MagicMock]:
         """Patch run_agent to return canned output for each call."""
         with patch("robotsix_llmio.core.run.run_agent") as ra:
             yield ra
@@ -652,7 +653,7 @@ class TestSelectManagerModel:
     """
 
     @pytest.fixture
-    def mock_build_agent(self) -> MagicMock:
+    def mock_build_agent(self) -> Generator[MagicMock]:
         """Patch build_agent_for_level to return fresh agent mocks per call."""
         with patch(
             "robotsix_llmio.build_agent_for_level",
@@ -661,7 +662,7 @@ class TestSelectManagerModel:
             yield ba
 
     @pytest.fixture
-    def mock_run_agent(self) -> MagicMock:
+    def mock_run_agent(self) -> Generator[MagicMock]:
         """Patch run_agent to return canned output for each call."""
         with patch("robotsix_llmio.core.run.run_agent") as ra:
             yield ra
@@ -1072,7 +1073,7 @@ class TestBuildTools:
     # -- create_ticket -------------------------------------------------------
 
     def test_create_ticket_defaults_source_to_requester(self, manager: BoardManager) -> None:
-        manager._run = MagicMock(return_value={"id": "ticket-1"})
+        manager._run = MagicMock(return_value={"id": "ticket-1"})  # type: ignore[method-assign]
         manager.client.create_ticket = MagicMock(return_value=MagicMock())
 
         tools = manager._build_tools("test-requester")
@@ -1088,7 +1089,7 @@ class TestBuildTools:
         )
 
     def test_create_ticket_respects_explicit_source(self, manager: BoardManager) -> None:
-        manager._run = MagicMock(return_value={"id": "ticket-2"})
+        manager._run = MagicMock(return_value={"id": "ticket-2"})  # type: ignore[method-assign]
         manager.client.create_ticket = MagicMock(return_value=MagicMock())
 
         tools = manager._build_tools("test-requester")
@@ -1106,7 +1107,7 @@ class TestBuildTools:
     # -- update_memory -------------------------------------------------------
 
     def test_update_memory_delegates_to_save_notes(self, manager: BoardManager) -> None:
-        manager._memory.save_notes = MagicMock(return_value="maintained memory updated")
+        manager._memory.save_notes = MagicMock(return_value="maintained memory updated")  # type: ignore[method-assign]
 
         tools = manager._build_tools("test-requester")
         update_memory = next(t for t in tools if t.__name__ == "update_memory")
@@ -1118,7 +1119,7 @@ class TestBuildTools:
 
     def test_update_memory_reports_truncation(self, manager: BoardManager) -> None:
         """When save_notes truncates, update_memory returns the truncation notice."""
-        manager._memory.save_notes = MagicMock(
+        manager._memory.save_notes = MagicMock(  # type: ignore[method-assign]
             return_value="maintained memory updated (truncated to 2000 chars — trim stale entries)"
         )
 
@@ -1133,7 +1134,7 @@ class TestBuildTools:
     # -- lookup_reference ---------------------------------------------------
 
     def test_lookup_reference_delegates_to_search_reference(self, manager: BoardManager) -> None:
-        manager._memory.search_reference = MagicMock(
+        manager._memory.search_reference = MagicMock(  # type: ignore[method-assign]
             return_value="## State Machine\n- open → in_progress → review → done"
         )
 
@@ -1146,7 +1147,7 @@ class TestBuildTools:
         assert "## State Machine" in result
 
     def test_lookup_reference_no_match_returns_notice(self, manager: BoardManager) -> None:
-        manager._memory.search_reference = MagicMock(
+        manager._memory.search_reference = MagicMock(  # type: ignore[method-assign]
             return_value="(no reference material matches query: 'nonexistent')"
         )
 
@@ -1160,8 +1161,8 @@ class TestBuildTools:
 
     def test_mark_done_prunes_closed_ticket_from_notes(self, manager: BoardManager) -> None:
         """When mark_done succeeds, the closed ticket's memory entries are pruned."""
-        manager._run = MagicMock(return_value={"ok": True})
-        manager._memory.prune_closed_ticket = MagicMock()
+        manager._run = MagicMock(return_value={"ok": True})  # type: ignore[method-assign]
+        manager._memory.prune_closed_ticket = MagicMock()  # type: ignore[method-assign]
         manager.client.mark_done = MagicMock(return_value=MagicMock())
 
         tools = manager._build_tools("test-requester")
@@ -1178,8 +1179,8 @@ class TestBuildTools:
     def test_mark_done_prunes_even_on_api_error(self, manager: BoardManager) -> None:
         """mark_done prunes the ticket from notes even if the API call fails."""
         error = BoardAPIError(404, "ticket not found")
-        manager._run = MagicMock(side_effect=error)
-        manager._memory.prune_closed_ticket = MagicMock()
+        manager._run = MagicMock(side_effect=error)  # type: ignore[method-assign]
+        manager._memory.prune_closed_ticket = MagicMock()  # type: ignore[method-assign]
         manager.client.mark_done = MagicMock(return_value=MagicMock())
 
         tools = manager._build_tools("test-requester")
@@ -1195,7 +1196,7 @@ class TestBuildTools:
 
     def test_safe_propagates_board_api_error_as_string(self, manager: BoardManager) -> None:
         error = BoardAPIError(422, "validation failed")
-        manager._run = MagicMock(side_effect=error)
+        manager._run = MagicMock(side_effect=error)  # type: ignore[method-assign]
         manager.client.list_tickets = MagicMock(return_value=MagicMock())
 
         tools = manager._build_tools("test-requester")
@@ -1227,7 +1228,7 @@ class TestBuildTools:
         ]
         assert len(json.dumps(items)) > _RESULT_CAP
 
-        manager._run = MagicMock(return_value=items.copy())
+        manager._run = MagicMock(return_value=items.copy())  # type: ignore[method-assign]
         manager.client.list_tickets = MagicMock(return_value=MagicMock())
 
         tools = manager._build_tools("test-requester")
@@ -1264,7 +1265,7 @@ class TestBuildTools:
         ]
         assert len(json.dumps(items)) > _RESULT_CAP
 
-        manager._run = MagicMock(return_value=items.copy())
+        manager._run = MagicMock(return_value=items.copy())  # type: ignore[method-assign]
         manager.client.list_tickets = MagicMock(return_value=MagicMock())
 
         tools = manager._build_tools("test-requester")
@@ -1284,7 +1285,7 @@ class TestBuildTools:
             "description": "x" * 15000,  # push past _RESULT_CAP
         }
 
-        manager._run = MagicMock(return_value=ticket)
+        manager._run = MagicMock(return_value=ticket)  # type: ignore[method-assign]
         manager.client.get_ticket = MagicMock(return_value=MagicMock())
 
         tools = manager._build_tools("test-requester")
@@ -1306,7 +1307,7 @@ class TestBuildTools:
         ]
         assert len(json.dumps(items)) < 12_000  # well under _RESULT_CAP
 
-        manager._run = MagicMock(return_value=items.copy())
+        manager._run = MagicMock(return_value=items.copy())  # type: ignore[method-assign]
         manager.client.list_tickets = MagicMock(return_value=MagicMock())
 
         tools = manager._build_tools("test-requester")
@@ -1502,7 +1503,7 @@ class TestFastReadTicket:
             "pending_question": None,
             "errors": None,
         }
-        data.update(overrides)  # type: ignore[arg-type]
+        data.update(overrides)
         return data
 
     # -- fast path accepted --------------------------------------------------
@@ -1510,7 +1511,7 @@ class TestFastReadTicket:
     def test_simple_read_returns_structured_status(self, manager: BoardManager) -> None:
         """A simple "read ticket X" query returns structured status without LLM."""
         data = self._ticket_data()
-        manager._run = MagicMock(return_value=data)
+        manager._run = MagicMock(return_value=data)  # type: ignore[method-assign]
 
         result = manager._fast_read_ticket(f"Read the live state of ticket {self.TICKET_ID}")
 
@@ -1527,7 +1528,7 @@ class TestFastReadTicket:
     def test_simple_read_omits_none_fields(self, manager: BoardManager) -> None:
         """Optional None fields are omitted from the status summary."""
         data = {"state": "open", "branch": None, "pr_url": None}
-        manager._run = MagicMock(return_value=data)
+        manager._run = MagicMock(return_value=data)  # type: ignore[method-assign]
 
         result = manager._fast_read_ticket(f"status of {self.TICKET_ID}")
 
@@ -1541,7 +1542,7 @@ class TestFastReadTicket:
             pending_question="approve this?",
             errors=[{"code": "lint-fail", "message": "flake8"}],
         )
-        manager._run = MagicMock(return_value=data)
+        manager._run = MagicMock(return_value=data)  # type: ignore[method-assign]
 
         result = manager._fast_read_ticket(f"what's up with {self.TICKET_ID}")
 
@@ -1554,7 +1555,7 @@ class TestFastReadTicket:
     def test_cache_hit_avoids_api_call(self, manager: BoardManager) -> None:
         """Second identical read is served from cache, no API call."""
         data = self._ticket_data()
-        manager._run = MagicMock(return_value=data)
+        manager._run = MagicMock(return_value=data)  # type: ignore[method-assign]
 
         # First call — hits the API.
         r1 = manager._fast_read_ticket(f"status of {self.TICKET_ID}")
@@ -1571,7 +1572,7 @@ class TestFastReadTicket:
     def test_cache_hit_different_wording(self, manager: BoardManager) -> None:
         """Cache key is the ticket id, not the question phrasing."""
         data = self._ticket_data()
-        manager._run = MagicMock(return_value=data)
+        manager._run = MagicMock(return_value=data)  # type: ignore[method-assign]
 
         manager._fast_read_ticket(f"read {self.TICKET_ID}")
         assert manager._run.call_count == 1
@@ -1591,7 +1592,7 @@ class TestFastReadTicket:
 
         data1 = self._ticket_data(state="open")
         data2 = self._ticket_data(state="done")
-        manager._run = MagicMock(side_effect=[data1, data2])
+        manager._run = MagicMock(side_effect=[data1, data2])  # type: ignore[method-assign]
 
         r1 = manager._fast_read_ticket(f"read {self.TICKET_ID}")
         assert "state: open" in (r1 or "")
@@ -1606,7 +1607,7 @@ class TestFastReadTicket:
 
     def test_write_intent_skips_fast_path(self, manager: BoardManager) -> None:
         """A question with write-intent keywords returns None (fall through to LLM)."""
-        manager._run = MagicMock()
+        manager._run = MagicMock()  # type: ignore[method-assign]
 
         result = manager._fast_read_ticket(f"please transition {self.TICKET_ID} to done")
         assert result is None
@@ -1614,7 +1615,7 @@ class TestFastReadTicket:
 
     def test_no_ticket_id_skips_fast_path(self, manager: BoardManager) -> None:
         """A question without a ticket id returns None."""
-        manager._run = MagicMock()
+        manager._run = MagicMock()  # type: ignore[method-assign]
 
         result = manager._fast_read_ticket("what tickets are open?")
         assert result is None
@@ -1622,7 +1623,7 @@ class TestFastReadTicket:
 
     def test_multiple_ticket_ids_skips_fast_path(self, manager: BoardManager) -> None:
         """A question mentioning multiple ticket ids returns None."""
-        manager._run = MagicMock()
+        manager._run = MagicMock()  # type: ignore[method-assign]
 
         result = manager._fast_read_ticket(
             f"compare {self.TICKET_ID} and 20260621T182023Z-other-one-b3c4"
@@ -1634,7 +1635,7 @@ class TestFastReadTicket:
 
     def test_api_error_falls_back_to_llm(self, manager: BoardManager) -> None:
         """When the board API returns an error, the fast path returns None."""
-        manager._run = MagicMock(side_effect=BoardAPIError(404, "not found"))
+        manager._run = MagicMock(side_effect=BoardAPIError(404, "not found"))  # type: ignore[method-assign]
 
         result = manager._fast_read_ticket(f"read {self.TICKET_ID}")
         assert result is None
@@ -1647,7 +1648,7 @@ class TestFastReadTicket:
         from tests.conftest import Request
 
         data = self._ticket_data()
-        manager._run = MagicMock(return_value=data)
+        manager._run = MagicMock(return_value=data)  # type: ignore[method-assign]
 
         with patch.object(manager, "_converse") as mock_conv:
             reply = manager._handle_request(Request(body={"message": f"read {self.TICKET_ID}"}))
