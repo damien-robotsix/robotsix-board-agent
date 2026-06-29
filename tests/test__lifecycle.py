@@ -161,6 +161,7 @@ class TestStop:
         assert obj.loop is None
         assert obj.loop_thread is None
         assert obj.client.closed
+        assert loop is not None
         assert loop.is_closed()
         thread.join(timeout=0.5)  # should already be done
 
@@ -179,6 +180,7 @@ class TestStop:
         assert obj.loop_thread is None
         assert "board client close failed during stop" in caplog.text
         # Loop and thread should still be cleaned up despite close failure.
+        assert loop is not None
         assert loop.is_closed()
         thread.join(timeout=0.5)
 

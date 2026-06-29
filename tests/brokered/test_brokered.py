@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from typing import Any
 from unittest.mock import patch
 
 import pytest
@@ -30,7 +31,7 @@ _WRITE_OP_BODY = {
 }
 
 
-def _req(body):
+def _req(body: Any) -> Any:
     from tests.conftest import Request
 
     return Request(body=body)

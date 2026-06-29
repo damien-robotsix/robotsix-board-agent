@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
+from typing import Any
 from unittest.mock import patch
 
 from robotsix_board_agent._imports import _resolve_agent_comm
@@ -13,16 +14,16 @@ from robotsix_board_agent._imports import _resolve_agent_comm
 # ---------------------------------------------------------------------------
 
 
-def _pop_agent_comm_modules() -> dict[str, object]:
+def _pop_agent_comm_modules() -> dict[str, Any]:
     """Remove all robotsix_agent_comm entries from sys.modules and return them."""
-    popped: dict[str, object] = {}
+    popped: dict[str, Any] = {}
     for key in list(sys.modules):
         if key == "robotsix_agent_comm" or key.startswith("robotsix_agent_comm."):
             popped[key] = sys.modules.pop(key)
     return popped
 
 
-def _restore_agent_comm_modules(modules: dict[str, object]) -> None:
+def _restore_agent_comm_modules(modules: dict[str, Any]) -> None:
     """Restore previously-popped agent-comm modules into sys.modules."""
     for key, mod in modules.items():
         sys.modules[key] = mod
@@ -89,6 +90,7 @@ class TestResolveAgentCommFallback:
             # Ensure the constructed path is not already in sys.path.
             # We compute the same path _resolve_agent_comm would compute.
             _mod = sys.modules[_resolve_agent_comm.__module__]
+            assert _mod.__file__ is not None
 
             _ref_path = str(
                 Path(_mod.__file__).resolve().parent.parent.parent / "_agent_comm_ref" / "src"
