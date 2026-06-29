@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Ask a Question
+    url: https://github.com/damien-robotsix/robotsix-board-agent/discussions/new?category=general
+    about: Ask a question about using robotsix-board-agent

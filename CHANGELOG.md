@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Added community health files: issue templates (bug report, feature request),
+  PR template, and ``FUNDING.yml``
+
 - Added ``LOG_LEVEL`` environment variable support for controlling logging verbosity
   (``DEBUG``, ``INFO``, ``WARNING``, ``ERROR``, ``CRITICAL``) — the library
   (``agent.py``) defaults to ``INFO`` and the CLI (``manager_cli.py``) defaults to
