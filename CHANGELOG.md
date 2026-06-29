@@ -14,6 +14,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added community health files: issue templates (bug report, feature request),
   PR template, and ``FUNDING.yml``
 
+- Fixed stale tool counts in documentation: `docs/architecture.md` now says
+  "16 board operations + update_memory + lookup_reference", and
+  `docs/board_manager/api.md` now includes the missing
+  `get_multiple_ticket_descriptions` row in the tool table.
+
 - Added ``LOG_LEVEL`` environment variable support for controlling logging verbosity
   (``DEBUG``, ``INFO``, ``WARNING``, ``ERROR``, ``CRITICAL``) — the library
   (``agent.py``) defaults to ``INFO`` and the CLI (``manager_cli.py``) defaults to
