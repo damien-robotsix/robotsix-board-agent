@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Added ``LOG_LEVEL`` environment variable support for controlling logging verbosity
+  (``DEBUG``, ``INFO``, ``WARNING``, ``ERROR``, ``CRITICAL``) — the library
+  (``agent.py``) defaults to ``INFO`` and the CLI (``manager_cli.py``) defaults to
+  ``WARNING``; invalid values silently fall back to the respective default
+
 - Restored public API re-exports in ``src/robotsix_board_agent/__init__.py``
   (deleted by a docs-stage commit; ``BoardAgent``, ``BoardClient``,
   ``BoardAgentSettings``, ``OP_TABLE``, ``WRITE_OPS``, ``BoardOp``,

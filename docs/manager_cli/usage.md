@@ -30,6 +30,7 @@ robotsix-board-manager "create a ticket: fix login timeout bug in auth service"
 | `ROBOTSIX_BROKER_SCHEME`  | `https`                          | No       | `http` or `https`                    |
 | `BOARD_MANAGER_CLI_ID`    | `board-manager-cli`              | No       | This CLI's agent id on the broker    |
 | `BOARD_MANAGER_TARGET`    | `board-manager-robotsix-mill`    | No       | Target manager agent id to talk to   |
+| `LOG_LEVEL`               | `WARNING`                        | No       | Logging verbosity (`DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL`) |
 
 ## Exit codes
 
