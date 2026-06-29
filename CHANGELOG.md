@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Fixed mypy strict type errors in test suite: added ``Generator`` return types for
+  fixtures that ``yield``, annotated untyped function signatures with ``Any``, and
+  added ``# type: ignore[method-assign]`` for MagicMock attribute assignments
+
 - Promoted `constants` to a standalone module: added module entry in `docs/modules.yaml`,
   created `docs/constants/reference.md` documenting `DEFAULT_*` constants and
   `BoardErrorCode` enum, and removed constants paths from the `__init__` module.
