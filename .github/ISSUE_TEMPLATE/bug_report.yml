@@ -1,0 +1,49 @@
+name: Bug Report
+description: Report a bug in robotsix-board-agent
+labels: [bug]
+body:
+  - type: checkboxes
+    id: initial-checks
+    attributes:
+      label: Initial Checks
+      options:
+        - label: I have searched the existing issues (open and closed) for a matching report
+          required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: A clear and concise description of the bug.
+      placeholder: |
+        When I ...
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction Steps
+      description: |
+        Minimal steps to reproduce the bug. Include code snippets where relevant.
+        Use ```python code blocks.
+      placeholder: |
+        1.
+        2.
+        3.
+        ```python
+        # example code
+        ```
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: The version of robotsix-board-agent you are using (e.g. commit SHA, package version).
+      placeholder: e.g. v0.1.0 or commit abc1234
+    validations:
+      required: true
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: OS, Python version, or anything else that may help diagnose the issue.
