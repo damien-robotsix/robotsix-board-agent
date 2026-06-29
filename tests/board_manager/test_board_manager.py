@@ -72,6 +72,23 @@ class TestHandleRequest:
         mock_conv.assert_called_once_with("use this", "agent")
         assert reply.result == {"reply": "from message"}
 
+    def test_converse_invalidates_read_cache(self, manager: BoardManager) -> None:
+        """A write-intent turn goes through _converse and must clear the read
+        cache, so a later fast read does not serve stale ticket status."""
+        from tests.conftest import Request
+
+        tid = "20260101T000000Z-x-abcd"
+        manager._ticket_cache.set(tid, {"id": tid, "state": "ready"})
+        assert manager._ticket_cache.get(tid) is not None
+
+        # "transition" is a write-intent word → bypasses fast read → _converse.
+        with patch.object(manager, "_converse", return_value="done") as mock_conv:
+            reply = manager._handle_request(Request(body={"message": f"transition {tid} to done"}))
+
+        mock_conv.assert_called_once()
+        assert reply.result == {"reply": "done"}
+        assert manager._ticket_cache.get(tid) is None  # cache invalidated
+
     def test_converse_result_appended_to_memory(self, manager: BoardManager) -> None:
         from tests.conftest import Request
 

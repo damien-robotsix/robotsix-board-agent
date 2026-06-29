@@ -156,6 +156,15 @@ class _TicketCache:
         """Store *data* for *ticket_id*, resetting its TTL."""
         self._store[ticket_id] = (time.monotonic(), data)
 
+    def clear(self) -> None:
+        """Drop all cached entries.
+
+        Called after any LLM/ops turn that may have mutated ticket state
+        (transitions, approvals, …) so a subsequent fast read does not serve
+        a stale status within the TTL.
+        """
+        self._store.clear()
+
 
 def _has_write_intent(question: str) -> bool:
     """Return ``True`` if *question* contains any write-intent keyword."""
@@ -326,7 +335,16 @@ class BoardManager(_ThreadedLoopMixin):
         )
         try:
             fast_answer = self._fast_read_ticket(question)
-            answer = fast_answer if fast_answer is not None else self._converse(question, requester)
+            if fast_answer is not None:
+                answer = fast_answer
+            else:
+                # The full pipeline may mutate ticket state (transitions,
+                # approvals, …). Invalidate the read cache afterwards so a
+                # subsequent fast read reflects the change rather than a
+                # stale cached status. Unconditional because the write-intent
+                # gate is keyword-based and can miss a write.
+                answer = self._converse(question, requester)
+                self._ticket_cache.clear()
         except Exception as exc:
             logger.exception("board-manager: _converse failed for requester %s", requester)
             return Response.to(
