@@ -40,7 +40,7 @@ try:
     from robotsix_llmio.logging import setup_logging as _llmio_setup_logging
 
     try:
-        _llmio_setup_logging(loggers=["robotsix_board_agent"], log_level=_log_level)
+        _llmio_setup_logging(loggers=["robotsix_board_agent"], log_level=_log_level)  # type: ignore[call-arg]
     except TypeError:
         _llmio_setup_logging(loggers=["robotsix_board_agent"])
         logging.getLogger().setLevel(getattr(logging, _log_level, logging.INFO))
