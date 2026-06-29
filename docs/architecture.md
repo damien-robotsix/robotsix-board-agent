@@ -138,7 +138,7 @@ BoardManager._converse(question, requester)
   ├─ Stage 3 — Acting manager
   │   ├─ Builds tool-using LLM agent (level=3) with _MANAGER_SYSTEM
   │   ├─ Context: curated memory notes + relevant prior exchanges
-  │   ├─ Tools: 15 board operations + update_memory
+  │   ├─ Tools: 16 board operations + update_memory + lookup_reference
   │   │         (each tool wraps a self._run(client.xxx()) call)
   │   └─ Runs h3.run_sync(question) → LLM replies in natural language
   │

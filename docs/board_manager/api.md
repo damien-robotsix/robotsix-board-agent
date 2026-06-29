@@ -110,6 +110,7 @@ strings.
 | `ticket_history`     | `ticket_id: str`                            | `GET /tickets/{id}/history`            |
 | `merge_status`       | `ticket_id: str`                            | `GET /tickets/{id}/merge-status`       |
 | `ticket_description` | `ticket_id: str`                            | `GET /tickets/{id}/description`        |
+| `get_multiple_ticket_descriptions` | `ticket_ids: list[str]`        | `GET /tickets/{id}/description (×N)`   |
 | `create_ticket`      | `title: str, description: str`              | `POST /tickets`                        |
 | `comment`            | `ticket_id: str, body: str`                 | `POST /tickets/{id}/comments`          |
 | `transition`         | `ticket_id: str, state: str, note: str = ""`| `POST /tickets/{id}/transition`        |
