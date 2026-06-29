@@ -1,6 +1,6 @@
 # Operations Reference
 
-The board agent supports 15 structured operations — 6 read, 9 write.
+The board agent supports 16 structured operations — 7 read, 9 write.
 Each maps 1:1 to an existing board REST endpoint.
 
 ## Request format
@@ -19,6 +19,7 @@ Each maps 1:1 to an existing board REST endpoint.
 | `history`       | `ticket_id: str`                     | `GET /tickets/{id}/history`       | `{"history": […]}` |
 | `merge_status`  | `ticket_id: str`                     | `GET /tickets/{id}/merge-status`  | merge-status dict |
 | `description`   | `ticket_id: str`                     | `GET /tickets/{id}/description`   | description dict |
+| `get_multiple_ticket_descriptions` | `ticket_ids: list[str]` | `GET /tickets/{id}/description` (×N) | `{"descriptions": […]}` |
 
 ## Write operations
 

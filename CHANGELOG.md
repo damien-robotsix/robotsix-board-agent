@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Removed orphaned ``.robotsix-mill/periodic/langfuse_cleanup.yaml`` periodic config
   (empty placeholder that was never wired into the mill scheduler)
+- Documented ``get_multiple_ticket_descriptions`` read operation in `docs/ops/operations.md`
 
 - Added ``max_output_chars`` row to the ``BoardAgentSettings`` field table in
   ``AGENT.md`` (was missing after the field was added in a prior ticket), and
