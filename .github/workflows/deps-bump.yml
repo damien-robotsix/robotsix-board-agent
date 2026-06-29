@@ -29,7 +29,7 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
-    uses: damien-robotsix/robotsix-mill/.github/workflows/deps-bump.yml@06f8807049ed8c16f584d2bf1e87f023e8a7e89a
+    uses: damien-robotsix/robotsix-github-workflows/.github/workflows/deps-bump.yml@5cd8c1facb02299da618979e7a55f1953f9c075a
     secrets:
       DEPS_BUMP_TOKEN: ${{ secrets.DEPS_BUMP_TOKEN }}
 
