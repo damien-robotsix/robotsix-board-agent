@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Restored public API re-exports in ``src/robotsix_board_agent/__init__.py``
+  (deleted by a docs-stage commit; ``BoardAgent``, ``BoardClient``,
+  ``BoardAgentSettings``, ``OP_TABLE``, ``WRITE_OPS``, ``BoardOp``,
+  ``UnknownOpError``, ``dispatch``, ``BoardAPIError``)
 - Removed orphaned ``.robotsix-mill/periodic/langfuse_cleanup.yaml`` periodic config
   (empty placeholder that was never wired into the mill scheduler)
 - Documented ``get_multiple_ticket_descriptions`` read operation in `docs/ops/operations.md`
