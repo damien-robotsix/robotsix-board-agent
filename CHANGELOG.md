@@ -44,6 +44,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   reusable workflow), gated by `workflow_dispatch` inputs
 - Bumped `robotsix-llmio` pin from `28b23a848003` to `3da3c4317f4a` to unblock
   fleet-wide `sqlite_utils` adoption (includes `core/sqlite_utils.py`)
+- **BoardManager**: Read-only ticket-status queries are now served directly from
+  the board API without spawning an LLM call, avoiding unnecessary Claude-SDK
+  subscription spend on status polls.  A short-TTL cache (default 5 min) avoids
+  repeated board-API calls for the same ticket id.
+- Added tests for `_fast_read_ticket`, cache hit/expiry, write-intent gating,
+  and API-error fallback in `TestFastReadTicket`.
 - Added test coverage for `_truncate_result`: a new unit test verifies that
   non-list results (e.g. plain strings) are returned unchanged, bypassing
   truncation even when they exceed `_RESULT_CAP`

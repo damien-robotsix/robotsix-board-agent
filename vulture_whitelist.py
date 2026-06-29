@@ -35,6 +35,9 @@ _ = ResumeBlockedArgs
 _ = MigrateArgs
 _ = SetPriorityArgs
 
+# -- agent.py: public API consumed by mill, not within board-agent ---------
+_ = BoardAgent
+
 # -- brokered.py: public API consumed by mill, not within board-agent ------
 _ = BrokeredBoardResponder
 

@@ -25,6 +25,8 @@ from __future__ import annotations
 
 import json
 import logging
+import re
+import time
 from pathlib import Path
 from typing import Any
 
@@ -93,6 +95,89 @@ def _truncate_result(result: Any) -> str:
         marker: dict[str, str] = {"_truncated": f"{omitted} item(s) omitted (result cap)"}
         truncated.append(marker)
     return json.dumps(truncated)
+
+
+# -- fast read path: ticket status without an LLM hop ---------------------
+
+#: Regex that matches a board ticket id (e.g. 20260621T182023Z-slug-a1b2).
+_TICKET_ID_RE = re.compile(r"\b\d{8}T\d{6}Z-[a-z0-9-]+-[a-f0-9]{4}\b")
+
+#: Words that signal a write/mutation intent — used to skip the fast read path.
+_WRITE_INTENT_WORDS: frozenset[str] = frozenset(
+    {
+        "create",
+        "new ticket",
+        "add",
+        "comment",
+        "transition",
+        "approve",
+        "mark done",
+        "mark_done",
+        "merge",
+        "migrate",
+        "resume",
+        "priority",
+        "close",
+        "delete",
+        "change",
+        "modify",
+        "set",
+        "move",
+        "update",
+        "assign",
+        "reopen",
+    }
+)
+
+#: Default TTL for the ticket-status cache (seconds).
+_DEFAULT_CACHE_TTL: float = 300.0
+
+
+class _TicketCache:
+    """A simple time-TTL cache for ticket read results.
+
+    Not thread-safe — the caller (BoardManager) serialises access through
+    its own event loop, so no lock is needed.
+    """
+
+    def __init__(self, ttl: float = _DEFAULT_CACHE_TTL) -> None:
+        self._ttl = ttl
+        self._store: dict[str, tuple[float, dict[str, Any]]] = {}
+
+    def get(self, ticket_id: str) -> dict[str, Any] | None:
+        """Return the cached ticket dict, or ``None`` if absent or expired."""
+        entry = self._store.get(ticket_id)
+        if entry is None:
+            return None
+        inserted_at, data = entry
+        if time.monotonic() - inserted_at > self._ttl:
+            del self._store[ticket_id]
+            return None
+        return data
+
+    def set(self, ticket_id: str, data: dict[str, Any]) -> None:
+        """Store *data* for *ticket_id*, resetting its TTL."""
+        self._store[ticket_id] = (time.monotonic(), data)
+
+    def clear(self) -> None:
+        """Drop all cached entries.
+
+        Called after any LLM/ops turn that may have mutated ticket state
+        (transitions, approvals, …) so a subsequent fast read does not serve
+        a stale status within the TTL.
+        """
+        self._store.clear()
+
+
+def _has_write_intent(question: str) -> bool:
+    """Return ``True`` if *question* contains any write-intent keyword."""
+    lower = question.lower()
+    return any(word in lower for word in _WRITE_INTENT_WORDS)
+
+
+def _extract_ticket_ids(question: str) -> list[str]:
+    """Return all unique ticket ids found in *question*."""
+    return list(dict.fromkeys(_TICKET_ID_RE.findall(question)))
 
 
 _RECALL_SYSTEM = (
@@ -247,6 +332,7 @@ class BoardManager(_ThreadedLoopMixin):
         self._moderate_model = moderate_model
         self._classify_model = classify_model
         self._memory = BoardManagerMemory(memory_path, max_conversations=max_conversations)
+        self._ticket_cache = _TicketCache()
         self._agent = _build_brokered_agent(
             self.agent_id,
             broker_host=broker_host,
@@ -277,7 +363,17 @@ class BoardManager(_ThreadedLoopMixin):
             or DEFAULT_TICKET_SOURCE
         )
         try:
-            answer = self._converse(question, requester)
+            fast_answer = self._fast_read_ticket(question)
+            if fast_answer is not None:
+                answer = fast_answer
+            else:
+                # The full pipeline may mutate ticket state (transitions,
+                # approvals, …). Invalidate the read cache afterwards so a
+                # subsequent fast read reflects the change rather than a
+                # stale cached status. Unconditional because the write-intent
+                # gate is keyword-based and can miss a write.
+                answer = self._converse(question, requester)
+                self._ticket_cache.clear()
         except Exception as exc:
             logger.exception("board-manager: _converse failed for requester %s", requester)
             return Response.to(
@@ -292,6 +388,73 @@ class BoardManager(_ThreadedLoopMixin):
             )
         self._memory.append(question, answer)
         return Response.to(request, body={"reply": answer})
+
+    # -- fast read path: ticket status without an LLM hop -------------------
+
+    def _fast_read_ticket(self, question: str) -> str | None:
+        """Serve a read-only ticket-status query directly from the board API.
+
+        Returns a structured summary string when *question* is a simple
+        read request that mentions exactly one ticket id and contains no
+        write-intent language.  Returns ``None`` when the fast path cannot
+        handle the request — the caller falls back to the full LLM pipeline.
+        """
+        if _has_write_intent(question):
+            return None
+        ticket_ids = _extract_ticket_ids(question)
+        if len(ticket_ids) != 1:
+            return None
+
+        ticket_id = ticket_ids[0]
+
+        # Check the cache first.
+        cached = self._ticket_cache.get(ticket_id)
+        if cached is not None:
+            logger.debug("board-manager: serving ticket %s from cache", ticket_id)
+            return self._format_ticket_status(ticket_id, cached, cached=True)
+
+        # Fetch from the board API.
+        try:
+            data: dict[str, Any] = self._run(self.client.get_ticket(ticket_id=ticket_id))
+        except BoardAPIError as exc:
+            logger.debug(
+                "board-manager: fast-read ticket %s failed (%s), falling back to LLM",
+                ticket_id,
+                exc,
+            )
+            return None
+
+        self._ticket_cache.set(ticket_id, data)
+        return self._format_ticket_status(ticket_id, data, cached=False)
+
+    @staticmethod
+    def _format_ticket_status(ticket_id: str, data: dict[str, Any], *, cached: bool = False) -> str:
+        """Format a ticket dict into a concise structured status summary.
+
+        Extracts the key fields: state, branch, pr_url, pending_question, errors.
+        """
+        state = data.get("state", "unknown")
+        branch = data.get("branch")
+        pr_url = data.get("pr_url")
+        pending_question = data.get("pending_question")
+        errors = data.get("errors")
+
+        parts: list[str] = [
+            f"Ticket {ticket_id}:",
+            f"  state: {state}",
+        ]
+        if branch:
+            parts.append(f"  branch: {branch}")
+        if pr_url:
+            parts.append(f"  pr_url: {pr_url}")
+        if pending_question:
+            parts.append(f"  pending_question: {pending_question}")
+        if errors:
+            parts.append(f"  errors: {errors}")
+        if cached:
+            parts.append("  (served from cache)")
+
+        return "\n".join(parts)
 
     # -- complexity classification ------------------------------------------
 
