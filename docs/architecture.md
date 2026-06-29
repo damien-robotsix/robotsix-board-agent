@@ -132,7 +132,9 @@ BoardManager._converse(question, requester)
   │
   ├─ Stage 1 — Recall scan (if conversation history exists)
   │   ├─ Builds lightweight LLM agent (level=1) with _RECALL_SYSTEM
-  │   ├─ Feeds: full conversation history + current question
+  │   ├─ Feeds: most recent N conversations (default 50) + current question
+  │   ├─ Older entries are kept on disk but excluded from the recall prompt
+  │   │   to cap per-invocation context size
   │   └─ Output: list of relevant prior exchange excerpts
   │
   ├─ Stage 3 — Acting manager
