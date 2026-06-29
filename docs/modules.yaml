@@ -11,8 +11,7 @@ modules:
       - src/robotsix_board_agent/_lifecycle.py
       - tests/test__lifecycle.py
       - src/robotsix_board_agent/_request_handler.py
-      - src/robotsix_board_agent/constants.py
-      - tests/constants/test_constants.py
+
       - docs/architecture.md
       - docs/modules.yaml
       - docs/reference.md
@@ -50,6 +49,16 @@ modules:
       Configuration model — BoardAgentSettings (pydantic BaseModel, NOT
       BaseSettings).  Holds board_api_url, board_api_token, board_repo_id,
       and the enable_write_ops flag.
+
+  - name: constants
+    path:
+      - src/robotsix_board_agent/constants.py
+      - tests/constants/
+      - docs/constants/reference.md
+    description: >
+      Shared defaults — DEFAULT_TICKET_SOURCE, DEFAULT_TICKET_KIND,
+      DEFAULT_COMMENT_AUTHOR, DEFAULT_NOTE — and the BoardErrorCode enum
+      for agent-comm Error responses.
 
   - name: ops
     path:

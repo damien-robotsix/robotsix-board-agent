@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Promoted `constants` to a standalone module: added module entry in `docs/modules.yaml`,
+  created `docs/constants/reference.md` documenting `DEFAULT_*` constants and
+  `BoardErrorCode` enum, and removed constants paths from the `__init__` module.
+
 - Added community health files: issue templates (bug report, feature request),
   PR template, and ``FUNDING.yml``
 
