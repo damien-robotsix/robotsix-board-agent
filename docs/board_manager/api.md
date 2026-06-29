@@ -36,22 +36,23 @@ manager = BoardManager(
 
 ## Constructor parameters
 
-| Parameter          | Type                 | Default                           | Purpose                                          |
-|--------------------|----------------------|-----------------------------------|--------------------------------------------------|
-| `settings`         | `BoardAgentSettings` | (required)                        | Board API credentials and repository identity    |
-| `broker_host`      | `str`                | (required)                        | Central broker hostname                          |
-| `broker_token`     | `str`                | (required)                        | Bearer token for the broker                      |
-| `memory_path`      | `Path`               | (required)                        | JSON file for conversation trace persistence     |
-| `broker_port`      | `int`                | `443`                             | Broker port                                      |
-| `broker_scheme`    | `str`                | `"https"`                         | `http` or `https`                                |
-| `agent_id`         | `str \| None`        | `board-manager-{repo_id}`         | This manager's agent identifier on the broker    |
-| `manager_model`    | `str \| None`        | (provider default)                | Model for the level-3 acting agent               |
-| `recall_model`     | `str \| None`        | (provider default)                | Model for the level-1 recall agent               |
-| `max_conversations`| `int`                | `200`                             | Max Q→A pairs retained in memory                 |
-| `simple_read_model`| `str`                | `"haiku"`                         | Claude model alias for SIMPLE_READ-classified requests|
-| `moderate_model`   | `str`                | `"sonnet"`                        | Claude model alias for MODERATE-classified requests (CRUD/dedup)|
-| `classify_model`   | `str \| None`        | (provider default)                | Model override for the level-1 complexity classifier|
-| `timeout`          | `float`              | `120.0`                           | Broker pull timeout in seconds                   |
+| Parameter                | Type                 | Default                           | Purpose                                          |
+|--------------------------|----------------------|-----------------------------------|--------------------------------------------------|
+| `settings`               | `BoardAgentSettings` | (required)                        | Board API credentials and repository identity    |
+| `broker_host`            | `str`                | (required)                        | Central broker hostname                          |
+| `broker_token`           | `str`                | (required)                        | Bearer token for the broker                      |
+| `memory_path`            | `Path`               | (required)                        | JSON file for conversation trace persistence     |
+| `broker_port`            | `int`                | `443`                             | Broker port                                      |
+| `broker_scheme`          | `str`                | `"https"`                         | `http` or `https`                                |
+| `agent_id`               | `str \| None`        | `board-manager-{repo_id}`         | This manager's agent identifier on the broker    |
+| `manager_model`          | `str \| None`        | (provider default)                | Model for the level-3 acting agent               |
+| `recall_model`           | `str \| None`        | (provider default)                | Model for the level-1 recall agent               |
+| `max_conversations`      | `int`                | `200`                             | Max Q→A pairs retained in memory                 |
+| `max_recall_conversations`| `int`               | `50`                              | Max prior conversations fed into recall-prompt   |
+| `simple_read_model`      | `str`                | `"haiku"`                         | Claude model alias for SIMPLE_READ-classified requests|
+| `moderate_model`         | `str`                | `"sonnet"`                        | Claude model alias for MODERATE-classified requests (CRUD/dedup)|
+| `classify_model`         | `str \| None`        | (provider default)                | Model override for the level-1 complexity classifier|
+| `timeout`                | `float`              | `120.0`                           | Broker pull timeout in seconds                   |
 
 ## Natural-language interface
 
@@ -72,10 +73,13 @@ appended to persistent memory.
 
 ### Level 1 — recall scan
 
-A cheap level-1 agent scans the conversation trace (all prior Q→A pairs stored
-by `BoardManagerMemory`) for exchanges relevant to the new question. This
-retrieves related decisions, tickets, or tasks without the cost of a full
-context window. If nothing is relevant, the recall agent replies `"none"`.
+A cheap level-1 agent scans the most recent conversations from the
+conversation trace (up to `max_recall_conversations`, default 50) for
+exchanges relevant to the new question. Older entries beyond this cap are
+kept on disk for traceability but excluded from the recall prompt, preventing
+accumulated history from bloating every invocation. This retrieves related
+decisions, tickets, or tasks without the cost of a full context window. If
+nothing is relevant, the recall agent replies `"none"`.
 
 ### Level 3 — acting manager
 

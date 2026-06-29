@@ -184,11 +184,19 @@ class BoardManagerMemory:
         self._path.parent.mkdir(parents=True, exist_ok=True)
         self._path.write_text(json.dumps(entries, indent=2))
 
-    def as_prompt(self) -> str:
-        """Render the stored conversations as a compact Q/A block for an LLM."""
+    def as_prompt(self, max_entries: int | None = None) -> str:
+        """Render the stored conversations as a compact Q/A block for an LLM.
+
+        When *max_entries* is given, only the most recent *max_entries*
+        conversations are included — older entries are dropped.  This limits
+        the recall-pass prompt size and prevents accumulated history from
+        bloating every invocation.
+        """
         entries = self.load()
         if not entries:
             return ""
+        if max_entries is not None and len(entries) > max_entries:
+            entries = entries[-max_entries:]
         return "\n".join(
             f"[{e.get('timestamp', '?')}]\nQ: {e['question']}\nA: {e.get('answer', '')}"
             for e in entries

@@ -57,9 +57,14 @@ Appends a Q→A turn with an ISO-8601 timestamp (UTC `now()` by default) and
 writes the JSON file. If the number of entries exceeds `max_conversations`, the
 oldest entries are pruned.
 
-### `as_prompt() -> str`
+### `as_prompt(max_entries=None) -> str`
 
-Renders all stored entries as a compact text block for an LLM:
+Renders stored entries as a compact text block for an LLM. When
+*max_entries* is specified, only the most recent *max_entries* conversations
+are included — older entries are dropped from the prompt. This limits the
+recall-pass prompt size and prevents accumulated history from bloating every
+invocation. The full trace is retained on disk for traceability; only the
+rendered prompt is scoped.
 
 ```
 [2025-01-01T00:00:00Z]

@@ -277,7 +277,7 @@ _CLASSIFY_SYSTEM = (
     "involves nuanced judgement where the cheapest models would likely make "
     "mistakes.\n\n"
     "When in doubt between SIMPLE_READ and MODERATE, reply MODERATE. "
-    "When in doubt between MODERATE and COMPLEX, reply COMPLEX."
+    "When in doubt between MODERATE and COMPLEX, reply MODERATE."
 )
 
 
@@ -300,6 +300,7 @@ class BoardManager(_ThreadedLoopMixin):
         moderate_model: str = "sonnet",
         classify_model: str | None = None,
         max_conversations: int = MAX_CONVERSATIONS,
+        max_recall_conversations: int = 50,
         timeout: float = 120.0,
     ) -> None:
         """Initialise the board manager.
@@ -320,8 +321,10 @@ class BoardManager(_ThreadedLoopMixin):
         organisation); default ``"sonnet"``.
         *classify_model* — optional bare model override for the level-1
         classifier (defaults to level-1's DeepSeek-flash).  *max_conversations* —
-        cap on stored conversation pairs.  *timeout* — broker operation timeout
-        in seconds.
+        cap on stored conversation pairs.  *max_recall_conversations* — how many
+        recent conversations to feed into the recall scan (default 50); stored
+        pairs beyond this are pruned from the recall prompt but kept on disk for
+        traceability.  *timeout* — broker operation timeout in seconds.
         """
         self.settings = settings
         self.client = BoardClient(settings)
@@ -331,6 +334,7 @@ class BoardManager(_ThreadedLoopMixin):
         self._simple_read_model = simple_read_model
         self._moderate_model = moderate_model
         self._classify_model = classify_model
+        self._max_recall_conversations = max_recall_conversations
         self._memory = BoardManagerMemory(memory_path, max_conversations=max_conversations)
         self._ticket_cache = _TicketCache()
         self._agent = _build_brokered_agent(
@@ -514,7 +518,7 @@ class BoardManager(_ThreadedLoopMixin):
         #    default provider/model (DeepSeek-flash over OpenRouter) is used; a
         #    model override changes only the bare model name, not the transport.
         relevant = ""
-        history = self._memory.as_prompt()
+        history = self._memory.as_prompt(max_entries=self._max_recall_conversations)
         if history:
             h1 = build_agent_for_level(
                 1,

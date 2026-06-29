@@ -42,6 +42,28 @@ def test_as_prompt_empty_and_nonempty(tmp_path: Path) -> None:
     assert "Q: hi" in rendered and "A: hello" in rendered
 
 
+def test_as_prompt_max_entries_caps_rendered_output(tmp_path: Path) -> None:
+    """When max_entries is given, only the most recent N are rendered."""
+    mem = BoardManagerMemory(tmp_path / "mem.json")
+    for i in range(10):
+        mem.append(f"q{i}", f"a{i}", timestamp=f"t{i}")
+    # Without cap: all 10 appear.
+    full = mem.as_prompt()
+    assert "Q: q0" in full
+    assert "Q: q9" in full
+    # With cap=3: only q7, q8, q9 appear.
+    capped = mem.as_prompt(max_entries=3)
+    assert "Q: q0" not in capped
+    assert "Q: q6" not in capped
+    assert "Q: q7" in capped
+    assert "Q: q8" in capped
+    assert "Q: q9" in capped
+    # With cap larger than stored count: all appear.
+    over = mem.as_prompt(max_entries=50)
+    assert "Q: q0" in over
+    assert "Q: q9" in over
+
+
 def test_maintained_notes_roundtrip(tmp_path: Path) -> None:
     mem = BoardManagerMemory(tmp_path / "mem.json")
     assert mem.load_notes() == ""

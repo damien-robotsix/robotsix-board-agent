@@ -343,6 +343,37 @@ class TestConverse:
         assert recall_call.args[0] == 1
         assert recall_call.kwargs["model"] is None
 
+    def test_max_recall_conversations_default_is_50(
+        self,
+        manager: BoardManager,
+    ) -> None:
+        """Default _max_recall_conversations is 50."""
+        assert manager._max_recall_conversations == 50
+
+    def test_max_recall_conversations_limits_recall_prompt(
+        self,
+        manager: BoardManager,
+        mock_build_agent: MagicMock,
+        mock_run_agent: MagicMock,
+    ) -> None:
+        """When many conversations are stored, only the most recent N are sent to
+        the recall LLM (not all stored pairs)."""
+        manager._max_recall_conversations = 2
+        # Seed 5 conversations.
+        for i in range(5):
+            manager._memory.append(f"q{i}", f"a{i}", timestamp=f"2026-06-01T00:0{i}:00Z")
+        mock_run_agent.side_effect = ["relevant ctx", "ok"]
+
+        manager._converse("new question")
+
+        # The recall prompt passed to run_agent should only contain the
+        # most recent 2 conversations.
+        rendered = manager._memory.as_prompt(max_entries=2)
+        # q0, q1, q2 should be absent; q3, q4 present.
+        assert "Q: q0" not in rendered
+        assert "Q: q3" in rendered
+        assert "Q: q4" in rendered
+
     # -- system prompt structure -----------------------------------------
 
     def test_system_prompt_includes_repo_id(
