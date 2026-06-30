@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Added CycloneDX SBOM generation to the release workflow (``sbom`` job) and
+  dependency-graph submission to CI (``dependency-submission`` job) for
+  supply-chain transparency
+
 - Added ``actionlint`` job to CI pipeline for GitHub Actions workflow
   syntax/expression validation, complementing the existing ``zizmor``
   security audit job. Also added ``actionlint-docker`` pre-commit hook.
