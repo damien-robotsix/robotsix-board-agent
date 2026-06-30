@@ -204,11 +204,8 @@ class BrokeredAgent:
         broker_token: str | None = "",
         broker_port: int = 443,
         broker_scheme: str = "https",
-        tls_ca: Any = None,
-        ssl_context: Any = None,
         timeout: float = 30.0,
         on_request: Any = None,
-        on_notification: Any = None,
     ) -> None:
         registry, transport = create_transport_pair(
             "brokered",
