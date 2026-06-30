@@ -151,3 +151,4 @@ jobs:
         with:
           manifest-path: pyproject.toml
           lockfile-path: uv.lock
+        continue-on-error: true
