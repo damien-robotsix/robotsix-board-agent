@@ -11,6 +11,7 @@ for the board agent and client.
 | `board_api_token`   | `str`   | —       | Bearer token sent as `Authorization: Bearer <token>`.          |
 | `board_repo_id`     | `str`   | —       | The `repo_id` / board ID to scope operations to.               |
 | `enable_write_ops`  | `bool`  | `True`  | When `False`, all write ops return an Error.                   |
+| `max_output_chars`  | `int`   | `2_000`  | Max characters in final reply before truncation (0 disables).  |
 
 ## Usage
 
@@ -22,6 +23,7 @@ settings = BoardAgentSettings(
     board_api_token="sk-...",
     board_repo_id="my-repo",
     enable_write_ops=True,
+    max_output_chars=2000,
 )
 ```
 

@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   every invocation.  The full trace is still kept on disk for traceability; only
   the recall prompt is capped.
 
+- Documented ``max_output_chars`` field in ``docs/config/reference.md`` fields table and usage example.
+
 - Changed complexity-classifier tiebreaker for MODERATE-vs-COMPLEX from COMPLEX to
   MODERATE so ambiguous requests default to the cheaper Sonnet tier instead of
   Opus, reducing per-trace cost.
