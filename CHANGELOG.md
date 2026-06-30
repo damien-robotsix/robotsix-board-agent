@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Added unit tests for ``scripts/check_kind_literals.py`` covering
+  ``_is_kind_context``, ``_read_default_ticket_kind``, ``_find_kind_literals``,
+  and ``main``
+
 - Added ``env_doc_sync`` periodic workflow and ``docs/configuration.md``
   documenting all environment variables
 
