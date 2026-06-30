@@ -254,7 +254,7 @@ uv run --frozen robotsix-modules check-registration docs/modules.yaml
 | **board_manager** | [`docs/board_manager/api.md`](board_manager/api.md) | LLM-powered conversational manager, tools, two-stage pipeline |
 | **client** | [`docs/client/api.md`](client/api.md) | `BoardClient` typed HTTP methods and error handling |
 | **config** | [`docs/config/reference.md`](config/reference.md) | `BoardAgentSettings` model fields |
-| **ops** | [`docs/ops/operations.md`](ops/operations.md) | Canonical op table (15 ops), `{"op": …}` protocol, error codes |
+| **ops** | [`docs/ops/operations.md`](ops/operations.md) | Canonical op table (16 ops), `{"op": …}` protocol, error codes |
 | **memory** | [`docs/memory/reference.md`](memory/reference.md) | `BoardManagerMemory` persistence model |
 | **manager_cli** | [`docs/manager_cli/usage.md`](manager_cli/usage.md) | CLI tool for talking to a `BoardManager` |
 | **API reference** | [`docs/reference.md`](reference.md) | Auto-generated API reference from docstrings |

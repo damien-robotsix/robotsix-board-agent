@@ -14,6 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added ``actionlint`` job to CI pipeline for GitHub Actions workflow
   syntax/expression validation, complementing the existing ``zizmor``
   security audit job. Also added ``actionlint-docker`` pre-commit hook.
+- Fixed stale op count in `docs/architecture.md`: changed "15 ops" to "16 ops"
+  to match the actual `OP_TABLE` size (7 read + 9 write).
 
 - Trimmed board-manager recall-prompt bloat: added ``max_recall_conversations``
   parameter (default 50) to cap the number of prior Q&A pairs sent to the recall
