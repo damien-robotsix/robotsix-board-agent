@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- Trimmed board-manager recall-prompt bloat: added ``max_recall_conversations``
+- Documented ``max_output_chars`` field in ``docs/config/reference.md`` fields table and usage example.
   parameter (default 50) to cap the number of prior Q&A pairs sent to the recall
   LLM scan each turn, preventing accumulated conversation history from bloating
   every invocation.  The full trace is still kept on disk for traceability; only
