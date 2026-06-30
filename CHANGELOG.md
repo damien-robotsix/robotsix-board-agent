@@ -7,11 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- Documented ``max_output_chars`` field in ``docs/config/reference.md`` fields table and usage example.
+- Trimmed board-manager recall-prompt bloat: added ``max_recall_conversations``
   parameter (default 50) to cap the number of prior Q&A pairs sent to the recall
   LLM scan each turn, preventing accumulated conversation history from bloating
   every invocation.  The full trace is still kept on disk for traceability; only
   the recall prompt is capped.
+
+- Documented ``max_output_chars`` field in ``docs/config/reference.md`` fields table and usage example.
 
 - Changed complexity-classifier tiebreaker for MODERATE-vs-COMPLEX from COMPLEX to
   MODERATE so ambiguous requests default to the cheaper Sonnet tier instead of
