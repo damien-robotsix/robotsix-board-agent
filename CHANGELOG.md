@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Added ``actionlint`` job to CI pipeline for GitHub Actions workflow
+  syntax/expression validation, complementing the existing ``zizmor``
+  security audit job. Also added ``actionlint-docker`` pre-commit hook.
+
 - Trimmed board-manager recall-prompt bloat: added ``max_recall_conversations``
   parameter (default 50) to cap the number of prior Q&A pairs sent to the recall
   LLM scan each turn, preventing accumulated conversation history from bloating
