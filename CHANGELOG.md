@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Added ``continue-on-error`` to the ``dependency-submission`` CI job to
+  prevent non-critical dependency-graph submission failures from blocking CI
+
 - Added CycloneDX SBOM generation to the release workflow (``sbom`` job) and
   dependency-graph submission to CI (``dependency-submission`` job) for
   supply-chain transparency
