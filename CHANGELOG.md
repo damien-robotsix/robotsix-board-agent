@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Added ``env_doc_sync`` periodic workflow and ``docs/configuration.md``
+  documenting all environment variables
+
 - Added ``continue-on-error`` to the ``dependency-submission`` CI job to
   prevent non-critical dependency-graph submission failures from blocking CI
 
