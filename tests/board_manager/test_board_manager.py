@@ -1701,3 +1701,134 @@ class TestFastReadTicket:
 
         mock_conv.assert_called_once()
         assert reply.result == {"reply": "LLM response"}
+
+
+# -- _TicketCache ------------------------------------------------------------
+
+
+class TestTicketCache:
+    """Direct unit tests for _TicketCache — TTL-based ticket read cache."""
+
+    def test_get_empty_cache_returns_none(self) -> None:
+        from robotsix_board_agent.board_manager import _TicketCache
+
+        cache = _TicketCache()
+        assert cache.get("any-id") is None
+
+    def test_set_then_get_returns_data(self) -> None:
+        from robotsix_board_agent.board_manager import _TicketCache
+
+        cache = _TicketCache()
+        data = {"ticket_id": "abc", "state": "open"}
+        cache.set("abc", data)
+        assert cache.get("abc") == data
+
+    def test_entry_expires_after_ttl(self) -> None:
+        from robotsix_board_agent.board_manager import _TicketCache
+
+        cache = _TicketCache(ttl=0.0)
+        cache.set("abc", {"state": "open"})
+        # TTL=0 means entry is immediately expired on next get.
+        assert cache.get("abc") is None
+
+    def test_clear_removes_all_entries(self) -> None:
+        from robotsix_board_agent.board_manager import _TicketCache
+
+        cache = _TicketCache()
+        cache.set("a", {"v": 1})
+        cache.set("b", {"v": 2})
+        cache.clear()
+        assert cache.get("a") is None
+        assert cache.get("b") is None
+
+    def test_clear_on_empty_cache_is_noop(self) -> None:
+        from robotsix_board_agent.board_manager import _TicketCache
+
+        cache = _TicketCache()
+        cache.clear()  # should not raise
+        assert cache.get("any") is None
+
+    def test_ttl_boundary_exactly_at_ttl_is_not_expired(self) -> None:
+        """Entry expires when time.monotonic() - inserted_at *strictly exceeds* TTL."""
+        from unittest.mock import patch
+
+        from robotsix_board_agent.board_manager import _TicketCache
+
+        cache = _TicketCache(ttl=10.0)
+        with patch("robotsix_board_agent.board_manager.time.monotonic") as mock_time:
+            mock_time.return_value = 0.0
+            cache.set("x", {"v": 1})
+
+            # At exactly TTL, the entry is still valid (> not >=).
+            mock_time.return_value = 10.0
+            assert cache.get("x") == {"v": 1}
+
+    def test_ttl_boundary_just_past_ttl_is_expired(self) -> None:
+        """Entry expires when time.monotonic() - inserted_at > TTL."""
+        from unittest.mock import patch
+
+        from robotsix_board_agent.board_manager import _TicketCache
+
+        cache = _TicketCache(ttl=10.0)
+        with patch("robotsix_board_agent.board_manager.time.monotonic") as mock_time:
+            mock_time.return_value = 0.0
+            cache.set("x", {"v": 1})
+
+            # Just past TTL.
+            mock_time.return_value = 10.000001
+            assert cache.get("x") is None
+
+    def test_multiple_entries_independent_ttls(self) -> None:
+        """Staggered insertions: each entry expires relative to its own set time."""
+        from unittest.mock import patch
+
+        from robotsix_board_agent.board_manager import _TicketCache
+
+        cache = _TicketCache(ttl=10.0)
+        with patch("robotsix_board_agent.board_manager.time.monotonic") as mock_time:
+            mock_time.return_value = 100.0
+            cache.set("a", {"v": 1})
+
+            mock_time.return_value = 105.0  # +5s, within TTL
+            cache.set("b", {"v": 2})
+
+            # At 105.0, "a" is 5s old (within TTL), "b" is fresh.
+            assert cache.get("a") == {"v": 1}
+            assert cache.get("b") == {"v": 2}
+
+            mock_time.return_value = 111.0  # "a" = 11s old (expired), "b" = 6s old (still valid)
+            assert cache.get("a") is None
+            assert cache.get("b") == {"v": 2}
+
+    def test_set_resets_ttl(self) -> None:
+        """Calling set() on an existing entry resets its TTL."""
+        from unittest.mock import patch
+
+        from robotsix_board_agent.board_manager import _TicketCache
+
+        cache = _TicketCache(ttl=10.0)
+        with patch("robotsix_board_agent.board_manager.time.monotonic") as mock_time:
+            mock_time.return_value = 0.0
+            cache.set("x", {"v": 1})
+
+            mock_time.return_value = 9.0  # almost expired
+            cache.set("x", {"v": 2})  # reset TTL
+
+            mock_time.return_value = 18.0  # 9s since reset, would be expired from original set
+            assert cache.get("x") == {"v": 2}  # still valid because TTL was reset
+
+    def test_get_expired_entry_evicts_from_store(self) -> None:
+        """After get() returns None due to expiry, the entry is removed from the store."""
+        from unittest.mock import patch
+
+        from robotsix_board_agent.board_manager import _TicketCache
+
+        cache = _TicketCache(ttl=10.0)
+        with patch("robotsix_board_agent.board_manager.time.monotonic") as mock_time:
+            mock_time.return_value = 0.0
+            cache.set("x", {"v": 1})
+
+            mock_time.return_value = 11.0
+            assert cache.get("x") is None
+            # The internal store should be empty now.
+            assert not cache._store
