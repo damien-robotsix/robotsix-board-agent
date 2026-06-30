@@ -14,6 +14,7 @@ modules:
 
       - docs/architecture.md
       - docs/modules.yaml
+      - docs/configuration.md
       - docs/reference.md
     description: >
       Package init — re-exports BoardAgent, BoardClient, BoardAgentSettings,
