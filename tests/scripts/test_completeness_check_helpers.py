@@ -41,7 +41,6 @@ def _handler_with_multiple_client_calls(client: object) -> None:
 
 
 def _handler_with_no_client_calls(client: object) -> None:
-    x = 1 + 2  # noqa: F841
     print("hello")
 
 
@@ -51,7 +50,7 @@ def _handler_with_non_client_attribute(client: object) -> None:
 
 
 def _handler_with_attribute_access_not_call(client: object) -> None:
-    x = client.get_ticket  # noqa: F841 — attribute access, not a call
+    _ = client.get_ticket  # attribute access, not a call
 
 
 # NOTE: _http_method_of_client_fn walks the AST of the function body.  Because
