@@ -17,6 +17,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Added `state_sync` periodic workflow configuration for automated state
+  synchronization
+
 - Reverted addition of the `dependency-review` CI job — the repository does not
   have Dependency graph enabled, so the action cannot run
 
