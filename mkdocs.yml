@@ -18,6 +18,7 @@ nav:
   - Operations Reference: ops/operations.md
   - Client API: client/api.md
   - Config Reference: config/reference.md
+  - Constants Reference: constants/reference.md
   - Brokered Responder: brokered/responder.md
   - Board Manager: board_manager/api.md
   - Manager CLI: manager_cli/usage.md
