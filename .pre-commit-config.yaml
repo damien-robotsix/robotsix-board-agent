@@ -61,6 +61,12 @@ repos:
       - id: codespell
         args: ["--ignore-words-list=ba,clos,dic,dont,falsy,fo,hist,isnt,nd,ned,opt,pydantic,ruff,ser,str,te,thru,wont"]
 
+  - repo: https://github.com/abravalheri/validate-pyproject
+    rev: v0.25
+    hooks:
+      - id: validate-pyproject
+        additional_dependencies: ["validate-pyproject-schema-store[all]"]
+
   - repo: https://github.com/DavidAnson/markdownlint-cli2
     rev: v0.22.1
     hooks:
