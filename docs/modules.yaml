@@ -122,6 +122,7 @@ modules:
       - scripts/bump_git_pin.py
       - tests/scripts/test_bump_git_pin.py
       - tests/scripts/test_check_kind_literals.py
+      - tests/scripts/test_completeness_check_helpers.py
     description: >
       Utility scripts — check_kind_literals.py (codegen literal
       verification), completeness_check.py (agent-comm completeness
