@@ -13,6 +13,7 @@ plugins:
 
 nav:
   - Architecture Overview: architecture.md
+  - Configuration Reference: configuration.md
   - Getting Started: agent/getting-started.md
   - Operations Reference: ops/operations.md
   - Client API: client/api.md
