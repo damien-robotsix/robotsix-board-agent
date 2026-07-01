@@ -172,8 +172,13 @@ class TestStop:
         loop = obj.loop
         thread = obj.loop_thread
 
-        with caplog.at_level(logging.WARNING):
-            obj.stop()
+        parent = logging.getLogger("robotsix_board_agent")
+        parent.propagate = True
+        try:
+            with caplog.at_level(logging.WARNING):
+                obj.stop()
+        finally:
+            parent.propagate = False
 
         assert obj._agent.stopped
         assert obj.loop is None
