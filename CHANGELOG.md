@@ -1,6 +1,7 @@
 ## 0.0.0 (unreleased)
 
 - Added `get_multiple_ticket_descriptions` to the read-operations table in `docs/client/api.md` (the method already existed in code and other docs but was missing from this table).
+- Added `docs/constants/reference.md` to the mkdocs navigation.
 # Changelog
 
 All notable changes to robotsix-board-agent will be documented in this file.
