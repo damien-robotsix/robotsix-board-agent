@@ -58,7 +58,7 @@ Pre-commit hooks run automatically on each commit. Install them once:
 uv run pre-commit install
 ```
 
-The hooks run ruff (check + format), mypy, bandit, detect-secrets, and
+The hooks run ruff (check + format), mypy, bandit, gitleaks, and
 general file hygiene checks.  You can also run them manually without
 committing:
 

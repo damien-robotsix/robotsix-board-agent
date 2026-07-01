@@ -176,7 +176,7 @@ execute MUST be registered there so tool building and access control
 - **`ruff format` is the single formatter.**  Do not add black, isort, or
   other formatters.  Line length: 100 characters, double quotes.
 - **`mypy --strict`.**  New code must pass strict mypy.
-- **Pre-commit hooks** run ruff, mypy, bandit, detect-secrets, and
+- **Pre-commit hooks** run ruff, mypy, bandit, gitleaks, and
   file-hygiene checks.  Run `uv run pre-commit run --all-files` before
   proposing changes.
 - **uv lockfile.**  `uv.lock` is committed.  When `pyproject.toml` deps
