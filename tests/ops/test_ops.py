@@ -6,6 +6,7 @@ from __future__ import annotations
 from typing import Any
 from unittest.mock import AsyncMock
 
+import pydantic
 import pytest
 
 from robotsix_board_agent.client import BoardClient
@@ -166,3 +167,76 @@ def test_write_ops_set_content():
         "migrate",
         "set_priority",
     } == WRITE_OPS
+
+
+# ---------------------------------------------------------------------------
+# Arg-model validation: missing required fields
+# ---------------------------------------------------------------------------
+
+
+MISSING_REQUIRED_TESTS = [
+    ("get_ticket", {}, "ticket_id"),
+    ("history", {}, "ticket_id"),
+    ("merge_status", {}, "ticket_id"),
+    ("description", {}, "ticket_id"),
+    ("get_multiple_ticket_descriptions", {}, "ticket_ids"),
+    ("create_ticket", {}, "title"),
+    ("comment", {}, "ticket_id"),
+    ("transition", {}, "ticket_id"),
+    ("approve", {}, "ticket_id"),
+    ("mark_done", {}, "ticket_id"),
+    ("merge_now", {}, "ticket_id"),
+    ("resume_blocked", {}, "ticket_id"),
+    ("migrate", {}, "ticket_id"),
+    ("set_priority", {}, "ticket_id"),
+]
+
+
+@pytest.mark.parametrize("op_name,args,missing_field", MISSING_REQUIRED_TESTS)
+async def test_op_rejects_missing_required_fields(
+    op_name: str,
+    args: dict[str, Any],
+    missing_field: str,
+):
+    """Each op with required fields should raise ValidationError on empty args."""
+    client = BoardClient.__new__(BoardClient)
+    with pytest.raises(pydantic.ValidationError, match=missing_field):
+        await dispatch(client, BoardOp(op=op_name, args=args))
+
+
+# ---------------------------------------------------------------------------
+# Arg-model validation: type errors
+# ---------------------------------------------------------------------------
+
+
+TYPE_ERROR_TESTS = [
+    # read ops
+    ("list_tickets", {"state": 42}),
+    ("get_ticket", {"ticket_id": 42}),
+    ("board_cards", {"repo_id": 42}),
+    ("history", {"ticket_id": 42}),
+    ("merge_status", {"ticket_id": 42}),
+    ("description", {"ticket_id": 42}),
+    ("get_multiple_ticket_descriptions", {"ticket_ids": "not-a-list"}),
+    # write ops
+    ("create_ticket", {"title": 42, "description": "ok"}),
+    ("comment", {"ticket_id": 42, "body": "ok"}),
+    ("transition", {"ticket_id": 42, "state": "ok"}),
+    ("approve", {"ticket_id": 42}),
+    ("mark_done", {"ticket_id": 42, "note": "ok"}),
+    ("merge_now", {"ticket_id": 42}),
+    ("resume_blocked", {"ticket_id": 42}),
+    ("migrate", {"ticket_id": 42, "target_repo_id": "ok"}),
+    ("set_priority", {"ticket_id": "T-1", "priority": "not-a-bool"}),
+]
+
+
+@pytest.mark.parametrize("op_name,args", TYPE_ERROR_TESTS)
+async def test_op_rejects_type_errors(
+    op_name: str,
+    args: dict[str, Any],
+):
+    """Each op should raise ValidationError when given args of the wrong type."""
+    client = BoardClient.__new__(BoardClient)
+    with pytest.raises(pydantic.ValidationError):
+        await dispatch(client, BoardOp(op=op_name, args=args))
