@@ -184,3 +184,11 @@ execute MUST be registered there so tool building and access control
   `uv.lock`.
 - **No generated artifacts.**  Do not commit build output, coverage reports,
   or compiled assets.
+
+## Documentation conventions
+
+- **`mkdocs.yml` nav entries.**  When adding a new documentation file under
+  `docs/`, add a corresponding entry in `mkdocs.yml` under the `nav:` section.
+  A missing nav entry makes the page undiscoverable from the documentation
+  sidebar even if it is referenced from other docs or listed in
+  `modules.yaml`.
