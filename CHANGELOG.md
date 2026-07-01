@@ -1,5 +1,6 @@
 ## 0.0.0 (unreleased)
 
+- Extract agent-comm stub classes from ``tests/conftest.py`` into ``tests/agent_comm_stubs.py``, shrinking conftest to fixture-only (~50 lines).
 - Remove the OpenSSF Scorecard workflow and README badge (feedback-only, no
   regular human reviewer) to match the fleet security policy — every other
   robotsix repo has removed it.

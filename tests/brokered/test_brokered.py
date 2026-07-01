@@ -32,7 +32,7 @@ _WRITE_OP_BODY = {
 
 
 def _req(body: Any) -> Any:
-    from tests.conftest import Request
+    from tests.agent_comm_stubs import Request
 
     return Request(body=body)
 

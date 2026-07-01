@@ -15,11 +15,11 @@ def _build_target_agent(
     registry: Any, response_body: dict[str, Any] | str | None = None, error: bool = False
 ) -> Any:
     """Register a target agent in *registry* that returns a given reply."""
-    from tests.conftest import Agent, Request
+    from tests.agent_comm_stubs import Agent, Request
 
     target = Agent(agent_id="board-manager-test-repo", registry=registry)
     if error:
-        from tests.conftest import Error
+        from tests.agent_comm_stubs import Error
 
         def handler(req: Request) -> Any:
             return Error(code="INTERNAL", message="something broke")
@@ -27,7 +27,7 @@ def _build_target_agent(
         body = response_body or {"reply": "hello from manager"}
 
         def handler(req: Request) -> Any:
-            from tests.conftest import Response
+            from tests.agent_comm_stubs import Response
 
             return Response.to(req, body=body)
 
@@ -39,7 +39,7 @@ def _build_target_agent(
 
 def _default_target_agent(registry: Any) -> Any:
     """Register a target at the default id used when BOARD_MANAGER_TARGET is unset."""
-    from tests.conftest import Agent, Response
+    from tests.agent_comm_stubs import Agent, Response
 
     target = Agent(agent_id="board-manager-robotsix-mill", registry=registry)
     target.on_request._handler = lambda req: Response.to(req, body={"reply": "default target"})
@@ -53,7 +53,7 @@ def _default_target_agent(registry: Any) -> Any:
 def _brokered_using(registry: Any) -> Any:
     """A ``BrokeredAgent`` replacement binding the CLI agent to *registry* so it
     shares the target agent's in-memory registry."""
-    from tests.conftest import Agent
+    from tests.agent_comm_stubs import Agent
 
     def _factory(agent_id: str, **_kwargs: Any) -> Agent:
         return Agent(agent_id, registry=registry)
