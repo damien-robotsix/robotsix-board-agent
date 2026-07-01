@@ -14,6 +14,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Migrated pre-commit secret scanning from ``detect-secrets`` to ``gitleaks``,
+  replacing the system-level hook with the ``gitleaks-docker`` hook
+
 - Added ``codespell`` and ``markdownlint-cli2`` pre-commit hooks for automated
   documentation quality checks
 
