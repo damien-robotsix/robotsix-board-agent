@@ -1,5 +1,6 @@
 ## 0.0.0 (unreleased)
 
+- Add `docs/configuration.md` to the `mkdocs.yml` nav so the configuration guide is discoverable from the documentation site sidebar.
 - Added `get_multiple_ticket_descriptions` to the read-operations table in `docs/client/api.md` (the method already existed in code and other docs but was missing from this table).
 # Changelog
 
