@@ -1,5 +1,7 @@
 ## 0.0.0 (unreleased)
 
+- Added "Documentation conventions" section to AGENT.md: new docs files
+  under `docs/` must have a corresponding `mkdocs.yml` nav entry.
 - Add `docs/configuration.md` to the `mkdocs.yml` nav so the configuration guide is discoverable from the documentation site sidebar.
 - Added `get_multiple_ticket_descriptions` to the read-operations table in `docs/client/api.md` (the method already existed in code and other docs but was missing from this table).
 - Added `docs/constants/reference.md` to the mkdocs navigation.
