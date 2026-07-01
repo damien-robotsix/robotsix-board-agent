@@ -35,6 +35,7 @@ client = BoardClient(settings, transport=httpx.MockTransport(handler))
 | `history`       | `ticket_id: str`              | `GET /tickets/{id}/history`       | `list[dict]`         |
 | `merge_status`  | `ticket_id: str`              | `GET /tickets/{id}/merge-status`  | `dict`               |
 | `description`   | `ticket_id: str`              | `GET /tickets/{id}/description`   | `dict`               |
+| `get_multiple_ticket_descriptions` | `ticket_ids: list[str]`       | `GET /tickets/{id}/description` (×N) | `list[dict]`     |
 
 All read methods are async and return parsed JSON from the board API.
 
