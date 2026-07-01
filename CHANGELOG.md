@@ -150,6 +150,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed `_CLASSIFY_SYSTEM` prompt parenthetical to use actual tool names
   (`merge_now`, `resume_blocked`) instead of the mismatched shorthands
   (`merge`, `resume`)
+- Fixed `TestStop` in `test__lifecycle.py`: enabled parent logger propagation so
+  `caplog` can capture WARNING-level log messages from `obj.stop()`
+
 - Fixed `_MANAGER_SYSTEM` prompt parenthetical to use actual tool names
   (`merge_now`, `resume_blocked`) instead of the mismatched shorthands
   (`merge`, `resume`)
