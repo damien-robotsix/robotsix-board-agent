@@ -15,6 +15,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Reverted addition of the `dependency-review` CI job — the repository does not
+  have Dependency graph enabled, so the action cannot run
+
 - Added Pydantic validation-failure tests for all board ops in
   ``tests/ops/test_ops.py``: each op is tested with missing required
   fields and type errors to ensure ``dispatch`` raises ``ValidationError``
