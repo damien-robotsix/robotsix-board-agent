@@ -33,7 +33,7 @@ class TestHandleRequest:
     """Test BoardManager._handle_request — mock _converse to isolate."""
 
     def test_missing_message_returns_error(self, manager: BoardManager) -> None:
-        from tests.conftest import Request
+        from tests.agent_comm_stubs import Request
 
         reply = manager._handle_request(Request(body={}))
         assert reply.error is not None
@@ -41,14 +41,14 @@ class TestHandleRequest:
         assert "message" in reply.error["message"]
 
     def test_empty_message_returns_error(self, manager: BoardManager) -> None:
-        from tests.conftest import Request
+        from tests.agent_comm_stubs import Request
 
         reply = manager._handle_request(Request(body={"message": "   "}))
         assert reply.error is not None
         assert reply.error["code"] == BoardErrorCode.BAD_REQUEST.value
 
     def test_body_not_dict_defaults_to_empty(self, manager: BoardManager) -> None:
-        from tests.conftest import Request
+        from tests.agent_comm_stubs import Request
 
         # When body is not a dict, _handle_request defaults to {}.
         with patch.object(manager, "_converse", return_value="test reply"):
@@ -58,7 +58,7 @@ class TestHandleRequest:
         assert reply.error["code"] == BoardErrorCode.BAD_REQUEST.value
 
     def test_valid_message_converses_and_returns_reply(self, manager: BoardManager) -> None:
-        from tests.conftest import Request
+        from tests.agent_comm_stubs import Request
 
         with patch.object(manager, "_converse", return_value="I did the thing."):
             reply = manager._handle_request(Request(body={"message": "do the thing"}))
@@ -66,7 +66,7 @@ class TestHandleRequest:
         assert reply.result == {"reply": "I did the thing."}
 
     def test_message_key_accepted(self, manager: BoardManager) -> None:
-        from tests.conftest import Request
+        from tests.agent_comm_stubs import Request
 
         with patch.object(manager, "_converse", return_value="from message") as mock_conv:
             reply = manager._handle_request(Request(body={"message": "use this"}))
@@ -76,7 +76,7 @@ class TestHandleRequest:
     def test_converse_invalidates_read_cache(self, manager: BoardManager) -> None:
         """A write-intent turn goes through _converse and must clear the read
         cache, so a later fast read does not serve stale ticket status."""
-        from tests.conftest import Request
+        from tests.agent_comm_stubs import Request
 
         tid = "20260101T000000Z-x-abcd"
         manager._ticket_cache.set(tid, {"id": tid, "state": "ready"})
@@ -91,7 +91,7 @@ class TestHandleRequest:
         assert manager._ticket_cache.get(tid) is None  # cache invalidated
 
     def test_converse_result_appended_to_memory(self, manager: BoardManager) -> None:
-        from tests.conftest import Request
+        from tests.agent_comm_stubs import Request
 
         with patch.object(manager, "_converse", return_value="the answer"):
             manager._handle_request(Request(body={"message": "the question"}))
@@ -105,7 +105,7 @@ class TestHandleRequest:
         """When _converse raises, _handle_request returns a clear error reply
         (with error=True) instead of letting the broker emit an opaque
         'internal handler error'."""
-        from tests.conftest import Request
+        from tests.agent_comm_stubs import Request
 
         with patch.object(
             manager,
@@ -125,7 +125,7 @@ class TestHandleRequest:
 
     def test_converse_failure_not_appended_to_memory(self, manager: BoardManager) -> None:
         """A failed turn is not written to conversation memory."""
-        from tests.conftest import Request
+        from tests.agent_comm_stubs import Request
 
         with patch.object(manager, "_converse", side_effect=RuntimeError("boom")):
             manager._handle_request(Request(body={"message": "the question"}))
@@ -1676,7 +1676,7 @@ class TestFastReadTicket:
 
     def test_handle_request_uses_fast_path(self, manager: BoardManager) -> None:
         """_handle_request returns the fast-path result without calling _converse."""
-        from tests.conftest import Request
+        from tests.agent_comm_stubs import Request
 
         data = self._ticket_data()
         manager._run = MagicMock(return_value=data)  # type: ignore[method-assign]
@@ -1692,7 +1692,7 @@ class TestFastReadTicket:
 
     def test_handle_request_falls_back_to_converse(self, manager: BoardManager) -> None:
         """When fast path returns None, _handle_request calls _converse."""
-        from tests.conftest import Request
+        from tests.agent_comm_stubs import Request
 
         with patch.object(manager, "_converse", return_value="LLM response") as mock_conv:
             reply = manager._handle_request(
