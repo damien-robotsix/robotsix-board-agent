@@ -1,5 +1,6 @@
 ## 0.0.0 (unreleased)
 
+- Add OpenSSF Scorecard workflow and badge to README
 - Added "Documentation conventions" section to AGENT.md: new docs files
   under `docs/` must have a corresponding `mkdocs.yml` nav entry.
 - Add `docs/configuration.md` to the `mkdocs.yml` nav so the configuration guide is discoverable from the documentation site sidebar.

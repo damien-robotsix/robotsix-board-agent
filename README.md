@@ -1,6 +1,7 @@
 # robotsix-board-agent
 
 [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/damien-robotsix/robotsix-board-agent/main.svg)](https://results.pre-commit.ci/latest/github/damien-robotsix/robotsix-board-agent/main)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/damien-robotsix/robotsix-board-agent/badge)](https://scorecard.dev/analyze?uri=github.com/damien-robotsix/robotsix-board-agent)
 
 A reusable **agent-comm** agent that exposes the mill board's full ticket
 lifecycle over structured messages — query, file, comment, transition,
