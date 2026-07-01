@@ -38,6 +38,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   ``_is_kind_context``, ``_read_default_ticket_kind``, ``_find_kind_literals``,
   and ``main``
 
+- Added unit tests for ``scripts/completeness_check.py`` covering
+  ``_source_text``, ``_parse_source``, ``_client_method_calls_in_handler``,
+  ``_http_method_of_client_fn``, ``_imported_from_submodules``, and
+  ``_env_keys_in_test_patches``
+
 - Added ``env_doc_sync`` periodic workflow and ``docs/configuration.md``
   documenting all environment variables
 
