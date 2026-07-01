@@ -1,6 +1,8 @@
 ## 0.0.0 (unreleased)
 
-- Add OpenSSF Scorecard workflow and badge to README
+- Remove the OpenSSF Scorecard workflow and README badge (feedback-only, no
+  regular human reviewer) to match the fleet security policy — every other
+  robotsix repo has removed it.
 - Added "Documentation conventions" section to AGENT.md: new docs files
   under `docs/` must have a corresponding `mkdocs.yml` nav entry.
 - Add `docs/configuration.md` to the `mkdocs.yml` nav so the configuration guide is discoverable from the documentation site sidebar.
