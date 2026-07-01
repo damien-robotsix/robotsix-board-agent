@@ -15,6 +15,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Added Pydantic validation-failure tests for all board ops in
+  ``tests/ops/test_ops.py``: each op is tested with missing required
+  fields and type errors to ensure ``dispatch`` raises ``ValidationError``
+
 - Migrated pre-commit secret scanning from ``detect-secrets`` to ``gitleaks``,
   replacing the system-level hook with the ``gitleaks-docker`` hook
 
