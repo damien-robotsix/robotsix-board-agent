@@ -1,5 +1,6 @@
 ## 0.0.0 (unreleased)
 
+- Fix mypy `attr-defined` and `no-untyped-def` errors in `tests/scripts/test_completeness_check_helpers.py` and resolve CodeQL `py/import-and-import-from` / `py/unused-import` alerts in `tests/conftest.py`.
 - Add Ruff lint rules PT (pytest-style), PERF (performance), FURB (modern idioms), and T20 (print detection) to `pyproject.toml`
 - Enable changelog_autofill periodic workflow to automatically insert changelog entries on dependabot branches.
 - Extract agent-comm stub classes from ``tests/conftest.py`` into ``tests/agent_comm_stubs.py``, shrinking conftest to fixture-only (~50 lines).
