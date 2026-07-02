@@ -11,6 +11,7 @@ import inspect
 import os.path
 import textwrap
 from pathlib import Path
+from typing import Any
 from unittest.mock import patch
 
 from scripts.completeness_check import (
@@ -30,26 +31,26 @@ from scripts.completeness_check import (
 # ---------------------------------------------------------------------------
 
 
-def _handler_with_single_client_call(client: object) -> None:
+def _handler_with_single_client_call(client: Any) -> None:
     client.get_ticket("123")
 
 
-def _handler_with_multiple_client_calls(client: object) -> None:
+def _handler_with_multiple_client_calls(client: Any) -> None:
     client.get_ticket("123")
     client.list_tickets()
     client.get_ticket("456")
 
 
-def _handler_with_no_client_calls(client: object) -> None:
+def _handler_with_no_client_calls(client: Any) -> None:
     print("hello")
 
 
-def _handler_with_non_client_attribute(client: object) -> None:
+def _handler_with_non_client_attribute(client: Any) -> None:
     other.do_something()  # type: ignore[name-defined]  # noqa: F821
     client.get_ticket("123")
 
 
-def _handler_with_attribute_access_not_call(client: object) -> None:
+def _handler_with_attribute_access_not_call(client: Any) -> None:
     _ = client.get_ticket  # attribute access, not a call
 
 
@@ -64,19 +65,19 @@ def _handler_with_attribute_access_not_call(client: object) -> None:
 # ``test_http_method_class_method_indentation_returns_none`` below.
 
 
-def _get_ticket(self) -> None:
+def _get_ticket(self: Any) -> None:
     self._request("GET", "/tickets/1")
 
 
-def _create_ticket(self) -> None:
+def _create_ticket(self: Any) -> None:
     self._request("POST", "/tickets", json={})
 
 
-def _helper(self) -> None:
+def _helper(self: Any) -> None:
     pass
 
 
-def _dynamic_method(self, verb: str) -> None:
+def _dynamic_method(self: Any, verb: str) -> None:
     self._request(verb, "/path")
 
 
@@ -90,6 +91,9 @@ def _fn_with_local_request() -> None:
 class _FakeClientMethod:
     """Class whose methods have indented source — used to test the
     indentation limitation of _http_method_of_client_fn."""
+
+    def _request(self, method: str, path: str, **kwargs: Any) -> None:
+        pass
 
     def get_ticket(self) -> None:
         self._request("GET", "/tickets/1")

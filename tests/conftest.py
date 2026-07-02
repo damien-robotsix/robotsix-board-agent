@@ -17,12 +17,13 @@ from typing import Any
 import httpx
 import pytest
 
+# isort: off
 # Trigger sys.modules injection before any test code imports agent-comm.
-import tests.agent_comm_stubs  # noqa: F401
-from robotsix_board_agent.config import BoardAgentSettings
-
 # Re-export Registry for the registry fixture (and backward compat).
 from tests.agent_comm_stubs import Registry
+
+from robotsix_board_agent.config import BoardAgentSettings
+# isort: on
 
 
 @pytest.fixture
