@@ -1,0 +1,140 @@
+# Module taxonomy for robotsix-board-agent.
+# The module_curator periodic workflow validates this against the live
+# directory tree and flags drift (new, missing, or relocated modules).
+modules:
+  - name: __init__
+    path:
+      - src/robotsix_board_agent/__init__.py
+      - src/robotsix_board_agent/py.typed
+      - src/robotsix_board_agent/_imports.py
+      - tests/test__imports.py
+      - src/robotsix_board_agent/_lifecycle.py
+      - tests/test__lifecycle.py
+      - src/robotsix_board_agent/_request_handler.py
+
+      - docs/architecture.md
+      - docs/modules.yaml
+      - docs/configuration.md
+      - docs/reference.md
+    description: >
+      Package init — re-exports BoardAgent, BoardClient, BoardAgentSettings,
+      BoardOp, UnknownOpError, and dispatch.
+
+  - name: agent
+    path:
+      - src/robotsix_board_agent/agent.py
+      - docs/agent/getting-started.md
+      - tests/agent/
+    description: >
+      BoardAgent class — registers with an agent-comm Registry, parses
+      structured ``{"op": ..., "args": {...}}`` requests, and dispatches
+      them to the board client.  Also contains the read/write op gate and
+      the lazy import fallback for sandbox environments.
+
+  - name: client
+    path:
+      - src/robotsix_board_agent/client.py
+      - docs/client/api.md
+      - tests/client/
+    description: >
+      Typed HTTP client (BoardClient) for the mill board REST API.
+      Every public method maps 1:1 to a board endpoint.  Supports
+      transport injection for network-free testing.
+
+  - name: config
+    path:
+      - src/robotsix_board_agent/config.py
+      - docs/config/reference.md
+      - tests/config/
+    description: >
+      Configuration model — BoardAgentSettings (pydantic BaseModel, NOT
+      BaseSettings).  Holds board_api_url, board_api_token, board_repo_id,
+      and the enable_write_ops flag.
+
+  - name: constants
+    path:
+      - src/robotsix_board_agent/constants.py
+      - tests/constants/
+      - docs/constants/reference.md
+    description: >
+      Shared defaults — DEFAULT_TICKET_SOURCE, DEFAULT_TICKET_KIND,
+      DEFAULT_COMMENT_AUTHOR, DEFAULT_NOTE — and the BoardErrorCode enum
+      for agent-comm Error responses.
+
+  - name: ops
+    path:
+      - src/robotsix_board_agent/ops.py
+      - docs/ops/operations.md
+      - tests/ops/
+    description: >
+      Operation dispatch — OP_TABLE mapping, per-op argument models
+      (pydantic), handler functions, WRITE_OPS set, and the dispatch()
+      entry point.  Also defines BoardOp (the incoming request model)
+      and UnknownOpError.
+
+  - name: brokered
+    path:
+      - src/robotsix_board_agent/brokered.py
+      - docs/brokered/responder.md
+      - tests/brokered/
+    description: >
+      BrokeredBoardResponder — production entry point for structured
+      board operations over the agent-comm broker.  Pull/mailbox mode,
+      write gate, synchronous facade over a dedicated event loop.
+
+  - name: board_manager
+    path:
+      - src/robotsix_board_agent/board_manager.py
+      - docs/board_manager/api.md
+      - tests/board_manager/
+    description: >
+      BoardManager — natural-language LLM-powered board manager.
+      Two-stage pipeline (level-1 recall + level-3 acting), 16 board
+      operation tools + update_memory + lookup_reference, maintained
+      memory, reference-material store, persistent conversation trace.
+
+  - name: manager_cli
+    path:
+      - src/robotsix_board_agent/manager_cli.py
+      - docs/manager_cli/usage.md
+      - tests/manager_cli/
+    description: >
+      CLI entry point (robotsix-board-manager) for talking to a
+      BoardManager over the broker in natural language.  Environment-
+      configurable broker coordinates, three exit codes.
+
+  - name: memory
+    path:
+      - src/robotsix_board_agent/memory.py
+      - docs/memory/reference.md
+      - tests/memory/
+    description: >
+      BoardManagerMemory — three-track persistence (conversation trace
+      JSON + maintained memory Markdown + reference material Markdown).
+      Capped at 200 Q→A pairs, 2000-char notes, and 20k-char reference
+      file; oldest-first pruning on overflow; on-demand keyword search
+      of reference material via search_reference.
+
+  - name: scripts
+    path:
+      - scripts/check_kind_literals.py
+      - scripts/completeness_check.py
+      - scripts/bump_git_pin.py
+      - tests/scripts/test_bump_git_pin.py
+      - tests/scripts/test_check_kind_literals.py
+      - tests/scripts/test_completeness_check_helpers.py
+    description: >
+      Utility scripts — check_kind_literals.py (codegen literal
+      verification), completeness_check.py (agent-comm completeness
+      check), bump_git_pin.py (automated git dependency pin bumps).
+
+  - name: tests
+    path:
+      - tests/
+      - tests/test__lifecycle.py
+      - tests/test__request_handler.py
+    description: >
+      Test suite — conftest.py (shared fixtures, mock transports),
+      test_agent.py, test_client.py, config/test_config.py,
+      ops/test_ops.py, test_brokered.py, test_board_manager.py,
+      test_manager_cli.py.
