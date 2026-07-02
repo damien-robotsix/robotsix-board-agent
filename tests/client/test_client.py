@@ -168,7 +168,8 @@ async def test_get_multiple_ticket_descriptions(
         nonlocal call_count
         call_count += 1
         assert req.method == "GET"
-        assert "/tickets/" in str(req.url) and "/description" in str(req.url)
+        assert "/tickets/" in str(req.url)
+        assert "/description" in str(req.url)
         # Return a description keyed by the ticket id from the URL.
         tid = str(req.url).split("/tickets/")[1].split("/description")[0]
         return json_response({"ticket_id": tid, "body": f"desc of {tid}"})
@@ -214,9 +215,8 @@ async def test_get_multiple_ticket_descriptions_partial_error(
 async def test_create_ticket(client: BoardClient, mock_transport: httpx.MockTransport):
     def handler(req: httpx.Request) -> httpx.Response:
         assert req.method == "POST"
-        assert "/tickets" in str(req.url) and "/tickets/" not in str(req.url).replace(
-            "//tickets", "/tickets"
-        )
+        assert "/tickets" in str(req.url)
+        assert "/tickets/" not in str(req.url).replace("//tickets", "/tickets")
         return json_response({"id": "new-1", "title": "Hello"}, status=201)
 
     mock_transport.handler = handler  # type: ignore[attr-defined]

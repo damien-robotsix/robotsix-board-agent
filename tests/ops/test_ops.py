@@ -86,7 +86,9 @@ READ_OP_TESTS = [
 ]
 
 
-@pytest.mark.parametrize("op_name,method_name,args,return_value,expected", READ_OP_TESTS)
+@pytest.mark.parametrize(
+    ("op_name", "method_name", "args", "return_value", "expected"), READ_OP_TESTS
+)
 async def test_read_op_routes_correctly(
     op_name: str,
     method_name: str,
@@ -117,7 +119,7 @@ WRITE_OP_TESTS = [
 ]
 
 
-@pytest.mark.parametrize("op_name,method_name,args,return_value", WRITE_OP_TESTS)
+@pytest.mark.parametrize(("op_name", "method_name", "args", "return_value"), WRITE_OP_TESTS)
 async def test_write_op_routes_correctly(
     op_name: str,
     method_name: str,
@@ -192,7 +194,7 @@ MISSING_REQUIRED_TESTS = [
 ]
 
 
-@pytest.mark.parametrize("op_name,args,missing_field", MISSING_REQUIRED_TESTS)
+@pytest.mark.parametrize(("op_name", "args", "missing_field"), MISSING_REQUIRED_TESTS)
 async def test_op_rejects_missing_required_fields(
     op_name: str,
     args: dict[str, Any],
@@ -231,7 +233,7 @@ TYPE_ERROR_TESTS = [
 ]
 
 
-@pytest.mark.parametrize("op_name,args", TYPE_ERROR_TESTS)
+@pytest.mark.parametrize(("op_name", "args"), TYPE_ERROR_TESTS)
 async def test_op_rejects_type_errors(
     op_name: str,
     args: dict[str, Any],

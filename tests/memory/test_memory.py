@@ -39,7 +39,8 @@ def test_as_prompt_empty_and_nonempty(tmp_path: Path) -> None:
     assert mem.as_prompt() == ""
     mem.append("hi", "hello", timestamp="t0")
     rendered = mem.as_prompt()
-    assert "Q: hi" in rendered and "A: hello" in rendered
+    assert "Q: hi" in rendered
+    assert "A: hello" in rendered
 
 
 def test_as_prompt_max_entries_caps_rendered_output(tmp_path: Path) -> None:
