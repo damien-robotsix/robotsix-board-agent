@@ -2,6 +2,7 @@
 
 - Fix mypy `attr-defined` and `no-untyped-def` errors in `tests/scripts/test_completeness_check_helpers.py` and resolve CodeQL `py/import-and-import-from` / `py/unused-import` alerts in `tests/conftest.py`.
 - Add Ruff lint rules PT (pytest-style), PERF (performance), FURB (modern idioms), and T20 (print detection) to `pyproject.toml`
+- Add `mypy` (strict mode) job to CI workflow to enforce type-checking as a gate, matching the pre-commit hook that pre-commit.ci previously skipped.
 - Enable changelog_autofill periodic workflow to automatically insert changelog entries on dependabot branches.
 - Extract agent-comm stub classes from ``tests/conftest.py`` into ``tests/agent_comm_stubs.py``, shrinking conftest to fixture-only (~50 lines).
 - Remove the OpenSSF Scorecard workflow and README badge (feedback-only, no
