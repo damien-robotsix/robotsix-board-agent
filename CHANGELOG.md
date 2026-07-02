@@ -20,6 +20,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Added `codespell` spell-checking to the `ruff-check` CI job to catch spelling
+  mistakes in Python files and documentation
+
 - Added `state_sync` periodic workflow configuration for automated state
   synchronization
 
