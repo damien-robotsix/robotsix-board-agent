@@ -17,6 +17,7 @@ _ = _merge_now
 _ = _resume_blocked
 _ = _migrate
 _ = _set_priority
+_ = _get_multiple_ticket_descriptions
 
 # -- Pydantic args models (used only via .model_validate() in handlers) -----
 _ = ListTicketsArgs
@@ -34,6 +35,7 @@ _ = MergeNowArgs
 _ = ResumeBlockedArgs
 _ = MigrateArgs
 _ = SetPriorityArgs
+_ = GetMultipleTicketDescriptionsArgs
 
 # -- agent.py: public API consumed by mill, not within board-agent ---------
 _ = BoardAgent
